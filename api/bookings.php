@@ -342,7 +342,7 @@ function create_toyyibpay_bill(array $slot, array $user, int $slotId): array
         'billPayerPhone'     => $user['phone'],
         'billReceiverName'   => 'BuskersSabah',
         'billPayorComment'   => '',
-        'billReceiverEmail'  => 'admin@sbcbooking.my',
+        'billReceiverEmail'  => 'info@sabahbuskers.my',
         'billContent'        => '',
         'billPaymentMode'    => '0',
         'billUrlSlug'        => md5('slot' . $slotId),

@@ -1,7 +1,7 @@
 window.APP = {
   name: 'Sabah Buskers Community',
   shortName: 'SBC',
-  domain: 'sbcbooking.my',
+  domain: 'sabahbuskers.my',
   tagline: 'Platform busking Sabah',
   city: 'Kota Kinabalu',
   prayerCity: 'Kota Kinabalu',

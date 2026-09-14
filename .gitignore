@@ -16,3 +16,6 @@ data/*.sqlite3
 
 # Deployment artifacts
 *.zip
+
+# Credentials (JANGAN naik ke GitHub)
+api/config.local.php
