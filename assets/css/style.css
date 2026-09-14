@@ -124,6 +124,22 @@ img { max-width: 100%; display: block; }
   white-space: nowrap;
 }
 .app-tag-static { align-self: flex-start; margin-top: 14px; display: inline-flex; font-size: 10.5px; gap: 6px; }
+.beta-pill, .beta-dot {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #2A1200;
+  background: var(--grad);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 9px;
+  vertical-align: middle;
+  line-height: 1.5;
+}
+.beta-dot { color: #2A1200; margin-left: 4px; }
 @media (max-width: 1020px) {
   .site-nav .app-tag { display: none; }
 }
