@@ -23,7 +23,6 @@
     'admin-dashboard': 'viewAdmin',
     'admin-finance': 'viewAdminFinance',
     'pengurusan-slot': 'viewAdminSlots',
-    'observation-room': 'viewObservation',
     mocks: 'viewTools',
   };
 
@@ -127,7 +126,6 @@
           ['?page=admin-dashboard', 'Panel Admin'],
           ['?page=admin-finance', 'Kewangan'],
           ['?page=pengurusan-slot', 'Slot'],
-          ['?page=observation-room', 'Bilik Pemerhatian'],
         ];
       }
       return [

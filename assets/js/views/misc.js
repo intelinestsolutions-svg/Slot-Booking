@@ -87,49 +87,6 @@
       { eyebrow: 'Struktur yuran' });
   };
 
-  /* ============ Bilik Pemerhatian (admin) ============ */
-  window.viewObservation = function () {
-    const u = Session.user;
-    if (!u || u.role !== 'admin') { Router.go('login', { next: 'observation-room' }); return ''; }
-    return UI.page('Bilik Pemerhatian', 'Suapan langsung slot &amp; kehadiran selama 7 hari.',
-      `
-      <div id="obsTop"><div class="empty">Memuatkan bilik pemerhatian...</div></div>`,
-      { eyebrow: 'Live' });
-  };
-
-  window.ViewHooks.viewObservation = async function () {
-    const u = Session.user;
-    if (!u || u.role !== 'admin') return;
-    let slots = [];
-    try {
-      const r = await API.partner.dashboard();
-      slots = r.slots || [];
-    } catch (e) {
-      document.getElementById('obsTop').innerHTML = UI.notice(e.message, 'error');
-      return;
-    }
-
-    const byDate = {};
-    slots.forEach(s => { (byDate[s.date] = byDate[s.date] || []).push(s); });
-
-    document.getElementById('obsTop').innerHTML = Object.keys(byDate).sort().map(date => {
-      const items = byDate[date];
-      return `
-        <div class="panel" style="margin-top:14px;">
-          <h3 style="font-size:17px;">${UI.dateLabel(date)} <span class="st st-ok">${items.length} slot</span></h3>
-          <div style="margin-top:12px;">
-            ${items.map(s => `
-              <div style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap;align-items:center;">
-                <span style="font-weight:700;color:var(--gold);">${UI.esc(s.startTime)} – ${UI.esc(s.endTime)}</span>
-                <span>${UI.esc(s.locationName || '')} · <small style="color:var(--muted)">${UI.esc(s.area || '')}</small></span>
-                <span>${s.stageName ? '🎤 ' + UI.esc(s.stageName) : '<small style="color:var(--muted-2)">Tiada busker</small>'}</span>
-                <span class="st st-${UI.esc(s.status)}">${UI.esc(s.status)}</span>
-              </div>`).join('')}
-          </div>
-        </div>`;
-    }).join('') || '<div class="empty">Tiada slot dalam 7 hari akan datang.</div>';
-  };
-
   /* ============ Jadual awam /jadualbuskers/<slug>/ ============ */
   window.viewSchedule = async function () {
     const slug = Router.scheduleSlug();
