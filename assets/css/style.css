@@ -62,7 +62,8 @@ img { max-width: 100%; display: block; }
 
 /* Falling music notes */
 .music-fall { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
-.m-note { position: absolute; top: -8%; font-family: Georgia, serif; color: rgba(242, 180, 65, 0.5); text-shadow: 0 0 12px rgba(242, 180, 65, 0.35); animation: note-fall var(--dur, 9s) linear var(--delay, 0s) infinite; user-select: none; will-change: transform; }
+.m-note { position: absolute; top: -8%; animation: note-fall var(--dur, 9s) linear var(--delay, 0s) infinite; user-select: none; will-change: transform; }
+.m-note img { width: var(--w, 28px); height: auto; object-fit: contain; border-radius: 6px; box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.5); }
 @keyframes note-fall {
   0% { transform: translateY(-12vh) translateX(0) rotate(0deg); opacity: 0; }
   10% { opacity: var(--op, 0.5); }

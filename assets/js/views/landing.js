@@ -17,11 +17,9 @@
     const data = await stats();
     const locPreview = ((data.locations || []).slice(0, 6));
     const rnd = (a, b) => a + Math.random() * (b - a);
-    const NOTES = ['♪', '♫', '♬', '♩', '🎵', '🎶'];
-    const notesHTML = Array.from({ length: 18 }, () => {
-      const n = NOTES[Math.floor(Math.random() * NOTES.length)];
-      const s = Math.round(rnd(16, 40));
-      return `<span class="m-note" style="left:${Math.round(rnd(2, 96))}%;font-size:${s}px;--dur:${rnd(8, 16).toFixed(1)}s;--delay:${rnd(0, 13).toFixed(1)}s;--op:${rnd(0.25, 0.6).toFixed(2)};--sway:${Math.round(rnd(-45, 45))}px">${n}</span>`;
+    const notesHTML = Array.from({ length: 16 }, () => {
+      const s = Math.round(rnd(18, 44));
+      return `<span class="m-note" style="left:${Math.round(rnd(2, 96))}%;--w:${s}px;--dur:${rnd(8, 16).toFixed(1)}s;--delay:${rnd(0, 13).toFixed(1)}s;--op:${rnd(0.35, 0.8).toFixed(2)};--sway:${Math.round(rnd(-45, 45))}px"><img src="assets/img/sbc-logo.png?v=20260924" alt="" loading="lazy"></span>`;
     }).join('');
 
     return `
