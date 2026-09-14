@@ -1,7 +1,10 @@
 package my.sabahbuskers.community;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.provider.Settings;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -35,5 +38,14 @@ public class DevicePermissionPlugin extends Plugin {
         out.put("granted",
             getContext().checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED);
         call.resolve(out);
+    }
+
+    @PluginMethod
+    public void openAppSettings(PluginCall call) {
+        Intent intent = new Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.parse("package:" + getActivity().getPackageName()));
+        getActivity().startActivity(intent);
+        call.resolve();
     }
 }

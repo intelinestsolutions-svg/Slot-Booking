@@ -157,12 +157,16 @@
         }
       } catch (e) {
         const canAsk = window.APP.isNative && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.DevicePermission;
+        const openSettings = canAsk
+          ? '<button class="btn btn-ghost" id="tnSettings" type="button" style="margin-top:10px;width:100%;">Buka Tetapan Aplikasi</button>'
+          : '';
         hintEl.innerHTML =
           '<span style="color:var(--danger)">Mikrofon tidak tersedia: ' + UI.esc(e.message) + '</span><br>' +
-          '<span style="font-size:12px;">Pastikan akses mikrofon dibenarkan dan anda berada di halaman HTTPS.</span>' +
+          '<span style="font-size:12px;">Buka Tetapan aplikasi dan benarkan akses <b>Mikrofon</b>, kemudian cuba semula.</span>' +
           (canAsk
-            ? '<div style="margin-top:12px;"><button class="btn btn-primary" id="tnRetry" type="button">Izinkan Mikrofon &amp; Cuba Semula</button></div>' +
-              '<p style="font-size:11.5px;color:var(--muted-2);margin-top:8px;">Jika tiada dialog keluar, buka Tetapan telefon → SBC Mobile Apps → Kebenaran → Mikrofon.</p>'
+            ? '<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">' +
+              '<button class="btn btn-primary" id="tnRetry" type="button">Izinkan Mikrofon &amp; Cuba Semula</button>' + openSettings +
+              '</div>'
             : '');
         const retryBtn = modal.querySelector('#tnRetry');
         if (retryBtn) retryBtn.addEventListener('click', async () => {
@@ -174,6 +178,10 @@
             startBtn.disabled = false;
             startBtn.click();
           }, 700);
+        });
+        const settingsBtn = modal.querySelector('#tnSettings');
+        if (settingsBtn) settingsBtn.addEventListener('click', () => {
+          try { window.Capacitor.Plugins.DevicePermission.openAppSettings(); } catch (e2) {}
         });
       }
     });
