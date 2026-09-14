@@ -162,6 +162,12 @@ function schema(PDO $pdo): void
         comment TEXT,
         createdAt TEXT NOT NULL DEFAULT (datetime('now'))
     )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS prayerTimes (
+        date TEXT PRIMARY KEY,
+        raw TEXT,
+        fetchedAt TEXT NOT NULL DEFAULT (datetime('now'))
+    )");
 }
 
 function seed(PDO $pdo): void

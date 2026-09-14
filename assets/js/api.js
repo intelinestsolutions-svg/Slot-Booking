@@ -5,6 +5,7 @@
     const map = {
       auth: 'auth.php', slots: 'slots.php', bookings: 'bookings.php',
       community: 'community.php', partner: 'partner.php', admin: 'admin.php',
+      prayer: 'prayer.php',
     };
     return map[kind] || kind;
   }
@@ -69,6 +70,9 @@
       dashboard: () => call('partner', 'dashboard'),
       setStatus: (b) => call('partner', 'set_status', { method: 'POST', body: b }),
       register: (b) => call('partner', 'partner_registration', { method: 'POST', body: b }),
+    },
+    prayer: {
+      today: () => call('prayer', 'today'),
     },
     admin: {
       applications: () => call('admin', 'applications'),

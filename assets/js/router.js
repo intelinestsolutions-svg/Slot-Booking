@@ -5,12 +5,12 @@
     landing: 'viewLanding',
     login: 'viewLogin',
     'busker_login': 'viewLogin',
-    'partner_login': 'viewLogin',
     'admin_login': 'viewLogin',
     register: 'viewRegister',
     'busker-landing': 'viewLanding',
     'cari-slot': 'viewCariSlot',
     'slot-booking': 'viewSlotBooking',
+    'bersedia': 'viewBersedia',
     'tempahan-saya': 'viewTempahan',
     profil: 'viewProfil',
     'kemaskini-profil': 'viewKemaskini',
@@ -20,11 +20,6 @@
     tools: 'viewTools',
     'about-buzzking': 'viewAbout',
     pricing: 'viewPricing',
-    partnership: 'viewPartnership',
-    'partner-dashboard': 'viewPartner',
-    'partner-schedule': 'viewPartner',
-    'partner-complaints': 'viewPartner',
-    'partner-settings': 'viewPartner',
     'admin-dashboard': 'viewAdmin',
     'admin-finance': 'viewAdminFinance',
     'pengurusan-slot': 'viewAdminSlots',
@@ -76,14 +71,11 @@
       }
 
       const user = Session.user;
-      const loginPages = ['slot-booking', 'tempahan-saya', 'profil', 'kemaskini-profil', 'performance-dashboard', 'inbox', 'tools', 'partner-dashboard'];
+      const loginPages = ['slot-booking', 'tempahan-saya', 'profil', 'kemaskini-profil', 'performance-dashboard', 'inbox', 'tools', 'bersedia'];
       if (loginPages.includes(page) && !user) {
         return this.go('login', { next: page });
       }
-      if (['slot-booking', 'tempahan-saya', 'profil', 'kemaskini-profil', 'performance-dashboard', 'inbox', 'tools'].includes(page) && user && user.role && user.role !== 'busker') {
-        return this.go('landing');
-      }
-      if (['partner-dashboard'].includes(page) && user && user.role !== 'partner' && user.role !== 'admin') {
+      if (['slot-booking', 'tempahan-saya', 'profil', 'kemaskini-profil', 'performance-dashboard', 'inbox', 'tools', 'bersedia'].includes(page) && user && user.role && user.role !== 'busker') {
         return this.go('landing');
       }
 
@@ -102,6 +94,9 @@
           await window.ViewHooks[viewFn](q);
         }
         UI.hideLoader();
+        if (window.Reminders && typeof window.Reminders.ensure === 'function') {
+          window.Reminders.ensure();
+        }
       } catch (e) {
         root.innerHTML = UI.page('Ralat', 'Sesuatu telah berlaku.', '') +
           `<div class="container"><div class="notice notice-error">${UI.esc(e.message)}</div></div>`;
@@ -119,6 +114,7 @@
       if (role === 'busker') {
         return [
           ['?page=cari-slot', 'Cari Slot'],
+          ['?page=bersedia', 'Persediaan'],
           ['?page=tempahan-saya', 'Tempahan Saya'],
           ['?page=performance-dashboard', 'Dashboard'],
           ['?page=ahli-buzzking', 'Komuniti'],
@@ -126,16 +122,9 @@
           ['?page=about-buzzking', 'Tentang'],
         ];
       }
-      if (role === 'partner') {
-        return [
-          ['?page=partner-dashboard', 'Dashboard Penyelia'],
-          ['?page=cari-slot', 'Cari Slot'],
-          ['?page=about-buzzking', 'Tentang'],
-        ];
-      }
       if (role === 'admin') {
         return [
-          ['?page=admin-dashboard', 'Admin'],
+          ['?page=admin-dashboard', 'Panel Admin'],
           ['?page=admin-finance', 'Kewangan'],
           ['?page=pengurusan-slot', 'Slot'],
           ['?page=observation-room', 'Bilik Pemerhatian'],
@@ -144,7 +133,6 @@
       return [
         ['?page=landing', 'Laman Utama'],
         ['?page=cari-slot', 'Cari Slot'],
-        ['?page=partnership', 'Perkongsian'],
         ['?page=about-buzzking', 'Tentang'],
       ];
     },
@@ -165,8 +153,8 @@
         const roleBadge = u.role === 'busker' ? (u.stageName || u.fullName || u.email) : u.role;
         userBox.innerHTML = `
           <div class="nav-user">
-            <a href="${u.role === 'busker' ? '?page=profil' : u.role === 'partner' ? '?page=partner-dashboard' : '?page=admin-dashboard'}" class="nav-avatar">${UI.esc(('' + (u.stageName || u.fullName || u.email || 'U')).slice(0, 1).toUpperCase())}</a>
-            <div class="who"><a href="${u.role === 'busker' ? '?page=profil' : '?page=landing'}" style="color:var(--cream)">${UI.esc(roleBadge)}</a><small>${u.role}</small></div>
+            <a href="${u.role === 'busker' ? '?page=profil' : '?page=admin-dashboard'}" class="nav-avatar">${UI.esc(('' + (u.stageName || u.fullName || u.email || 'U')).slice(0, 1).toUpperCase())}</a>
+            <div class="who"><a href="${u.role === 'busker' ? '?page=profil' : '?page=admin-dashboard'}" style="color:var(--cream)">${UI.esc(roleBadge)}</a><small>${u.role}</small></div>
             <a class="btn btn-ghost btn-sm" href="#" data-logout>Log Keluar</a>
           </div>`;
         userBox.querySelector('[data-logout]').addEventListener('click', async (e) => {
