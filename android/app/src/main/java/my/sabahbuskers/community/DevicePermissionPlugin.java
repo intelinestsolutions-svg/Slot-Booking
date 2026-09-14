@@ -1,7 +1,9 @@
 package my.sabahbuskers.community;
 
 import android.Manifest;
+import android.content.pm.PackageManager;
 
+import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
@@ -25,5 +27,13 @@ public class DevicePermissionPlugin extends Plugin {
     @PermissionCallback
     private void microphonePermissionCallback(PluginCall call) {
         call.resolve();
+    }
+
+    @PluginMethod
+    public void getMicrophoneStatus(PluginCall call) {
+        JSObject out = new JSObject();
+        out.put("granted",
+            getContext().checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED);
+        call.resolve(out);
     }
 }

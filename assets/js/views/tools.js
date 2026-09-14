@@ -120,6 +120,11 @@
 
     startBtn.addEventListener('click', async () => {
       try {
+        const devPerm = window.APP.isNative && window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins : null;
+        if (devPerm && devPerm.DevicePermission) {
+          const st = await devPerm.DevicePermission.getMicrophoneStatus();
+          if (st && st.granted === false) await devPerm.DevicePermission.requestMicrophone();
+        }
         if (!ctx) {
           ctx = new (window.AudioContext || window.webkitAudioContext)();
           if (ctx.state === 'suspended') await ctx.resume();
@@ -151,8 +156,25 @@
           tunerRAF = requestAnimationFrame(loop);
         }
       } catch (e) {
-        hintEl.innerHTML = '<span style="color:var(--danger)">Mikrofon tidak tersedia: ' + UI.esc(e.message) + '</span><br>' +
-          '<span style="font-size:12px;">Pastikan akses mikrofon dibenarkan dan anda berada di halaman HTTPS.</span>';
+        const canAsk = window.APP.isNative && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.DevicePermission;
+        hintEl.innerHTML =
+          '<span style="color:var(--danger)">Mikrofon tidak tersedia: ' + UI.esc(e.message) + '</span><br>' +
+          '<span style="font-size:12px;">Pastikan akses mikrofon dibenarkan dan anda berada di halaman HTTPS.</span>' +
+          (canAsk
+            ? '<div style="margin-top:12px;"><button class="btn btn-primary" id="tnRetry" type="button">Izinkan Mikrofon &amp; Cuba Semula</button></div>' +
+              '<p style="font-size:11.5px;color:var(--muted-2);margin-top:8px;">Jika tiada dialog keluar, buka Tetapan telefon → SBC Mobile Apps → Kebenaran → Mikrofon.</p>'
+            : '');
+        const retryBtn = modal.querySelector('#tnRetry');
+        if (retryBtn) retryBtn.addEventListener('click', async () => {
+          retryBtn.disabled = true;
+          retryBtn.textContent = 'Meminta kebenaran…';
+          try { await window.Capacitor.Plugins.DevicePermission.requestMicrophone(); } catch (e2) {}
+          setTimeout(() => {
+            startBtn.textContent = 'Mula Penala';
+            startBtn.disabled = false;
+            startBtn.click();
+          }, 700);
+        });
       }
     });
   }
