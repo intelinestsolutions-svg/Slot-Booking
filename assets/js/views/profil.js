@@ -2,14 +2,16 @@
   const GENRES = ['Akustik / Folk', 'Balada / Pop', 'Jazz / Soul', 'Rock', 'Klasik / Instrumental', 'Nasyid', 'Etnik Tradisional / Kadazandusun', 'Original / Experimental'];
   const STATES = ['Johor', 'Kedah', 'Kelantan', 'W.P. Kuala Lumpur', 'Labuan', 'Melaka', 'Negeri Sembilan', 'Pahang', 'Perak', 'Perlis', 'Pulau Pinang', 'Putrajaya', 'Sabah', 'Sarawak', 'Selangor', 'Terengganu'];
 
-  function guardBusker() {
+  function guardAuth() {
     const u = Session.user;
-    if (!u || u.role !== 'busker') {
-      Router.go('login', { next: 'profil' });
+    if (!u) {
+      Router.go('login', { next: 'kemaskini-profil' });
       return null;
     }
     return u;
   }
+
+  window.viewProfil = function () {
 
   function verifyBadge(status) {
     const map = {
@@ -96,7 +98,7 @@
   };
 
   window.viewKemaskini = function () {
-    if (!guardBusker()) return '';
+    if (!guardAuth()) return '';
     return UI.page('Kemaskini Profil', 'Kemas kini butiran peribadi dan kata laluan anda.',
       `
       <div class="panel">
