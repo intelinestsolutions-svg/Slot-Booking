@@ -1,6 +1,6 @@
 <?php
 
-define('APP_NAME', 'SabahBuskers');
+define('APP_NAME', 'Sabah Buskers Community');
 define('DB_DIR', dirname(__DIR__) . '/data');
 define('DB_FILE', DB_DIR . '/buskers.db');
 

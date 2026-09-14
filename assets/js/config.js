@@ -1,8 +1,11 @@
 window.APP = {
-  name: 'SabahBuskers',
+  name: 'Sabah Buskers Community',
+  shortName: 'SBC',
   domain: 'sbcbooking.my',
   tagline: 'Platform busking Sabah',
   city: 'Kota Kinabalu',
+  prayerCity: 'Kota Kinabalu',
+  prayerCountry: 'Malaysia',
   apiPrefix: 'api/',
   tokenKey: 'sabahbuskers_token',
   userKey: 'sabahbuskers_user',

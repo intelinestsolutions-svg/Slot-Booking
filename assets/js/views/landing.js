@@ -23,7 +23,7 @@
       <div class="container" style="position:relative;">
         <p class="hero-eyebrow reveal"><span class="live-dot"></span> Platform untuk buskers Sabah — berpusat di Kota Kinabalu</p>
         <h1 class="reveal" style="--d:60ms">Cari spot.<br>Tempah <b>slot persembahan.</b><br>Main.</h1>
-        <p class="lead reveal" style="--d:140ms">SabahBuskers menghubungkan buskers dengan lokasi sah di Sabah — terokai lokasi yang disahkan pihak berkuasa, tempah slot persembahan mingguan anda dan uruskan aktiviti busking semua dalam satu platform.</p>
+        <p class="lead reveal" style="--d:140ms">Sabah Buskers Community (SBC) menghubungkan buskers dengan lokasi sah di Sabah — terokai lokasi yang disahkan pihak berkuasa, tempah slot persembahan mingguan anda dan uruskan aktiviti busking semua dalam satu platform.</p>
         <div class="hero-cta reveal" style="--d:220ms">
           <a class="btn btn-primary btn-lg" href="?page=register">Daftar Sebagai Busker</a>
           <a class="btn btn-ghost btn-lg" href="?page=cari-slot">Tempah Slot Sekarang</a>

@@ -109,7 +109,7 @@
     /* Demo admin */
     users.push(mkUser({
       email: 'admin@demo.my', password: hashpw('admin123'), role: 'admin',
-      fullName: 'Admin SabahBuskers', verificationStatus: 'approved',
+      fullName: 'Admin Sabah Buskers Community', verificationStatus: 'approved',
     }));
 
     /* ============ LOKASI (SPEC RASMI INDUSTRI) ============
