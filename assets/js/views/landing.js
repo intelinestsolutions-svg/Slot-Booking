@@ -56,6 +56,7 @@
       </div>
     </section>
 
+    ${window.APP.isNative ? '' : `
     <section class="dl-band" id="muat-turun">
       <div class="container">
         <div class="dl-card reveal">
@@ -80,7 +81,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </section>`}
 
     <div class="marquee" aria-hidden="true">
       <div class="marquee-track">

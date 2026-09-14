@@ -108,6 +108,8 @@
         el.querySelectorAll('.reveal').forEach(n => n.classList.add('in'));
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         try { history.replaceState(null, '', '?page=landing#' + id); } catch (e2) {}
+      } else if (window.APP.isNative) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         location.href = '?page=landing#' + id;
       }
