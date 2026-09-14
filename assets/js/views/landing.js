@@ -205,7 +205,7 @@
         <div class="grid-3" style="margin-top:28px;">
           <article class="card reveal" style="text-align:center;"><div style="font-size:30px;">🎫</div><h3>Menjadi Ahli</h3><p style="color:var(--muted);font-size:14px;">Daftar sebagai busker dan mula tempah slot anda yang disahkan.</p><a class="btn btn-primary btn-sm mt" href="?page=register">Daftar</a></article>
           <article class="card reveal" style="text-align:center;--d:80ms;"><div style="font-size:30px;">🎼</div><h3>Menyokong</h3><p style="color:var(--muted);font-size:14px;">Sokong pemuzik jalanan tempatan — saksikan persembahan di lokasi disahkan.</p><a class="btn btn-ghost btn-sm mt" href="?page=cari-slot">Lihat Slot</a></article>
-          <article class="card reveal" style="text-align:center;--d:160ms;"><div style="font-size:30px;">📬</div><h3>Hubungi Kami</h3><p style="color:var(--muted);font-size:14px;">info@sabahbuskers.my<br>+6011-6990 0092</p><a class="btn btn-ghost btn-sm mt" href="mailto:info@sabahbuskers.my">Emel</a></article>
+          <article class="card reveal" style="text-align:center;--d:160ms;"><div style="font-size:30px;">📬</div><h3>Hubungi Kami</h3><p style="color:var(--muted);font-size:14px;">info@sabahbuskers.my<br>+6013-869 9933</p><a class="btn btn-ghost btn-sm mt" href="mailto:info@sabahbuskers.my">Emel</a></article>
         </div>
       </div>
     </section>
