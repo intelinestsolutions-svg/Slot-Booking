@@ -4,6 +4,15 @@ SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 
 Options -Indexes
 
+# Serve Android APK with the correct MIME type and force download.
+<IfModule mod_mime.c>
+  AddType application/vnd.android.package-archive .apk
+</IfModule>
+
 <IfModule mod_headers.c>
   Header set X-Content-Type-Options "nosniff"
+  <FilesMatch "\.apk$">
+    Header set Content-Type "application/vnd.android.package-archive"
+    Header set Content-Disposition "attachment; filename=sbc-mobile.apk"
+  </FilesMatch>
 </IfModule>

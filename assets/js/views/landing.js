@@ -56,6 +56,32 @@
       </div>
     </section>
 
+    <section class="dl-band">
+      <div class="container">
+        <div class="dl-card reveal">
+          <div class="dl-media">
+            <img loading="lazy" src="assets/img/apk-download.jpg?v=20261005" alt="Aplikasi mudah alih ${UI.esc(APP.mobileLabel)}">
+            <span class="dl-badge"><img src="assets/img/sbc-logo.png?v=20261005" alt="">${UI.esc(APP.mobileLabel)} <i class="beta-dot">Beta</i></span>
+          </div>
+          <div class="dl-body">
+            <p class="eyebrow">Aplikasi mudah alih · Android</p>
+            <h2>Muat turun <b>${UI.esc(APP.mobileLabel)}</b> sekarang</h2>
+            <p>Pasang aplikasi Android ini pada telefon anda untuk menempah slot lebih pantas, menerima pemberitahuan dan mengurus persembahan anda di mana sahaja.</p>
+            <ul>
+              <li>Tempah slot busking terus dari telefon</li>
+              <li>Peringatan 1 jam &amp; 15 minit sebelum persembahan</li>
+              <li>Alatan busker — penala gitar &amp; metronom</li>
+            </ul>
+            <div class="dl-actions">
+              <a class="btn btn-primary btn-lg" href="sbc-mobile.apk" download>📲 Muat Turun APK</a>
+              <span class="dl-meta"><b>Versi Beta</b> · 3.6 MB · Android 6.0+</span>
+            </div>
+            <p class="dl-note">Aplikasi dalaman SBC. Pasang, dan sedia untuk buka "Saya telah membaca" skrin pertama kali.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <div class="marquee" aria-hidden="true">
       <div class="marquee-track">
         <span>Persembahan Jalanan</span><span class="alt">Lokasi Disahkan DBKK</span><span>Temperan Slot Mingguan</span><span class="alt">Hotspot &amp; Coldspot</span><span>Sesi Pagi / Petang / Malam</span><span class="alt">Komuniti Busker Sabah</span>
