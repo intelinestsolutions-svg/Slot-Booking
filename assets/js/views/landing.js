@@ -16,9 +16,17 @@
   window.viewLanding = async function () {
     const data = await stats();
     const locPreview = ((data.locations || []).slice(0, 6));
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const NOTES = ['♪', '♫', '♬', '♩', '🎵', '🎶'];
+    const notesHTML = Array.from({ length: 18 }, () => {
+      const n = NOTES[Math.floor(Math.random() * NOTES.length)];
+      const s = Math.round(rnd(16, 40));
+      return `<span class="m-note" style="left:${Math.round(rnd(2, 96))}%;font-size:${s}px;--dur:${rnd(8, 16).toFixed(1)}s;--delay:${rnd(0, 13).toFixed(1)}s;--op:${rnd(0.25, 0.6).toFixed(2)};--sway:${Math.round(rnd(-45, 45))}px">${n}</span>`;
+    }).join('');
 
     return `
     <section class="hero">
+      <div class="music-fall" aria-hidden="true">${notesHTML}</div>
       <div class="hero-glow" aria-hidden="true"></div>
       <div class="container" style="position:relative;">
         <p class="hero-eyebrow reveal"><span class="live-dot"></span> Platform untuk buskers Sabah — berpusat di Kota Kinabalu</p>
@@ -134,7 +142,7 @@
               </div>
             </div>
             <div style="display:grid;gap:14px;">
-              <img loading="lazy" style="width:100%;border-radius:18px;object-fit:cover;aspect-ratio:4/3;box-shadow:0 20px 50px -20px rgba(0,0,0,.7);" src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop/LvShkzFMOiXmYr9V/482228889_1077063617798943_6619674590655979819_n-C84jQniQZslBoWRZ.jpg" alt="Persembahan komuniti SBC">
+              <img loading="lazy" style="width:100%;border-radius:18px;object-fit:cover;aspect-ratio:16/10;box-shadow:0 20px 50px -20px rgba(0,0,0,.7);" src="assets/img/sbc-community.jpg?v=20260919" alt="Komuniti Sabah Buskers">
               <img loading="lazy" style="width:100%;border-radius:18px;object-fit:cover;aspect-ratio:4/3;box-shadow:0 20px 50px -20px rgba(0,0,0,.7);" src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,fit=crop,q=95/LvShkzFMOiXmYr9V/475435916_1039399808231254_4765134179936357276_n-vMNZUi7gmvgtftE1.jpg" alt="Persembahan komuniti SBC">
             </div>
           </div>
