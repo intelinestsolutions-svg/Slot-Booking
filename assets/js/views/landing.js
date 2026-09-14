@@ -121,6 +121,89 @@
 
     <section class="section" style="padding-top:0;">
       <div class="container">
+        <div class="panel reveal" style="background:linear-gradient(135deg,rgba(255,122,89,0.08),rgba(242,180,65,0.06))">
+          <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between;">
+            <div style="flex:1 1 340px;">
+              <p class="eyebrow" style="color:var(--gold);">Dipercayai ahli tempatan · ★ 5.0</p>
+              <h2 style="font-size:clamp(22px,3.4vw,34px);">Dari <b>Jalan Gaya</b> ke Tanjung Aru &amp; KKIA</h2>
+              <p style="color:var(--muted);font-size:15px;line-height:1.8;margin-top:10px;">SBC menghidupkan muzik jalanan Sabah — gabungan tradisi dan ketahanan. Persembahan oleh pemuzik tempatan Kota Kinabalu yang disaring dan mematuhi etika komuniti.</p>
+              <a class="btn btn-primary mt" href="?page=register">Jadi Sebahagian Komuniti</a>
+            </div>
+            <div style="flex:1 1 300px;max-width:400px;">
+              <div class="stat-grid" style="margin-top:0;">
+                <div class="stat-card"><b>${data.stats.locations}+</b><span>Spot Sah</span></div>
+                <div class="stat-card"><b>${data.stats.buskers}+</b><span>Busker Aktif</span></div>
+                <div class="stat-card"><b>DBKK</b><span>Pihak Berkuasa</span></div>
+                <div class="stat-card"><b>KKIA</b><span>Lapangan Terbang</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top:0;">
+      <div class="container">
+        <div class="sec-head center reveal">
+          <p class="eyebrow">Perkhidmatan kami · dari sabahbuskers.my</p>
+          <h2>Menghidupkan muzik jalanan Sabah di <b>Jalan Gaya &amp; sekitar</b></h2>
+        </div>
+        <div class="grid-3">
+          <article class="card reveal">
+            <h3>🎤 Persembahan di Lokasi</h3>
+            <p>Persembahan meriah oleh pemuzik tempatan Kota Kinabalu di lokasi yang disahkan &amp; ditempah terus dalam platform.</p>
+          </article>
+          <article class="card reveal" style="--d:80ms">
+            <h3>📡 Siaran Langsung &amp; Konsert Maya</h3>
+            <p>Nikmati bakat artis kami melalui siaran langsung dan konsert maya untuk menjangkau lebih ramai penonton.</p>
+          </article>
+          <article class="card reveal" style="--d:160ms">
+            <h3>👨‍👩‍👧‍👦 Kumpulan Keluarga &amp; Solo</h3>
+            <p>Kumpulan keluarga dan persembahan solo menyesuaikan SOP baharu untuk persembahan yang selamat dan profesional.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top:0;">
+      <div class="container">
+        <div class="sec-head center reveal">
+          <p class="eyebrow">Moments</p>
+          <h2>Moment-moment muzik jalanan <b>Kota Kinabalu</b></h2>
+          <p class="sub">Gambar-gambar daripada komuniti Sabah Buskers Community (SBC).</p>
+        </div>
+        <div class="grid-3" style="margin-top:34px;">
+          <figure class="card reveal" style="margin:0;padding:0;overflow:hidden;"><img loading="lazy" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;" src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,h=366,fit=crop/LvShkzFMOiXmYr9V/467337213_18039163061470514_2340748686953379096_n-UQ1VmugXZmHhGYZt.jpg" alt="Persembahan SBC"></figure>
+          <figure class="card reveal" style="margin:0;padding:0;overflow:hidden;--d:60ms;"><img loading="lazy" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;" src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,h=366,fit=crop/LvShkzFMOiXmYr9V/475795124_1039399944897907_1065217721881326429_n-2ZvO51Qq3lE8B1wR.jpg" alt="Persembahan SBC"></figure>
+          <figure class="card reveal" style="margin:0;padding:0;overflow:hidden;--d:120ms;"><img loading="lazy" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;" src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,h=366,fit=crop/LvShkzFMOiXmYr9V/481205956_1067700372068601_8654649213320417981_n-YXnEvbvwdAx66l2M.jpg" alt="Persembahan SBC"></figure>
+          <figure class="card reveal" style="margin:0;padding:0;overflow:hidden;"><img loading="lazy" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;" src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,h=366,fit=crop/LvShkzFMOiXmYr9V/485995998_1085969600241678_6199954289405681917_n-QITU49ncav9Y1s7L.jpg" alt="Persembahan SBC"></figure>
+          <figure class="card reveal" style="margin:0;padding:0;overflow:hidden;--d:60ms;"><img loading="lazy" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;" src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,h=366,fit=crop/LvShkzFMOiXmYr9V/486224747_1086293730209265_878895635845052663_n-zBmEPBrIRfukMVKN.jpg" alt="Persembahan SBC"></figure>
+          <figure class="card reveal" style="margin:0;padding:0;overflow:hidden;--d:120ms;"><img loading="lazy" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;" src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,h=366,fit=crop/LvShkzFMOiXmYr9V/515499659_10162990737144413_5515010220609343603_n-yXaIUBWXbr3uvOoV.jpg" alt="Persembahan SBC"></figure>
+        </div>
+        <div style="text-align:center;margin-top:22px;" class="reveal">
+          <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener" href="https://www.facebook.com/p/Sabah-Buskers-Community-SBC-100064859433527/">Ikuti di Facebook</a>
+          <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener" href="https://www.instagram.com/sabahbuskercommunity/?hl=en" style="margin-left:10px;">Instagram</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top:0;">
+      <div class="container">
+        <div class="sec-head center reveal">
+          <p class="eyebrow">Hubungi kami</p>
+          <h2>Sokong <b>muzik jalanan Sabah</b></h2>
+          <p class="sub">Reach out untuk menyertai atau menyokong komuniti. Semua busker disaring oleh pasukan kami sebelum tempahan dibuka.</p>
+        </div>
+        <div class="grid-3" style="margin-top:28px;">
+          <article class="card reveal" style="text-align:center;"><div style="font-size:30px;">🎫</div><h3>Menjadi Ahli</h3><p style="color:var(--muted);font-size:14px;">Daftar sebagai busker dan mula tempah slot anda yang disahkan.</p><a class="btn btn-primary btn-sm mt" href="?page=register">Daftar</a></article>
+          <article class="card reveal" style="text-align:center;--d:80ms;"><div style="font-size:30px;">🎼</div><h3>Menyokong</h3><p style="color:var(--muted);font-size:14px;">Sokong pemuzik jalanan tempatan — saksikan persembahan di lokasi disahkan.</p><a class="btn btn-ghost btn-sm mt" href="?page=cari-slot">Lihat Slot</a></article>
+          <article class="card reveal" style="text-align:center;--d:160ms;"><div style="font-size:30px;">📬</div><h3>Hubungi Kami</h3><p style="color:var(--muted);font-size:14px;">info@sabahbuskers.my<br>+6011-6990 0092</p><a class="btn btn-ghost btn-sm mt" href="mailto:info@sabahbuskers.my">Emel</a></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top:0;">
+      <div class="container">
         <div class="sec-head center reveal">
           <p class="eyebrow">Yuran sesi DBKK</p>
           <h2>Struktur <b>mesra busker</b> yang telus</h2>
