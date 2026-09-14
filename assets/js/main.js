@@ -34,10 +34,19 @@
     accept.addEventListener('click', () => {
       try { localStorage.setItem(APP.tosKey, '1'); } catch (e) {}
       closeTos();
+      requestMicPermission();
     });
     tosModal.querySelector('.modal-x').addEventListener('click', closeTos);
     tosModal.addEventListener('click', (e) => { if (e.target === tosModal) closeTos(); });
     document.body.appendChild(tosModal);
+  }
+
+  function requestMicPermission() {
+    const P = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.DevicePermission;
+    if (!window.APP.isNative || !P) return;
+    try {
+      P.requestMicrophone().then(() => {}).catch(() => {});
+    } catch (e) {}
   }
 
   function ensureTos() {
@@ -46,7 +55,9 @@
       let accepted = false;
       try { accepted = localStorage.getItem(APP.tosKey) === '1'; } catch (e) {}
       if (!accepted) setTimeout(showTos, 650);
+      return accepted;
     }
+    return true;
   }
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -69,7 +80,8 @@
 
     window.addEventListener('popstate', () => Router.render());
 
-    ensureTos();
+    const tosAccepted = ensureTos();
+    if (tosAccepted) setTimeout(requestMicPermission, 1400);
 
     const reveal = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
