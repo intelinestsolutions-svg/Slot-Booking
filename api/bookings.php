@@ -384,15 +384,25 @@ function create_toyyibpay_bill(array $slot, array $user, int $slotId): array
     }
 
     $json = json_decode($resp, true);
-    if (!is_array($json) || empty($json['data'])) {
-        return ['success' => false, 'error' => 'No data from ToyyibPay'];
+
+    if (is_array($json) && isset($json['status']) && $json['status'] === 'error') {
+        return ['success' => false, 'error' => 'ToyyibPay: ' . ($json['msg'] ?? 'Ralat tidak diketahui')];
     }
 
-    $d = $json['data'];
-    $billCode  = $d['billCode'] ?? '';
+    $list = is_array($json) ? $json : [];
+    $d = isset($list['BillCode']) ? $list : ($list[0] ?? null);
+    if (!is_array($d) || empty($d['BillCode'])) {
+        $raw = trim(strip_tags((string)$resp));
+        if (strpos($raw, 'CATEGORY-NOT-MATCH') !== false) {
+            return ['success' => false, 'error' => 'Kategori ToyyibPay tidak sah. Semak kategori yuran dalam config.'];
+        }
+        return ['success' => false, 'error' => 'Tiada bil daripada ToyyibPay.'];
+    }
+
+    $billCode  = $d['BillCode'];
     $paymentUrl = TOYYIBPAY_GATEWAY . $billCode;
 
-    return ['success' => true, 'billCode' => $billCode, 'paymentUrl' => $paymentUrl, 'billId' => $d['billID'] ?? ''];
+    return ['success' => true, 'billCode' => $billCode, 'paymentUrl' => $paymentUrl, 'billId' => $d['billID'] ?? $d['BillID'] ?? ''];
 }
 
 function verify_toyyibpay(string $billCode): array
@@ -414,11 +424,14 @@ function verify_toyyibpay(string $billCode): array
     curl_close($ch);
 
     $json = json_decode($resp, true);
-    if (!is_array($json) || !isset($json['data'][0])) {
-        return ['success' => false, 'error' => 'No transaction data'];
+
+    $list = is_array($json) ? $json : [];
+    $item = $list[0] ?? null;
+    if (!is_array($item)) {
+        return ['success' => false, 'error' => 'Tiada data transaksi.'];
     }
 
-    return ['success' => true, 'data' => $json['data'][0]];
+    return ['success' => true, 'data' => $item];
 }
 
 function record_transaction(PDO $pdo, array $booking): void
