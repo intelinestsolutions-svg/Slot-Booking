@@ -1,0 +1,9 @@
+# Ensure the Authorization (Bearer token) header reaches PHP.
+# Required on Apache mod_rewrite / FastCGI setups (common on free hosts).
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+Options -Indexes
+
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+</IfModule>
