@@ -3,16 +3,14 @@
   const GENRES = ['Akustik / Folk', 'Balada / Pop', 'Jazz / Soul', 'Rock', 'Klasik / Instrumental', 'Nasyid', 'Etnik Tradisional / Kadazandusun', 'Original / Experimental'];
 
   window.viewLogin = function (q) {
-    const role = q.page === 'partner_login' ? 'partner' : q.page === 'admin_login' ? 'admin' : 'busker';
-    const tabNames = { busker: 'Busker', partner: 'Penyelia', admin: 'Admin' };
+    const role = q.page === 'admin_login' ? 'admin' : 'busker';
+    const tabNames = { busker: 'Busker', admin: 'Admin' };
     const tabs = Object.keys(tabNames).map(r =>
       `<button class="auth-tab ${r === role ? 'active' : ''}" data-role="${r}">${tabNames[r]}</button>`).join('');
 
-    const subtitle = role === 'partner'
-      ? 'Log masuk untuk penyelia lokasi & pihak berkuasa.'
-      : role === 'admin'
-        ? 'Log masuk pentadbiran platform.'
-        : 'Log masuk untuk menempah slot busking anda.';
+    const subtitle = role === 'admin'
+      ? 'Log masuk pentadbiran platform.'
+      : 'Log masuk untuk menempah slot busking anda.';
 
     return UI.page('Log Masuk', subtitle,
       `<div class="auth-wrap">
@@ -32,7 +30,6 @@
           </form>
           <p style="text-align:center;margin-top:18px;font-size:13px;color:var(--muted)">
             Belum ada akaun? <a href="?page=register" style="color:var(--gold);font-weight:700;">Daftar sebagai busker</a>
-            <br><span style="font-size:12px;color:var(--muted-2)">Penyelia lokasi? <a href="?page=partnership" style="color:var(--amber);font-weight:700;">Mohon perkongsian</a></span>
           </p>
         </div>
       </div>`,
@@ -45,15 +42,14 @@
       if (tab) {
         document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        Router.replace(tab.dataset.role === 'partner' ? 'partner_login' : tab.dataset.role === 'admin' ? 'admin_login' : 'busker_login');
+        Router.replace(tab.dataset.role === 'admin' ? 'admin_login' : 'busker_login');
       }
     });
 
     document.addEventListener('submit', async (e) => {
       if (e.target.id !== 'loginForm') return;
       e.preventDefault();
-      const role = new URLSearchParams(location.search).get('page') === 'partner_login'
-        ? 'partner' : new URLSearchParams(location.search).get('page') === 'admin_login' ? 'admin' : 'busker';
+      const role = new URLSearchParams(location.search).get('page') === 'admin_login' ? 'admin' : 'busker';
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const btn = document.getElementById('loginBtn');
@@ -71,7 +67,7 @@
           return;
         }
         const next = new URLSearchParams(location.search).get('next');
-        const roleHome = data.user.role === 'partner' ? 'partner-dashboard' : data.user.role === 'admin' ? 'admin-dashboard' : 'cari-slot';
+        const roleHome = data.user.role === 'admin' ? 'admin-dashboard' : 'cari-slot';
         Router.go(next || roleHome);
       } catch (err) {
         noticeBox.innerHTML = UI.notice(err.message, 'error');

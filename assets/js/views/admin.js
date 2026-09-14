@@ -2,7 +2,7 @@
   function guard() {
     const u = Session.user;
     if (!u || u.role !== 'admin') {
-      Router.go('login', { next: u && u.role === 'partner' ? 'partner-dashboard' : 'login' });
+      Router.go('admin_login', { next: 'admin-dashboard' });
       return null;
     }
     return u;

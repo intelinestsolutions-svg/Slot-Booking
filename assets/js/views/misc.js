@@ -1,11 +1,11 @@
 (function () {
   /* ============ Tentang ============ */
   window.viewAbout = function () {
-    return UI.page('Tentang SabahBuskers',
-      'Clone komuniti buskers Sabah — menghubungkan buskers dengan lokasi sah.',
+    return UI.page('Tentang Sabah Buskers Community',
+      'Komuniti buskers Sabah — menghubungkan buskers dengan lokasi sah.',
       `
       <div class="panel">
-        <p style="color:var(--muted);font-size:14.5px;line-height:1.8;">SabahBuskers™ (inspirasi daripada buskers.my/BuzzKing) ialah platform digital untuk komuniti buskers di Sabah, berpusat di <b style="color:var(--gold)">Kota Kinabalu</b>. Kami menghubungkan buskers dengan lokasi persembahan yang disahkan pihak berkuasa (DBKK/KKIA) dan membolehkan tempahan slot mingguan secara telus melalui pembayaran ToyyibPay.</p>
+        <p style="color:var(--muted);font-size:14.5px;line-height:1.8;">Sabah Buskers Community (SBC) — inspirasi daripada buskers.my/BuzzKing — ialah platform digital untuk komuniti buskers di Sabah, berpusat di <b style="color:var(--gold)">Kota Kinabalu</b>. Kami menghubungkan buskers dengan lokasi persembahan yang disahkan pihak berkuasa (DBKK/KKIA) dan membolehkan tempahan slot mingguan secara telus melalui pembayaran ToyyibPay.</p>
       </div>
       <div class="grid-3" style="margin-top:22px;">
         <article class="card"><h3>🟢 Lokasi Sah</h3><p>Hanya venue dengan kebenaran pihak berkuasa. Tiada lagi tekaan di mana untuk bermain — setiap slot dipetakan &amp; disahkan.</p></article>
@@ -23,8 +23,6 @@
           <p style="color:var(--muted);font-size:13.5px;">Daftar sebagai busker, tunggu kelulusan admin (biasanya 24 jam), kemudian layari Cari Slot dan tempah.</p>
           <p style="font-weight:800;color:var(--cream);margin-top:14px;">Berapa yuran?</p>
           <p style="color:var(--muted);font-size:13.5px;">Yuran mengikut tier lokasi — RM5 (coldspot) hingga RM10 (hotspot) setiap sesi. Lihat halaman Yuran Sesi.</p>
-          <p style="font-weight:800;color:var(--cream);margin-top:14px;">Siapa penyelia lokasi?</p>
-          <p style="color:var(--muted);font-size:13.5px;">Penyelia (partner) membantu mengesahkan kehadiran dan status slot di lokasi masing-masing.</p>
         </div>
       </div>`,
       { eyebrow: 'Kenali kami' });
@@ -85,73 +83,9 @@
             </tbody>
           </table>
         </div>
-      </div>
-
-      <div class="cta-band" style="text-align:left;border:1px solid var(--line);border-radius:20px;padding:30px;margin-top:26px;">
-        <h3>Ada lokasi sesuai untuk busking?</h3>
-        <p style="color:var(--muted);">Ahli korporat atau pihak berkuasa boleh menjadi penyelia lokasi melalui program perkongsian.</p>
-        <a class="btn btn-primary" href="?page=partnership">Mohon Perkongsian Lokasi</a>
       </div>`,
       { eyebrow: 'Struktur yuran' });
   };
-
-  /* ============ Perkongsian (partner registration) ============ */
-  window.viewPartnership = function () {
-    return UI.page('Perkongsian Lokasi', 'Menjadi penyelia lokasi untuk platform busking Sabah.',
-      `
-      <div class="grid-3" style="margin-bottom:24px;">
-        <article class="card"><h3>🏢 Pihak Berkuasa / Korporat</h3><p>Jadikan ruang awam anda sebagai venue busking bertauliah dan menarik orang ramai ke kawasan anda.</p></article>
-        <article class="card"><h3>🗺️ Penyelia Lokasi</h3><p>Pengesahan kehadiran, pemantauan slot dan hubungan terus dengan komuniti buskers.</p></article>
-        <article class="card"><h3>📈 Liputan &amp; Laporan</h3><p>Dashboard penyelia memberikan pandangan langsung jadual slot dan kehadiran mingguan.</p></article>
-      </div>
-      <div class="auth-wrap" style="margin-top:0;">
-        <div class="auth-card">
-          <h3 style="font-size:22px;margin-bottom:6px;">Mohon Sebagai Penyelia</h3>
-          <p style="color:var(--muted);font-size:13px;margin-bottom:18px;">Daftar akaun penyelia lokasi. Anda boleh log masuk serta-merta.</p>
-          <div id="pNotice"></div>
-          <form id="partnerForm">
-            <div class="field"><label for="paFullName">Nama Penuh / Organisasi <em>*</em></label><input class="input" id="paFullName" required></div>
-            <div class="field" style="margin-top:14px;"><label for="paEmail">Email <em>*</em></label><input class="input" id="paEmail" type="email" required></div>
-            <div class="field" style="margin-top:14px;"><label for="paPhone">Telefon <em>*</em></label><input class="input" id="paPhone" required></div>
-            <div class="field" style="margin-top:14px;"><label for="paPassword">Kata Laluan <em>*</em></label><input class="input" id="paPassword" type="password" minlength="6" required></div>
-            <button class="btn btn-primary btn-block" style="margin-top:20px;" id="paSubmit">Hantar Permohonan</button>
-          </form>
-        </div>
-      </div>`,
-      { eyebrow: 'Program perkongsian' });
-  };
-
-  window.ViewHooks = window.ViewHooks || {};
-
-  if (window.viewPartnership) {
-    window.ViewHooks.viewPartnership = function () {
-      const form = document.getElementById('partnerForm');
-      if (!form) return;
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('paSubmit');
-        btn.disabled = true;
-        btn.textContent = 'Menghantar...';
-        try {
-          const data = await API.partner.register({
-            fullName: document.getElementById('paFullName').value.trim(),
-            email: document.getElementById('paEmail').value.trim(),
-            phone: document.getElementById('paPhone').value.trim(),
-            password: document.getElementById('paPassword').value,
-          });
-          Session.setToken(data.token);
-          Session.setUser(data.user);
-          UI.toast('Akaun penyelia berjaya didaftarkan!', 'ok');
-          Router.go('partner-dashboard');
-        } catch (err) {
-          document.getElementById('pNotice').innerHTML = UI.notice(err.message, 'error');
-        } finally {
-          btn.disabled = false;
-          btn.textContent = 'Hantar Permohonan';
-        }
-      });
-    };
-  }
 
   /* ============ Bilik Pemerhatian (admin) ============ */
   window.viewObservation = function () {
