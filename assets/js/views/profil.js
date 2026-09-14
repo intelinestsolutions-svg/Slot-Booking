@@ -11,7 +11,14 @@
     return u;
   }
 
-  window.viewProfil = function () {
+  function guardBusker() {
+    const u = Session.user;
+    if (!u || u.role !== 'busker') {
+      Router.go('login', { next: 'profil' });
+      return null;
+    }
+    return u;
+  }
 
   function verifyBadge(status) {
     const map = {
