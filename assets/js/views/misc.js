@@ -5,7 +5,7 @@
       'Komuniti buskers Sabah — menghubungkan buskers dengan lokasi sah.',
       `
       <div class="panel">
-        <p style="color:var(--muted);font-size:14.5px;line-height:1.8;">Sabah Buskers Community (SBC) — inspirasi daripada buskers.my/BuzzKing — ialah platform digital untuk komuniti buskers di Sabah, berpusat di <b style="color:var(--gold)">Kota Kinabalu</b>. Kami menghubungkan buskers dengan lokasi persembahan yang disahkan pihak berkuasa (DBKK/KKIA) dan membolehkan tempahan slot mingguan secara telus melalui pembayaran ToyyibPay.</p>
+        <p style="color:var(--muted);font-size:14.5px;line-height:1.8;">Sabah Buskers Community (SBC) — ialah platform digital untuk komuniti buskers di Sabah, berpusat di <b style="color:var(--gold)">Kota Kinabalu</b>. Kami menghubungkan buskers dengan lokasi persembahan yang disahkan pihak berkuasa (DBKK/KKIA) dan membolehkan tempahan slot mingguan secara telus melalui pembayaran secara atas talian atau online.</p>
       </div>
       <div class="grid-3" style="margin-top:22px;">
         <article class="card"><h3>🟢 Lokasi Sah</h3><p>Hanya venue dengan kebenaran pihak berkuasa. Tiada lagi tekaan di mana untuk bermain — setiap slot dipetakan &amp; disahkan.</p></article>
