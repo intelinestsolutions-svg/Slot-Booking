@@ -232,6 +232,21 @@ function seed(PDO $pdo): void
 
         $pdo->prepare("INSERT INTO meta (key,value) VALUES ('theme','sunset-golden')")->execute();
         $pdo->prepare("INSERT INTO meta (key,value) VALUES ('seeded',datetime('now'))")->execute();
+
+        if (defined('DEFAULT_ADMIN_EMAIL') && defined('DEFAULT_ADMIN_PASSWORD')
+            && !empty(DEFAULT_ADMIN_EMAIL) && !empty(DEFAULT_ADMIN_PASSWORD)) {
+            $stmt = $pdo->prepare("SELECT id FROM users WHERE email=? AND role='admin'");
+            $stmt->execute([DEFAULT_ADMIN_EMAIL]);
+            if (!$stmt->fetch()) {
+                $pdo->prepare("INSERT INTO users (email,password,role,fullName,verificationStatus,isActive,token)
+                    VALUES (?,?,?,?,?,?,?)")
+                    ->execute([
+                        strtolower(DEFAULT_ADMIN_EMAIL),
+                        password_hash(DEFAULT_ADMIN_PASSWORD, PASSWORD_DEFAULT),
+                        'admin', 'Admin SBC', 'approved', 1, bin2hex(random_bytes(24)),
+                    ]);
+            }
+        }
     })($pdo);
 }
 
