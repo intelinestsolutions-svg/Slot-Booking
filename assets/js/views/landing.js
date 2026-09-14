@@ -122,20 +122,20 @@
     <section class="section" style="padding-top:0;">
       <div class="container">
         <div class="panel reveal" style="background:linear-gradient(135deg,rgba(255,122,89,0.08),rgba(242,180,65,0.06))">
-          <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between;">
-            <div style="flex:1 1 340px;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px;align-items:center;">
+            <div>
               <p class="eyebrow" style="color:var(--gold);">Dipercayai ahli tempatan · ★ 5.0</p>
               <h2 style="font-size:clamp(22px,3.4vw,34px);">Dari <b>Jalan Gaya</b> ke Tanjung Aru &amp; KKIA</h2>
-              <p style="color:var(--muted);font-size:15px;line-height:1.8;margin-top:10px;">SBC menghidupkan muzik jalanan Sabah — gabungan tradisi dan ketahanan. Persembahan oleh pemuzik tempatan Kota Kinabalu yang disaring dan mematuhi etika komuniti.</p>
-              <a class="btn btn-primary mt" href="?page=register">Jadi Sebahagian Komuniti</a>
-            </div>
-            <div style="flex:1 1 300px;max-width:400px;">
-              <div class="stat-grid" style="margin-top:0;">
-                <div class="stat-card"><b>${data.stats.locations}+</b><span>Spot Sah</span></div>
-                <div class="stat-card"><b>${data.stats.buskers}+</b><span>Busker Aktif</span></div>
-                <div class="stat-card"><b>DBKK</b><span>Pihak Berkuasa</span></div>
-                <div class="stat-card"><b>KKIA</b><span>Lapangan Terbang</span></div>
+              <p style="color:var(--muted);font-size:15px;line-height:1.8;margin-top:12px;">Dari Jalan Gaya ke Tanjung Aru dan KKIA, SBC menghidupkan suasana muzik jalanan Sabah yang meriah, dengan menggabungkan unsur tradisi, kemodenan, dan kepelbagaian.</p>
+              <p style="color:var(--muted);font-size:15px;line-height:1.8;margin-top:10px;">Ditubuhkan pada tahun 2019, Sabah Buskers Community berperanan sebagai platform untuk menyokong, menghubungkan, dan memperkasakan para penghibur jalanan di seluruh Sabah.</p>
+              <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:20px;">
+                <a class="btn btn-primary" href="?page=register">Jadi Sebahagian Komuniti</a>
+                <a class="btn btn-ghost" href="?page=cari-slot">Tempah Slot</a>
               </div>
+            </div>
+            <div style="display:grid;gap:14px;">
+              <img loading="lazy" style="width:100%;border-radius:18px;object-fit:cover;aspect-ratio:4/3;box-shadow:0 20px 50px -20px rgba(0,0,0,.7);" src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop/LvShkzFMOiXmYr9V/482228889_1077063617798943_6619674590655979819_n-C84jQniQZslBoWRZ.jpg" alt="Persembahan komuniti SBC">
+              <img loading="lazy" style="width:100%;border-radius:18px;object-fit:cover;aspect-ratio:4/3;box-shadow:0 20px 50px -20px rgba(0,0,0,.7);" src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,fit=crop,q=95/LvShkzFMOiXmYr9V/475435916_1039399808231254_4765134179936357276_n-vMNZUi7gmvgtftE1.jpg" alt="Persembahan komuniti SBC">
             </div>
           </div>
         </div>
