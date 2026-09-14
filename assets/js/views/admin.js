@@ -142,10 +142,14 @@
 
   window.ViewHooks.viewAdminSlots = async function () {
     if (!guard()) return;
-    let slots = [];
+    let slots = [], buskers = [];
     try {
-      const r = await API.partner.dashboard();
+      const [r, buskersRes] = await Promise.all([
+        API.partner.dashboard(),
+        API.admin.listBuskers().catch(() => ({ buskers: [] })),
+      ]);
       slots = r.slots || [];
+      buskers = (buskersRes && buskersRes.buskers) || [];
     } catch (e) {
       document.getElementById('slotMgr').innerHTML = UI.notice(e.message, 'error');
       return;
@@ -172,6 +176,11 @@
                     <select class="select st-select" data-slot="${s.id}" style="width:150px;padding:7px 12px;font-size:12.5px;">
                       ${['Tersedia', 'Ditempah', 'Dibatalkan', 'Selesai'].map(o => `<option ${o === s.status ? 'selected' : ''}>${o}</option>`).join('')}
                     </select>
+                    ${s.buskerId && buskers.length ? `
+                    <select class="select ganti-select" data-ganti="${s.id}" style="width:190px;margin-top:6px;padding:7px 12px;font-size:12.5px;color:var(--muted);">
+                      <option value="">⇄ Ganti busker…</option>
+                      ${buskers.map(b => `<option value="${b.id}" ${b.id === s.buskerId ? 'selected' : ''}>${UI.esc(b.stageName || b.fullName)}</option>`).join('')}
+                    </select>` : ''}
                   </td>
                 </tr>`).join('')}
             </tbody>
@@ -183,6 +192,22 @@
       try {
         await API.partner.setStatus({ slotId: Number(sel.dataset.slot), status: sel.value });
         UI.toast('Status slot dikemas kini.', 'ok');
+        Router.replace('pengurusan-slot');
+      } catch (e) {
+        UI.toast(e.message, 'err');
+      }
+    }));
+
+    box.querySelectorAll('.ganti-select').forEach(sel => sel.addEventListener('change', async () => {
+      const newU = Number(sel.value);
+      if (!newU) return;
+      if (!confirm('Ganti busker bagi slot ini?')) {
+        sel.value = '';
+        return;
+      }
+      try {
+        await API.admin.assignBusker({ slotId: Number(sel.dataset.ganti), buskerId: newU });
+        UI.toast('Busker diganti.', 'ok');
         Router.replace('pengurusan-slot');
       } catch (e) {
         UI.toast(e.message, 'err');

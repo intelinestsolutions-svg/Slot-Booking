@@ -79,6 +79,8 @@
       approve: (b) => call('admin', 'approve', { method: 'POST', body: b }),
       financials: () => call('admin', 'financials'),
       registerAdmin: (b) => call('admin', 'register_admin', { method: 'POST', body: b }),
+      listBuskers: () => call('admin', 'buskers'),
+      assignBusker: (b) => call('admin', 'assign_busker', { method: 'POST', body: b }),
     },
   };
 

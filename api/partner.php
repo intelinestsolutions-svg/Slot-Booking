@@ -17,7 +17,7 @@ switch ($action) {
         $weekEnd = date('Y-m-d', strtotime('+7 days'));
 
         $stmt = $pdo->prepare("SELECT s.id, s.date, s.startTime, s.endTime, s.status, s.price,
-                l.name AS locationName, l.area, u.stageName
+                l.name AS locationName, l.area, u.stageName, u.id AS buskerId
             FROM slots s
             JOIN locations l ON l.id = s.locationId
             LEFT JOIN bookings b ON b.slotId = s.id AND b.status IN ('pending','confirmed','completed')

@@ -91,6 +91,83 @@ switch ($action) {
         ok(['token' => $token, 'user' => ['id' => $id, 'email' => $email, 'role' => 'admin']]);
         break;
 
+    case 'buskers':
+        admin_only($pdo);
+        $stmt = $pdo->query("SELECT id, stageName, fullName, phone, email
+            FROM users WHERE role='busker' AND verificationStatus='approved' AND isActive=1
+            ORDER BY stageName COLLATE NOCASE");
+        ok(['buskers' => $stmt->fetchAll()]);
+        break;
+
+    case 'assign_busker':
+        admin_only($pdo);
+        $d = body();
+        $slotId = (int)($d['slotId'] ?? 0);
+        $buskerId = (int)($d['buskerId'] ?? 0);
+        if (!$slotId || !$buskerId) {
+            fail('Parameter tidak sah.');
+        }
+
+        $slotStmt = $pdo->prepare("SELECT * FROM slots WHERE id=?");
+        $slotStmt->execute([$slotId]);
+        $slot = $slotStmt->fetch();
+        if (!$slot) {
+            fail('Slot tidak dijumpai.');
+        }
+        if ($slot['status'] === 'Tersedia') {
+            fail('Slot ini masih terbuka — tiada busker untuk diganti.');
+        }
+
+        $buskerStmt = $pdo->prepare("SELECT * FROM users WHERE id=? AND role='busker' AND verificationStatus='approved'");
+        $buskerStmt->execute([$buskerId]);
+        $busker = $buskerStmt->fetch();
+        if (!$busker) {
+            fail('Busker sasaran tidak sah atau belum diluluskan.');
+        }
+
+        $pdo->beginTransaction();
+        try {
+            $bookStmt = $pdo->prepare(
+                "SELECT b.id, b.userId FROM bookings b
+                 WHERE b.slotId=? AND b.status IN ('pending','confirmed','completed')
+                 ORDER BY b.id DESC LIMIT 1");
+            $bookStmt->execute([$slotId]);
+            $book = $bookStmt->fetch();
+
+            if ($book) {
+                $oldUserId = (int)$book['userId'];
+                $pdo->prepare(
+                    "UPDATE bookings SET userId=?, buskerStageName=?, buskerPhone=? WHERE id=?")
+                    ->execute([$buskerId, $busker['stageName'], $busker['phone'], $book['id']]);
+
+                $pdo->prepare("INSERT INTO notifications (userId,title,body) VALUES (?, 'Gantian Slot', ?)")
+                    ->execute([$buskerId, "Anda ditetapkan kepada slot {$slot['date']} {$slot['startTime']}. Sila semak tempahan anda."]);
+                if ($oldUserId && $oldUserId !== $buskerId) {
+                    $pdo->prepare("INSERT INTO notifications (userId,title,body) VALUES (?, 'Slot Diganti', ?)")
+                        ->execute([$oldUserId, "Slot {$slot['date']} {$slot['startTime']} telah digantikan oleh admin."]);
+                }
+            } else {
+                $pdo->prepare(
+                    "INSERT INTO bookings (slotId,userId,locationId,status,amount,buskerStageName,buskerPhone)
+                     VALUES (?,?,?,?,?,?,?)")
+                    ->execute([
+                        $slotId, $buskerId, $slot['locationId'],
+                        $slot['status'] === 'Ditempah' ? 'confirmed' : 'pending',
+                        $slot['price'], $busker['stageName'], $busker['phone'],
+                    ]);
+                $pdo->prepare("INSERT INTO notifications (userId,title,body) VALUES (?, 'Gantian Slot', ?)")
+                    ->execute([$buskerId, "Anda ditetapkan kepada slot {$slot['date']} {$slot['startTime']}."]);
+            }
+
+            $pdo->prepare("UPDATE slots SET bookedBy=? WHERE id=?")->execute([$buskerId, $slotId]);
+            $pdo->commit();
+        } catch (Throwable $e) {
+            $pdo->rollBack();
+            fail($e->getMessage(), 500);
+        }
+        ok();
+        break;
+
     default:
         fail('Action tidak dikenali: ' . $action);
 }
