@@ -118,7 +118,7 @@
             style="width:96px;height:96px;border-radius:50%;object-fit:cover;background:#222;border:3px solid var(--gold);"
             src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><rect width='96' height='96' rx='48' fill='%23222'/><text x='48' y='60' font-size='38' text-anchor='middle' fill='%23d4af37'>S</text></svg>">
           <div style="flex:1;min-width:220px;">
-            <input type="file" id="avatarFile" accept="image/jpeg" class="input" style="padding:8px;">
+            <input type="file" id="avatarFile" accept="image/jpeg" style="font-size:14px;">
             <button class="btn btn-primary" type="button" id="avatarSave" style="margin-top:10px;">Muat Naik</button>
             <div id="avatarNotice"></div>
           </div>
