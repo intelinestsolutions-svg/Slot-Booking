@@ -41,6 +41,7 @@
   }
 
   function ensureTos() {
+    if (!window.APP.isNative) return;
     if (window.TermsHTML) {
       let accepted = false;
       try { accepted = localStorage.getItem(APP.tosKey) === '1'; } catch (e) {}
