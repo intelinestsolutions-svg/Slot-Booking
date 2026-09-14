@@ -88,11 +88,11 @@
       try {
         const html = await window[viewFn](q);
         root.innerHTML = html;
-        window.dispatchEvent(new Event('revealReady'));
         window.Nav.refresh();
         if (window.ViewHooks && window.ViewHooks[viewFn]) {
           await window.ViewHooks[viewFn](q);
         }
+        document.dispatchEvent(new Event('revealReady'));
         UI.hideLoader();
         if (window.Reminders && typeof window.Reminders.ensure === 'function') {
           window.Reminders.ensure();
