@@ -15,6 +15,41 @@
 
   window.viewLanding = async function () {
     const data = await stats();
+    if (window.APP.isNative) {
+      const s = data.stats;
+      const user = Session.user;
+      const uName = user ? (user.stageName || user.fullName || user.email || '') : '';
+      return `
+      <div class="page app-home">
+        ${user ? `<div class="aph-greet">Selamat kembali, <b>${UI.esc(uName)}</b></div>` : ''}
+        <figure class="aph-hero">
+          <img src="assets/img/sbc-community.jpg?v=20260920" alt="Komuniti Sabah Buskers">
+          <figcaption>
+            <img src="assets/img/sbc-logo.png?v=20260924" alt="SBC logo">
+            <span><b>Sabah Buskers Community</b>Kota Kinabalu · Sejak 2019</span>
+          </figcaption>
+        </figure>
+        <div class="aph-intro">
+          <p>Sabah Buskers Community <b>(SBC)</b> menghubungkan buskers dengan lokasi sah di Sabah — terokai lokasi yang disahkan pihak berkuasa, tempah slot persembahan mingguan anda dan uruskan aktiviti busking semua dalam satu platform.</p>
+        </div>
+        <div class="aph-cta">
+          <a class="btn btn-primary" href="?page=cari-slot">Cari Slot</a>
+          <a class="btn btn-ghost" href="?page=slot-booking">Tempah Slot</a>
+        </div>
+        <div class="aph-stats">
+          <div class="aph-stat"><b>${s.locations || 0}+</b><span>Lokasi</span></div>
+          <div class="aph-stat"><b>${s.buskers || 0}+</b><span>Buskers</span></div>
+          <div class="aph-stat"><b>${s.bookings || 0}+</b><span>Slot</span></div>
+        </div>
+        <div class="aph-actions">
+          <a class="aph-card" href="?page=cari-slot"><span class="aph-ico">🗺️</span><b>Cari Slot</b><small>Terokai lokasi &amp; tempah</small></a>
+          <a class="aph-card" href="?page=tempahan-saya"><span class="aph-ico">📅</span><b>Tempahan Saya</b><small>Urus slot anda</small></a>
+          <a class="aph-card" href="?page=tools"><span class="aph-ico">🎯</span><b>Alatan Busker</b><small>Penala &amp; metronom</small></a>
+          <a class="aph-card" href="?page=ahli-buzzking"><span class="aph-ico">👥</span><b>Komuniti</b><small>Senarai ahli SBC</small></a>
+        </div>
+      </div>`;
+    }
+
     const locPreview = ((data.locations || []).slice(0, 6));
     const rnd = (a, b) => a + Math.random() * (b - a);
     const notesHTML = Array.from({ length: 16 }, () => {
