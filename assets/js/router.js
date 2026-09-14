@@ -126,6 +126,7 @@
           ['?page=admin-dashboard', 'Panel Admin'],
           ['?page=admin-finance', 'Kewangan'],
           ['?page=pengurusan-slot', 'Slot'],
+          ['?page=kemaskini-profil', 'Profil'],
         ];
       }
       return [
