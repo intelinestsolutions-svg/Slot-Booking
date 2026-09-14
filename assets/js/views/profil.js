@@ -75,7 +75,9 @@
     box.innerHTML = `
       <div class="card" style="margin-bottom:18px;">
         <div style="display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;">
-          <div class="pro-avatar">${UI.esc((u.stageName || u.fullName || 'B').slice(0, 1).toUpperCase())}</div>
+          <div class="pro-avatar">${u.avatar
+            ? `<img src="${UI.esc(u.avatar)}" alt="Gambar profil" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+            : UI.esc((u.stageName || u.fullName || 'B').slice(0, 1).toUpperCase())}</div>
           <div style="flex:1;min-width:230px;">
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
               <h2 style="font-size:26px;">${UI.esc(u.stageName || u.fullName)}</h2>
@@ -108,6 +110,21 @@
     if (!guardAuth()) return '';
     return UI.page('Kemaskini Profil', 'Kemas kini butiran peribadi dan kata laluan anda.',
       `
+      <div class="panel">
+        <h3>Gambar Profil</h3>
+        <p style="color:var(--muted);font-size:13.5px;margin:6px 0;">Format JPEG sahaja, kurang daripada <b>2MB</b>. Gambar dipaparkan pada panel profil anda.</p>
+        <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:14px;">
+          <img id="avatarPreview" alt="Gambar profil"
+            style="width:96px;height:96px;border-radius:50%;object-fit:cover;background:#222;border:3px solid var(--gold);"
+            src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><rect width='96' height='96' rx='48' fill='%23222'/><text x='48' y='60' font-size='38' text-anchor='middle' fill='%23d4af37'>S</text></svg>">
+          <div style="flex:1;min-width:220px;">
+            <input type="file" id="avatarFile" accept="image/jpeg" class="input" style="padding:8px;">
+            <button class="btn btn-primary" type="button" id="avatarSave" style="margin-top:10px;">Muat Naik</button>
+            <div id="avatarNotice"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="panel">
         <h3>Maklumat Peribadi &amp; Profil</h3>
         <form id="profileForm" style="margin-top:16px;">
@@ -161,6 +178,59 @@
     fill('pfInstagram', u.instagram);
     fill('pfTiktok', u.tiktok);
     document.getElementById('pfGenre').innerHTML = GENRES.map(g => `<option ${g === u.genre ? 'selected' : ''}>${g}</option>`).join('');
+
+    const avImg = document.getElementById('avatarPreview');
+    if (avImg && u.avatar) avImg.src = u.avatar;
+    const avFile = document.getElementById('avatarFile');
+    const avSave = document.getElementById('avatarSave');
+    const avNotice = document.getElementById('avatarNotice');
+    if (avFile && avSave) {
+      const MB = 2 * 1024 * 1024;
+      avFile.addEventListener('change', () => {
+        const f = avFile.files && avFile.files[0];
+        avNotice.innerHTML = '';
+        if (!f) return;
+        if (f.type !== 'image/jpeg') {
+          avNotice.innerHTML = UI.notice('Hanya JPEG dibenarkan.', 'error');
+          avFile.value = '';
+          return;
+        }
+        if (f.size >= MB) {
+          avNotice.innerHTML = UI.notice('Gambar mestilah kurang daripada 2MB.', 'error');
+          avFile.value = '';
+          return;
+        }
+        avImg.src = URL.createObjectURL(f);
+      });
+      avSave.addEventListener('click', async () => {
+        const f = avFile.files && avFile.files[0];
+        avNotice.innerHTML = '';
+        if (!f) {
+          avNotice.innerHTML = UI.notice('Sila pilih fail JPEG dahulu.', 'error');
+          return;
+        }
+        if (f.type !== 'image/jpeg') {
+          avNotice.innerHTML = UI.notice('Hanya JPEG dibenarkan.', 'error');
+          return;
+        }
+        if (f.size >= MB) {
+          avNotice.innerHTML = UI.notice('Gambar mestilah kurang daripada 2MB.', 'error');
+          return;
+        }
+        avSave.disabled = true;
+        avSave.textContent = 'Memuat naik...';
+        try {
+          const res = await API.auth.uploadAvatar(f);
+          Session.setUser({ ...Session.user, avatar: res.avatar });
+          avNotice.innerHTML = UI.notice('Gambar profil berjaya dikemas kini.', 'ok');
+        } catch (err) {
+          avNotice.innerHTML = UI.notice(err.message, 'error');
+        } finally {
+          avSave.disabled = false;
+          avSave.textContent = 'Muat Naik';
+        }
+      });
+    }
 
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
       e.preventDefault();

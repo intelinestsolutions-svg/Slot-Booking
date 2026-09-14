@@ -158,6 +158,35 @@ switch ($action) {
         ok();
         break;
 
+    case 'upload_avatar':
+        $user = require_user($pdo);
+        if (empty($_FILES['avatar']) || ($_FILES['avatar']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            fail('Sila pilih fail gambar dahulu.');
+        }
+        $file = $_FILES['avatar'];
+        $size = (int)$file['size'];
+        if ($size >= 2 * 1024 * 1024) {
+            fail('Gambar mestilah kurang daripada 2MB.');
+        }
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+        if ($mime !== 'image/jpeg') {
+            fail('Hanya gambar JPEG dibenarkan.');
+        }
+        if (!is_dir(UPLOAD_DIR)) {
+            mkdir(UPLOAD_DIR, 0775, true);
+        }
+        $name = 'avatar-' . $user['id'] . '-' . substr(bin2hex(random_bytes(6)), 0, 10) . '.jpg';
+        $dest = UPLOAD_DIR . '/' . $name;
+        if (!move_uploaded_file($file['tmp_name'], $dest)) {
+            fail('Gagal menyimpan gambar.', 500);
+        }
+        $url = '/uploads/avatars/' . $name;
+        $pdo->prepare("UPDATE users SET avatar = ? WHERE id = ?")->execute([$url, $user['id']]);
+        ok(['avatar' => $url]);
+        break;
+
     default:
         fail('Action tidak dikenali: ' . $action);
 }
@@ -172,7 +201,7 @@ function public_user(PDO $pdo, int $id): array
 function public_user_full(PDO $pdo, int $id): array
 {
     $stmt = $pdo->prepare("SELECT id,email,role,fullName,icNumber,phone,state,city,address,postcode,
-        stageName,genre,description,instagram,tiktok,verificationStatus,isActive,isPremium,isOku,language,createdAt
+        stageName,genre,description,instagram,tiktok,verificationStatus,isActive,isPremium,isOku,language,avatar,createdAt
         FROM users WHERE id=?");
     $stmt->execute([$id]);
     return $stmt->fetch() ?: [];

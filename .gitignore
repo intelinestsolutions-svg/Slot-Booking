@@ -3,6 +3,7 @@ data/*.db
 data/*.db-*
 data/*.sqlite
 data/*.sqlite3
+uploads/
 
 # macOS
 .DS_Store

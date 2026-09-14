@@ -43,6 +43,23 @@
       logout: () => call('auth', 'logout'),
       updateProfile: (b) => call('auth', 'update_profile', { method: 'POST', body: b }),
       changePassword: (b) => call('auth', 'change_password', { method: 'POST', body: b }),
+      uploadAvatar: (file) => {
+        const fd = new FormData();
+        fd.append('avatar', file);
+        const url = `${P()}${file('auth')}?${new URLSearchParams({ action: 'upload_avatar' })}`;
+        const headers = {};
+        const token = localStorage.getItem(APP.tokenKey);
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+          headers['X-Auth-Token'] = token;
+        }
+        return fetch(url, { method: 'POST', headers, body: fd })
+          .then(r => r.json().catch(() => null))
+          .then((data) => {
+            if (!data || data.success === false) throw new Error((data && data.error) || 'Ralat memuat naik gambar.');
+            return data;
+          });
+      },
     },
     locations: {
       list: (params) => call('slots', 'list', { params }),

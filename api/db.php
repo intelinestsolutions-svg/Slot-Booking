@@ -50,9 +50,15 @@ function schema(PDO $pdo): void
         coordinatorType TEXT,
         isOku INTEGER NOT NULL DEFAULT 0,
         language TEXT NOT NULL DEFAULT 'ms',
+        avatar TEXT,
         token TEXT,
         createdAt TEXT NOT NULL DEFAULT (datetime('now'))
     )");
+
+    $cols = array_column($pdo->query("PRAGMA table_info(users)")->fetchAll(), 'name');
+    if (!in_array('avatar', $cols, true)) {
+        $pdo->exec("ALTER TABLE users ADD COLUMN avatar TEXT");
+    }
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS buskerApplications (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -3,6 +3,7 @@
 define('APP_NAME', 'Sabah Buskers Community');
 define('DB_DIR', dirname(__DIR__) . '/data');
 define('DB_FILE', DB_DIR . '/buskers.db');
+define('UPLOAD_DIR', dirname(__DIR__) . '/uploads/avatars');
 
 $__local = __DIR__ . '/config.local.php';
 if (is_file($__local)) {

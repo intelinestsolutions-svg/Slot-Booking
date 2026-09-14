@@ -152,7 +152,9 @@
         const roleBadge = u.role === 'busker' ? (u.stageName || u.fullName || u.email) : u.role;
         userBox.innerHTML = `
           <div class="nav-user">
-            <a href="${u.role === 'busker' ? '?page=profil' : '?page=admin-dashboard'}" class="nav-avatar">${UI.esc(('' + (u.stageName || u.fullName || u.email || 'U')).slice(0, 1).toUpperCase())}</a>
+            <a href="?page=kemaskini-profil" class="nav-avatar" title="Profil saya">${u.avatar
+              ? `<img src="${UI.esc(u.avatar)}" alt="Gambar profil" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+              : UI.esc(('' + (u.stageName || u.fullName || u.email || 'U')).slice(0, 1).toUpperCase())}</a>
             <div class="who"><a href="${u.role === 'busker' ? '?page=profil' : '?page=admin-dashboard'}" style="color:var(--cream)">${UI.esc(roleBadge)}</a><small>${u.role}</small></div>
             <a class="btn btn-ghost btn-sm" href="#" data-logout>Log Keluar</a>
           </div>`;
