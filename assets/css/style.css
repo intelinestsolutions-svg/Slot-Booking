@@ -93,6 +93,7 @@ img { max-width: 100%; display: block; }
 .site-nav {
   position: sticky; top: 0; z-index: 100;
   height: var(--nav-h);
+  padding-top: env(safe-area-inset-top, 0px);
   background: rgba(11, 16, 38, 0.82);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--line);
@@ -140,7 +141,7 @@ img { max-width: 100%; display: block; }
 .burger.open span:nth-child(2) { opacity: 0; }
 .burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 .mobile-menu {
-  display: none; position: fixed; top: var(--nav-h); left: 0; right: 0; z-index: 99;
+  display: none; position: fixed; top: calc(var(--nav-h) + env(safe-area-inset-top, 0px)); left: 0; right: 0; z-index: 99;
   background: rgba(11, 16, 38, 0.97); backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--line);
   padding: 18px 6%;
@@ -457,7 +458,7 @@ table.data tr:hover td { background: rgba(255, 176, 58, 0.04); }
 .tuner-note { color: var(--gold); letter-spacing: 0.3em; font-size: 13px; font-weight: 800; text-transform: uppercase; }
 
 @media (max-width: 640px) {
-  .hero { padding-top: 48px; }
+  .hero { padding-top: calc(48px + env(safe-area-inset-top, 0px)); }
   .hero .container > div > div { grid-template-columns: 1fr !important; gap: 28px !important; }
   .hero-fig { order: -1; }
   .hero-fig img { aspect-ratio: 16/10 !important; }
