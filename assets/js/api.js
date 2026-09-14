@@ -43,9 +43,9 @@
       logout: () => call('auth', 'logout'),
       updateProfile: (b) => call('auth', 'update_profile', { method: 'POST', body: b }),
       changePassword: (b) => call('auth', 'change_password', { method: 'POST', body: b }),
-      uploadAvatar: (file) => {
+      uploadAvatar: (jpeg) => {
         const fd = new FormData();
-        fd.append('avatar', file);
+        fd.append('avatar', jpeg);
         const url = `${P()}${file('auth')}?${new URLSearchParams({ action: 'upload_avatar' })}`;
         const headers = {};
         const token = localStorage.getItem(APP.tokenKey);
