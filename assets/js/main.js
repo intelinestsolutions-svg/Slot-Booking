@@ -25,6 +25,12 @@
     window.RevealObserver = reveal;
     document.addEventListener('revealReady', () => {
       document.querySelectorAll('.reveal:not(.in)').forEach((el) => reveal.observe(el));
+      setTimeout(() => {
+        document.querySelectorAll('.reveal:not(.in)').forEach((el) => el.classList.add('in'));
+      }, 900);
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+      document.dispatchEvent(new Event('revealReady'));
     });
   });
 })();

@@ -27,17 +27,31 @@
       <div class="music-fall" aria-hidden="true">${notesHTML}</div>
       <div class="hero-glow" aria-hidden="true"></div>
       <div class="container" style="position:relative;">
-        <p class="hero-eyebrow reveal"><span class="live-dot"></span> Platform untuk buskers Sabah — berpusat di Kota Kinabalu</p>
-        <h1 class="reveal" style="--d:60ms">Cari spot.<br>Tempah <b>slot persembahan.</b><br>Main.</h1>
-        <p class="lead reveal" style="--d:140ms">Sabah Buskers Community (SBC) menghubungkan buskers dengan lokasi sah di Sabah — terokai lokasi yang disahkan pihak berkuasa, tempah slot persembahan mingguan anda dan uruskan aktiviti busking semua dalam satu platform.</p>
-        <div class="hero-cta reveal" style="--d:220ms">
-          <a class="btn btn-primary btn-lg" href="?page=register">Daftar Sebagai Busker</a>
-          <a class="btn btn-ghost btn-lg" href="?page=cari-slot">Tempah Slot Sekarang</a>
-        </div>
-        <div class="hero-stats reveal" style="--d:300ms">
-          <div class="hero-stat"><b>${data.stats.locations}+</b><span>Lokasi busking</span></div>
-          <div class="hero-stat"><b>${data.stats.buskers}+</b><span>Buskers berdaftar</span></div>
-          <div class="hero-stat"><b>${data.stats.bookings}+</b><span>Slot ditempah</span></div>
+        <div style="display:grid;grid-template-columns:1.15fr .85fr;gap:44px;align-items:center;">
+          <div>
+            <p class="hero-eyebrow reveal"><span class="live-dot"></span> Platform untuk buskers Sabah — berpusat di Kota Kinabalu</p>
+            <h1 class="reveal" style="--d:60ms">Cari spot.<br>Tempah <b>slot persembahan.</b><br>Main.</h1>
+            <p class="lead reveal" style="--d:140ms">Sabah Buskers Community (SBC) menghubungkan buskers dengan lokasi sah di Sabah — terokai lokasi yang disahkan pihak berkuasa, tempah slot persembahan mingguan anda dan uruskan aktiviti busking semua dalam satu platform.</p>
+            <div class="hero-cta reveal" style="--d:220ms">
+              <a class="btn btn-primary btn-lg" href="?page=register">Daftar Sebagai Busker</a>
+              <a class="btn btn-ghost btn-lg" href="?page=cari-slot">Tempah Slot Sekarang</a>
+            </div>
+            <div class="hero-stats reveal" style="--d:300ms">
+              <div class="hero-stat"><b>${data.stats.locations}+</b><span>Lokasi busking</span></div>
+              <div class="hero-stat"><b>${data.stats.buskers}+</b><span>Buskers berdaftar</span></div>
+              <div class="hero-stat"><b>${data.stats.bookings}+</b><span>Slot ditempah</span></div>
+            </div>
+          </div>
+          <figure class="reveal hero-fig" style="--d:180ms;margin:0;">
+            <img loading="lazy" style="width:100%;border-radius:24px;object-fit:cover;aspect-ratio:4/5;box-shadow:0 30px 70px -24px rgba(0,0,0,.75);border:1px solid var(--line);" src="assets/img/sbc-community.jpg?v=20260920" alt="Komuniti Sabah Buskers">
+            <figcaption style="position:absolute;bottom:16px;left:16px;right:16px;display:flex;gap:10px;align-items:center;background:rgba(10,10,14,.72);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:10px 14px;">
+              <img style="width:38px;height:38px;border-radius:9px;" src="assets/img/sbc-logo.png?v=20260924" alt="Logo SBC">
+              <div style="line-height:1.25;">
+                <b style="font-size:13.5px;display:block;">Sabah Buskers Community</b>
+                <span style="font-size:12px;color:var(--muted);">Kota Kinabalu · Sejak 2019</span>
+              </div>
+            </figcaption>
+          </figure>
         </div>
       </div>
     </section>

@@ -198,6 +198,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 600; color: var(
 
 /* ---------- Hero ---------- */
 .hero { position: relative; padding: 78px 0 110px; }
+.hero-fig { position: relative; }
 .hero-eyebrow { display: inline-flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 700; color: var(--muted); letter-spacing: 0.03em; margin-bottom: 18px; }
 .hero h1 { font-size: clamp(44px, 8vw, 82px); line-height: 1.02; font-weight: 600; letter-spacing: -0.01em; }
 .hero h1 b { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -457,6 +458,9 @@ table.data tr:hover td { background: rgba(255, 176, 58, 0.04); }
 
 @media (max-width: 640px) {
   .hero { padding-top: 48px; }
+  .hero .container > div > div { grid-template-columns: 1fr !important; gap: 28px !important; }
+  .hero-fig { order: -1; }
+  .hero-fig img { aspect-ratio: 16/10 !important; }
   .section { padding: 52px 0; }
   .steps { gap: 6px; }
   .step-name { display: none; }
