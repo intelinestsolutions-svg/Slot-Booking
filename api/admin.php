@@ -165,6 +165,16 @@ switch ($action) {
             $pdo->rollBack();
             fail($e->getMessage(), 500);
         }
+
+        try {
+            require_once __DIR__ . '/whatsapp.php';
+            $locStmt = $pdo->prepare("SELECT name FROM locations WHERE id=?");
+            $locStmt->execute([$slot['locationId']]);
+            $locName = $locStmt->fetch()['name'] ?? '';
+            notify_busker_swap($busker['phone'], $slot, $locName, $busker['stageName']);
+        } catch (Throwable $e) {
+            /* WhatsApp adalah pilihan — jangan gagalkan pertukaran */
+        }
         ok();
         break;
 

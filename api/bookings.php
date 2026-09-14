@@ -73,15 +73,6 @@ switch ($action) {
         ]);
         $bookingId = $pdo->lastInsertId();
 
-        try {
-            $locStmt = $pdo->prepare("SELECT name FROM locations WHERE id=?");
-            $locStmt->execute([$slot['locationId']]);
-            $locName = $locStmt->fetch()['name'] ?? '';
-            alert_new_booking($slot, $user, $locName, $bill['billCode']);
-        } catch (Throwable $e) {
-            /* WhatsApp adalah pilihan — jangan gagalkan tempahan */
-        }
-
         ok([
             'bookingId' => $bookingId,
             'paymentUrl' => $bill['paymentUrl'],
@@ -220,16 +211,17 @@ switch ($action) {
             break;
         }
 
-        $pdo->prepare("UPDATE bookings SET status='confirmed', txnRef=? WHERE billCode=?")
-            ->execute(['txn-' . $billCode, $billCode]);
-        $booking = $pdo->prepare("SELECT * FROM bookings WHERE billCode=?");
-        $booking->execute([$billCode]);
-        $b = $booking->fetch();
-        if ($b) {
+        $bookingStmt = $pdo->prepare("SELECT * FROM bookings WHERE billCode=?");
+        $bookingStmt->execute([$billCode]);
+        $b = $bookingStmt->fetch();
+        if ($b && $b['status'] !== 'confirmed') {
+            $pdo->prepare("UPDATE bookings SET status='confirmed', txnRef=? WHERE billCode=?")
+                ->execute(['txn-' . $billCode, $billCode]);
             $pdo->prepare("UPDATE slots SET status='Ditempah' WHERE id=?")->execute([$b['slotId']]);
             $pdo->prepare("INSERT INTO notifications (userId,title,body) VALUES (?, 'Pembayaran Berjaya', 'Slot anda telah disahkan! Sila hadir pada waktu yang ditetapkan.')")
                 ->execute([$b['userId']]);
             record_transaction($pdo, $b);
+            try { alert_paid_booking_ctx($pdo, $b); } catch (Throwable $e) {}
         }
 
         ok(['status' => 'confirmed', 'message' => 'Pembayaran berjaya! Slot telah disahkan.']);
@@ -299,12 +291,15 @@ switch ($action) {
             ok(['status' => 'cancelled']);
             break;
         }
-        $pdo->prepare("UPDATE bookings SET status='confirmed', txnRef=? WHERE id=?")
-            ->execute(['txn-' . $billCode, $booking['id']]);
-        $pdo->prepare("UPDATE slots SET status='Ditempah' WHERE id=?")->execute([$booking['slotId']]);
-        $pdo->prepare("INSERT INTO notifications (userId,title,body) VALUES (?, 'Pembayaran Berjaya', 'Slot anda telah disahkan! Sila hadir pada waktu yang ditetapkan.')")
-            ->execute([$booking['userId']]);
-        record_transaction($pdo, $booking);
+        if ($booking['status'] !== 'confirmed') {
+            $pdo->prepare("UPDATE bookings SET status='confirmed', txnRef=? WHERE id=?")
+                ->execute(['txn-' . $billCode, $booking['id']]);
+            $pdo->prepare("UPDATE slots SET status='Ditempah' WHERE id=?")->execute([$booking['slotId']]);
+            $pdo->prepare("INSERT INTO notifications (userId,title,body) VALUES (?, 'Pembayaran Berjaya', 'Slot anda telah disahkan! Sila hadir pada waktu yang ditetapkan.')")
+                ->execute([$booking['userId']]);
+            record_transaction($pdo, $booking);
+            try { alert_paid_booking_ctx($pdo, $booking); } catch (Throwable $e) {}
+        }
         ok(['status' => 'confirmed']);
         break;
 
@@ -432,6 +427,25 @@ function verify_toyyibpay(string $billCode): array
     }
 
     return ['success' => true, 'data' => $item];
+}
+
+function alert_paid_booking_ctx(PDO $pdo, array $booking): bool
+{
+    include_once __DIR__ . '/whatsapp.php';
+    $stmt = $pdo->prepare("SELECT s.date, s.startTime, s.endTime, l.name AS locationName
+        FROM slots s JOIN locations l ON l.id = s.locationId WHERE s.id=?");
+    $stmt->execute([$booking['slotId']]);
+    $info = $stmt->fetch();
+    if (!$info) {
+        return false;
+    }
+    $slot = ['date' => $info['date'], 'startTime' => $info['startTime'], 'endTime' => $info['endTime']];
+    $user = [
+        'stageName' => $booking['buskerStageName'] ?? null,
+        'fullName'  => $booking['buskerStageName'] ?? null,
+        'phone'     => $booking['buskerPhone'] ?? null,
+    ];
+    return alert_paid_booking($slot, $user, $info['locationName'] ?? '', $booking);
 }
 
 function record_transaction(PDO $pdo, array $booking): void

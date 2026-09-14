@@ -43,17 +43,29 @@ function whatsapp_target(): string
     return preg_replace('/[^0-9]/', '', $to);
 }
 
-function alert_new_booking(array $slot, array $user, string $locationName, string $billCode): bool
+function alert_paid_booking(array $slot, array $user, string $locationName, array $booking): bool
 {
-    $msg = "🎤 TEMPAHAN SLOT BARU (SBC)\n"
+    $msg = "💰 PEMBAYARAN BERJAYA — SLOT SAH (SBC)\n"
         . "• Busker: " . ($user['stageName'] ?? $user['fullName'] ?? '-') . "\n"
         . "• Telefon: " . ($user['phone'] ?? '-') . "\n"
         . "• Lokasi: " . $locationName . "\n"
         . "• Tarikh: " . $slot['date'] . "\n"
         . "• Masa: " . $slot['startTime'] . "–" . $slot['endTime'] . "\n"
-        . "• Bayaran: RM" . number_format((float)$slot['price'], 2) . " (belum dibayar)\n"
-        . "• Bil: " . $billCode . "\n"
-        . "Sila semak di Panel Admin.";
+        . "• Bayaran: RM" . number_format((float)$booking['amount'], 2) . " (LUNAS)\n"
+        . "• Bil: " . $booking['billCode'] . "\n"
+        . "Tempahan sah. Sila semak di Panel Admin.";
 
     return send_whatsapp(whatsapp_target(), $msg);
+}
+
+function notify_busker_swap(string $phone, array $slot, string $locationName, string $stageName): bool
+{
+    $msg = "🔄 SLOT ANDA DITETAPKAN OLEH ADMIN (SBC)\n"
+        . "• Busker: " . $stageName . "\n"
+        . "• Lokasi: " . $locationName . "\n"
+        . "• Tarikh: " . $slot['date'] . "\n"
+        . "• Masa: " . $slot['startTime'] . "–" . $slot['endTime'] . "\n"
+        . "Sila semak tempahan anda di aplikasi SBC.";
+
+    return send_whatsapp(preg_replace('/[^0-9]/', '', $phone), $msg);
 }
