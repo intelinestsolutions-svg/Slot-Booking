@@ -109,7 +109,7 @@
               <li>Alatan busker — penala gitar &amp; metronom</li>
             </ul>
             <div class="dl-actions">
-              <a class="btn btn-primary btn-lg" href="sbc-mobile.apk" download>📲 Muat Turun APK</a>
+              <a class="btn btn-primary btn-lg" href="sbc-mobile.apk?v=${Date.now()}" download>📲 Muat Turun APK</a>
               <span class="dl-meta"><b>Versi Beta</b> · 3.6 MB · Android 6.0+</span>
             </div>
             <p class="dl-note">Aplikasi dalaman SBC. Pasang, dan sedia untuk buka "Saya telah membaca" skrin pertama kali.</p>
