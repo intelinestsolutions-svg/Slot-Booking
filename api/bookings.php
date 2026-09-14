@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/whatsapp.php';
 
 $action = $_GET['action'] ?? '';
 $pdo = db();
@@ -71,6 +72,15 @@ switch ($action) {
             $bill['billCode'], $slot['price'], $user['stageName'], $user['phone'],
         ]);
         $bookingId = $pdo->lastInsertId();
+
+        try {
+            $locStmt = $pdo->prepare("SELECT name FROM locations WHERE id=?");
+            $locStmt->execute([$slot['locationId']]);
+            $locName = $locStmt->fetch()['name'] ?? '';
+            alert_new_booking($slot, $user, $locName, $bill['billCode']);
+        } catch (Throwable $e) {
+            /* WhatsApp adalah pilihan — jangan gagalkan tempahan */
+        }
 
         ok([
             'bookingId' => $bookingId,
