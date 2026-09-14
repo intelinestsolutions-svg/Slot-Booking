@@ -1,6 +1,6 @@
 (function () {
   window.viewCommunity = function () {
-    return UI.page('Ahli Komuniti BuzzKing', 'Kenali buskers yang disahkan dalam komuniti Sabah.',
+    return UI.page('Ahli SBC', 'Kenali buskers yang disahkan dalam komuniti Sabah.',
       `
       <div id="buskerGrid" class="loc-grid"><div class="empty">Memuatkan komuniti...</div></div>`,
       { eyebrow: 'Komuniti' });
