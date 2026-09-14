@@ -21,7 +21,7 @@
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-body: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
   --radius: 16px;
-  --nav-h: 72px;
+  --nav-h: 64px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -187,9 +187,16 @@ img { max-width: 100%; display: block; }
 .mobile-menu a:last-child { border-bottom: 0; }
 .mobile-menu a.is-active { color: var(--gold); }
 
-@media (max-width: 860px) {
+@media (max-width: 979px) {
   .nav-links, .nav-cta { display: none; }
   .burger { display: flex; }
+  .nav-user a[data-logout] { display: none; }
+  .nav-avatar { width: 34px; height: 34px; font-size: 13px; }
+  .site-nav { height: 58px; }
+  .brand-logo { width: 34px; height: 34px; border-radius: 10px; }
+  .brand-name { font-size: 15.5px; }
+  .brand-name small { font-size: 8.5px; }
+  .mobile-menu { top: calc(58px + env(safe-area-inset-top, 0px)); }
 }
 
 /* ---------- Buttons ---------- */
@@ -590,3 +597,111 @@ table.data tr:hover td { background: rgba(255, 176, 58, 0.04); }
 .tos-foot .btn-dim, .btn[disabled] { opacity: 0.55; cursor: not-allowed; transform: none !important; }
 .btn-dim { filter: grayscale(0.5); }
 .tos-sec h4::before { content: "§ "; color: var(--amber); }
+
+/* ==================================================================
+   MOBILE APP SHELL — bottom tab bar, compact top bar, app-style UI
+   ================================================================== */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 700;
+  display: none;
+  background: rgba(8, 11, 27, 0.94);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -10px 34px -14px rgba(0, 0, 0, 0.65);
+}
+.tabbar a {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; padding: 9px 4px 8px; color: var(--muted);
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em;
+  transition: color 0.2s; -webkit-tap-highlight-color: transparent;
+}
+.tabbar a svg { width: 22px; height: 22px; }
+.tabbar a.is-active { color: var(--gold); }
+.tabbar a.is-active svg { filter: drop-shadow(0 0 7px rgba(255, 176, 58, 0.55)); }
+
+@media (max-width: 979px) {
+  .tabbar {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  main#root { padding-bottom: calc(86px + env(safe-area-inset-bottom, 0px)); }
+  #toastWrap { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+
+  /* Compact footer on phones */
+  .site-footer { padding: 34px 0 18px; }
+  .site-footer .footer-grid { display: block; }
+  .site-footer .footer-grid > div + div { display: none; }
+  .footer-bottom { margin-top: 24px; }
+  .footer-credit { margin-top: 16px; }
+
+  /* App-style page shell */
+  .page { padding: 22px 0 26px; }
+  .page-title { margin-bottom: 18px; }
+  .page-title h1 { font-size: 25px; }
+  .hero { padding: 30px 0 34px; }
+  .hero h1 { font-size: 34px; }
+  .section { padding: 40px 0; }
+  .sec-head h2 { font-size: 26px; }
+
+  /* Bottom-sheet modals */
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal { width: 100%; max-height: 92dvh; border-radius: 22px 22px 0 0; }
+  .modal-body { padding: 18px 20px; }
+  .tos-overlay .tos-body { padding: 18px 20px; }
+
+  /* Bigger touch targets */
+  .input, .select, .textarea { font-size: 16px; padding: 14px 15px; }
+  .btn { min-height: 46px; }
+  .btn-lg { min-height: 52px; }
+  .btn-sm { min-height: 38px; }
+}
+
+/* Cari Slot — compact list cards on phones */
+@media (max-width: 639px) {
+  .loc-grid { gap: 12px; }
+  .loc-card { display: grid; grid-template-columns: 92px 1fr; }
+  .loc-head { height: auto; min-height: 118px; padding: 12px; grid-row: 1 / span 2; }
+  .loc-head .pin { font-size: 9.5px; }
+  .loc-head h3 { font-size: 14.5px; line-height: 1.2; }
+  .loc-body { padding: 12px 14px; gap: 8px; }
+  .loc-body p { -webkit-line-clamp: 2; line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+  .loc-foot { flex-direction: column; align-items: stretch; gap: 8px; }
+  .loc-foot .btn { width: 100%; }
+  .loc-price b { font-size: 19px; }
+  .toolbar { gap: 8px; margin-bottom: 18px; }
+  .search { padding: 8px 14px; }
+  .chip { padding: 8px 13px; font-size: 12px; }
+
+  /* Alatan — setting-style rows */
+  .tools-grid { grid-template-columns: 1fr; gap: 12px; }
+  .tool-tile { display: flex; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer; }
+  .tool-tile .ico { margin: 0; width: 46px; height: 46px; font-size: 18px; }
+  .tool-tile h3 { margin-bottom: 2px; font-size: 17px; }
+  .tool-tile p { font-size: 12.5px; }
+
+  /* Booking cards stack */
+  .bcard { align-items: flex-start; padding: 15px; gap: 12px; }
+  .bcard > div:last-child { width: 100%; flex-direction: row; justify-content: space-between; align-items: center; }
+  .bc-actions { width: 100%; }
+  .bc-actions .btn { flex: 1; }
+
+  /* Stats 2-up */
+  .stat-card { padding: 16px; }
+  .stat-card b { font-size: 26px; }
+
+  /* Tables scroll natively */
+  .table-wrap { -webkit-overflow-scrolling: touch; }
+
+  /* Hero CTAs full-width */
+  .hero-cta .btn { flex: 1; min-width: 0; }
+  .hero-stats { gap: 18px; margin-top: 28px; }
+  .hero-stat { min-width: 0; flex: 1; }
+  .hero-stat b { font-size: 24px; }
+  .marquee-track span { padding: 0 20px; font-size: 12px; }
+}
+
+@media (min-width: 980px) {
+  .tabbar { display: none; }
+}

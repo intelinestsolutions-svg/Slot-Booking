@@ -184,6 +184,33 @@
         Session.logout();
         Router.go('landing');
       });
+
+      const tab = document.getElementById('tabbar');
+      if (tab) {
+        const TAB_MAP = {
+          'cari-slot': 'cari-slot',
+          'slot-booking': 'cari-slot',
+          'ahli-buzzking': 'ahli-buzzking',
+          inbox: 'ahli-buzzking',
+          tools: 'tools',
+          profil: 'profil',
+          'kemaskini-profil': 'profil',
+          'tempahan-saya': 'profil',
+          'performance-dashboard': 'profil',
+          bersedia: 'profil',
+          login: 'profil',
+          register: 'profil',
+          'admin-dashboard': 'profil',
+          'admin-finance': 'profil',
+          'pengurusan-slot': 'profil',
+        };
+        const active = TAB_MAP[page] || 'landing';
+        tab.querySelectorAll('a').forEach(a => a.classList.toggle('is-active', a.dataset.tab === active));
+        if (u && u.role === 'admin') {
+          const me = tab.querySelector('a[data-tab="profil"]');
+          if (me) me.setAttribute('href', '?page=admin-dashboard');
+        }
+      }
     },
 
     refresh() {
