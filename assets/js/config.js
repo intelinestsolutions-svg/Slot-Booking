@@ -4,6 +4,8 @@ window.APP = {
   domain: 'sabahbuskers.my',
   tagline: 'Platform busking Sabah',
   city: 'Kota Kinabalu',
+  mobileLabel: 'SBC Mobile Apps',
+  tosKey: 'sabahbuskers_tos_v1',
   prayerCity: 'Kota Kinabalu',
   prayerCountry: 'Malaysia',
   apiPrefix: 'api/',

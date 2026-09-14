@@ -27,9 +27,9 @@
       <div class="music-fall" aria-hidden="true">${notesHTML}</div>
       <div class="hero-glow" aria-hidden="true"></div>
       <div class="container" style="position:relative;">
-        <div style="display:grid;grid-template-columns:1.15fr .85fr;gap:44px;align-items:center;">
+        <div style="display:grid;grid-template-columns:1.09fr .91fr;gap:clamp(28px,4.5vw,56px);align-items:center;">
           <div>
-            <p class="hero-eyebrow reveal"><span class="live-dot"></span> Platform untuk buskers Sabah — berpusat di Kota Kinabalu</p>
+            <p class="hero-eyebrow reveal"><span class="live-dot"></span> Platform dalaman untuk buskers Sabah — berpusat di Kota Kinabalu</p>
             <h1 class="reveal" style="--d:60ms">Cari spot.<br>Tempah <b>slot persembahan.</b><br>Main.</h1>
             <p class="lead reveal" style="--d:140ms">Sabah Buskers Community (SBC) menghubungkan buskers dengan lokasi sah di Sabah — terokai lokasi yang disahkan pihak berkuasa, tempah slot persembahan mingguan anda dan uruskan aktiviti busking semua dalam satu platform.</p>
             <div class="hero-cta reveal" style="--d:220ms">

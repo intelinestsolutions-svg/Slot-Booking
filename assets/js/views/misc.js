@@ -1,4 +1,34 @@
 (function () {
+  /* ============ Terma & Syarat (kandungan dikongsi modal + halaman) ============ */
+  window.TermsHTML = function (compact) {
+    const sec = (t, html) => `<section class="tos-sec"><h4>${t}</h4>${html}</section>`;
+    return `
+      <p class="tos-lead">${APP.mobileLabel} — Sabah Buskers Community (SBC). Aplikasi ini dibangunkan <b>untuk kegunaan dalaman komuniti sahaja</b> dan tidak untuk diedarkan secara bebas kepada awam. Dengan menggunakan aplikasi ini, anda bersetuju dengan terma &amp; syarat berikut:</p>
+      ${sec('1. Akses Dalaman', '<p>Aplikasi ini hanya untuk kegunaan ahli/karyawan SBC yang diberi akses. Ia tidak boleh dimuat turun, disalin, dikongsikan atau diagihkan kepada pihak luar tanpa kebenaran bertulis pasukan SBC.</p>')}
+      ${sec('2. Penerimaan', '<p>Penggunaan aplikasi bermakna anda menerima terma ini sepenuhnya. Jika anda tidak bersetuju, sila berhenti menggunakan aplikasi dengan serta-merta.</p>')}
+      ${sec('3. Pendaftaran &amp; Akaun', '<p>Anda mestilah berumur 18 tahun ke atas, memberi maklumat yang sah (termasuk MyKad) dan bertanggungjawab menjaga kerahsiaan akaun anda. Setiap busker disaring oleh pasukan admin sebelum tempahan dibuka.</p>')}
+      ${sec('4. Tempahan &amp; Slot', '<p>Slot dibuka untuk minggu berikutnya. Tempahan hanya sah selepas bayaran lengkap melalui ToyyibPay. Pembatalan tertakluk kepada dasar yang dipaparkan semasa tempahan.</p>')}
+      ${sec('5. Kelakuan di Lokasi', '<p>Patuhi SOP DBKK/KKIA, arahan pihak berkuasa, dan hormati peniaga serta orang awam. Aktiviti yang mencemarkan nama baik komuniti boleh menyebabkan akaun digantung.</p>')}
+      ${sec('6. Bayaran &amp; Yuran', '<p>Yuran sesi RM5–RM10 mengikut tier lokasi dibayar secara atas talian. Semua transaksi direkodkan; tempahan yang tidak dibayar akan dilepaskan.</p>')}
+      ${sec('7. Harta Intelek &amp; Kerahsiaan', '<p>Kandungan aplikasi (logo, teks, imej, data internal) adalah hak milik SBC dan dianggap sulit. Tidak dibenarkan berkongsi cetakan skrin atau data dalaman kepada pihak luar.</p>')}
+      ${sec('8. Had Tanggungjawab', '<p>SBC tidak bertanggungjawab atas kerugian akibat penggunaan aplikasi, pembatalan venue, cuaca, atau keadaan di luar kawalan kami.</p>')}
+      ${sec('9. Privasi &amp; Data', '<p>Maklumat anda digunakan untuk pengesahan, tempahan dan penyampaian notifikasi sahaja. Lihat dasar privasi untuk butiran penuh.</p>')}
+      ${sec('10. Perubahan Terma', '<p>Terma ini boleh dikemas kini dari masa ke masa. Penggunaan berterusan selepas perubahan bermakna anda menerima terma baharu.</p>')}
+      <p class="tos-lead" style="margin:18px 0 0;font-size:12px;color:var(--muted-2);">${APP.mobileLabel} dibangunkan oleh <b style="color:var(--muted)">Marwan Haji Beluar</b> untuk Sabah Buskers Community (SBC).</p>`;
+  };
+
+  /* ============ Halaman Terma ============ */
+  window.viewTerms = function () {
+    return UI.page('Terma &amp; Syarat Penggunaan', 'Sila baca dengan teliti sebelum menggunakan platform SBC.',
+      `
+      <div class="panel">${TermsHTML()}</div>
+      <div style="margin-top:20px;">
+        <a class="btn btn-primary" href="?page=landing">Kembali ke Laman Utama</a>
+        <a class="btn btn-ghost" href="mailto:hello@sabahbuskers.my" style="margin-left:10px;">Soalan? Hubungi Kami</a>
+      </div>`,
+      { eyebrow: 'Perundangan' });
+  };
+
   /* ============ Tentang ============ */
   window.viewAbout = function () {
     return UI.page('Tentang Sabah Buskers Community',
@@ -24,6 +54,10 @@
           <p style="font-weight:800;color:var(--cream);margin-top:14px;">Berapa yuran?</p>
           <p style="color:var(--muted);font-size:13.5px;">Yuran mengikut tier lokasi — RM5 (coldspot) hingga RM10 (hotspot) setiap sesi. Lihat halaman Yuran Sesi.</p>
         </div>
+      </div>
+      <div class="panel" style="margin-top:24px;">
+        <h3>Kredit Pembangunan</h3>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px;">${APP.mobileLabel} dibangunkan oleh <b style="color:var(--gold)">Marwan Haji Beluar</b> untuk komuniti Sabah Buskers Community (SBC).</p>
       </div>`,
       { eyebrow: 'Kenali kami' });
   };

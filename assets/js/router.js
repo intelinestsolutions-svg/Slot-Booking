@@ -20,6 +20,7 @@
     tools: 'viewTools',
     'about-buzzking': 'viewAbout',
     pricing: 'viewPricing',
+    terms: 'viewTerms',
     'admin-dashboard': 'viewAdmin',
     'admin-finance': 'viewAdminFinance',
     'pengurusan-slot': 'viewAdminSlots',
