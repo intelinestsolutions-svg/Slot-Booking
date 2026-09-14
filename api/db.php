@@ -214,7 +214,7 @@ function seed(PDO $pdo): void
 
         $templates = [];
         foreach (['dataran-deasoka', 'bsn', 'ex-pizza', 'horizon-water-fountain', 'jalan-jati'] as $slug) {
-            $templates[] = [$locIds[$slug], implode(',', $nights), '17:30', '21:00', 10.00, 'Malam'];
+            $templates[] = [$locIds[$slug], implode(',', $nights), '18:30', '22:30', 10.00, 'Malam'];
             $templates[] = [$locIds[$slug], implode(',', $sundays), '06:30', '12:00', 10.00, 'Pagi'];
         }
         $templates[] = [$locIds['segama-waterfront-dolphin'], implode(',', $everyday), '17:30', '21:00', 5.00, 'Malam'];
