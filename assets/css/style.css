@@ -146,6 +146,29 @@ img { max-width: 100%; display: block; }
 @media (max-width: 1020px) {
   .site-nav .app-tag { display: none; }
 }
+
+/* In the native app there is no APK download — remove download cues */
+.is-native .app-tag { display: none; }
+.is-native .app-tag-static { display: none; }
+
+/* Native app — clean compact top bar */
+.is-native .site-nav {
+  height: calc(54px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  box-sizing: border-box;
+}
+.is-native .brand { gap: 9px; min-width: 0; flex: 1; }
+.is-native .brand-logo { width: 30px; height: 30px; border-radius: 8px; }
+.is-native .brand-name {
+  font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-family: var(--font-body); font-weight: 800; min-width: 0;
+}
+.is-native .brand-name small { display: none; }
+.is-native .nav-user .nav-avatar { width: 32px; height: 32px; font-size: 12.5px; }
+.is-native .nav-user .btn-ghost { display: none; }
+.is-native .burger { padding: 7px; }
+.is-native .burger span { width: 20px; height: 2px; }
+.is-native .mobile-menu { top: calc(54px + env(safe-area-inset-top, 0px)); }
 .nav-links { display: flex; gap: 26px; list-style: none; font-weight: 600; font-size: 14.5px; }
 .nav-links a { color: var(--muted); transition: color 0.2s; position: relative; }
 .nav-links a:hover { color: var(--cream); }

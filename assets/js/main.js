@@ -52,6 +52,11 @@
   document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('year').textContent = new Date().getFullYear();
 
+    if (window.APP.isNative) {
+      const lt = document.querySelector('.loader-title a');
+      if (lt) lt.setAttribute('href', '?page=landing');
+    }
+
     const burger = document.getElementById('burger');
     const menu = document.getElementById('mobileMenu');
     burger.addEventListener('click', () => {

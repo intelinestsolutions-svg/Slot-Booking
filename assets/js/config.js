@@ -19,6 +19,7 @@ window.APP.isNative = typeof window.Capacitor !== 'undefined' && window.Capacito
 
 if (window.APP.isNative) {
   window.APP.apiPrefix = 'https://ghostwhite-bee-423431.hostingersite.com/api/';
+  document.documentElement.classList.add('is-native');
 }
 
 window.APP.abs = function (p) {
