@@ -76,7 +76,7 @@
       <div class="card" style="margin-bottom:18px;">
         <div style="display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;">
           <div class="pro-avatar">${u.avatar
-            ? `<img src="${UI.esc(u.avatar)}" alt="Gambar profil" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+            ? `<img src="${UI.esc(APP.abs(u.avatar))}" alt="Gambar profil" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
             : UI.esc((u.stageName || u.fullName || 'B').slice(0, 1).toUpperCase())}</div>
           <div style="flex:1;min-width:230px;">
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
@@ -180,7 +180,7 @@
     document.getElementById('pfGenre').innerHTML = GENRES.map(g => `<option ${g === u.genre ? 'selected' : ''}>${g}</option>`).join('');
 
     const avImg = document.getElementById('avatarPreview');
-    if (avImg && u.avatar) avImg.src = u.avatar;
+    if (avImg && u.avatar) avImg.src = APP.abs(u.avatar);
     const avFile = document.getElementById('avatarFile');
     const avSave = document.getElementById('avatarSave');
     const avNotice = document.getElementById('avatarNotice');

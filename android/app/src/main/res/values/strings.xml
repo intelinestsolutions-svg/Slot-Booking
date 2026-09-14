@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Sabah Buskers Community</string>
+    <string name="title_activity_main">Sabah Buskers Community</string>
+    <string name="package_name">my.sabahbuskers.community</string>
+    <string name="custom_url_scheme">my.sabahbuskers.community</string>
+</resources>

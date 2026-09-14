@@ -18,5 +18,14 @@ uploads/
 # Deployment artifacts
 *.zip
 
+# Mobile build artifacts
+node_modules/
+dist/
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+.capacitor/
+
 # Credentials (JANGAN naik ke GitHub)
 api/config.local.php
