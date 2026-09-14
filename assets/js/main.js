@@ -17,7 +17,7 @@
         </div>
         <div class="modal-body tos-body">${window.TermsHTML ? TermsHTML(true) : ''}</div>
         <div class="tos-foot">
-          <label class="consent-row tos-agree"><input type="checkbox" id="tosAgree"> Saya telah membaca dan <b>bersetuju</b> dengan Terma &amp; Syarat serta dasar privasi aplikasi.</label>
+          <label class="consent-row tos-agree"><input type="checkbox" id="tosAgree"> <span>Saya telah membaca dan <b>bersetuju</b> dengan Terma &amp; Syarat serta dasar privasi aplikasi.</span></label>
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
             <button class="btn btn-primary tos-accept" type="button" disabled>Teruskan ke Aplikasi</button>
             <a class="btn btn-ghost" style="text-decoration:none;" href="?page=terms">Lihat Terma Penuh</a>

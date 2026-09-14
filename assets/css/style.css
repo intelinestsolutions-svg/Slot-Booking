@@ -580,11 +580,12 @@ table.data tr:hover td { background: rgba(255, 176, 58, 0.04); }
 .tos-modal { width: min(560px, 100%); }
 .tos-modal .modal-body { padding: 0; }
 .tos-body { max-height: 46vh; overflow-y: auto; padding: 22px 24px; border-bottom: 1px solid var(--line); }
-.tos-body .tos-lead { font-size: 13.5px; color: var(--cream); line-height: 1.7; margin-bottom: 16px; }
+.tos-body .tos-lead { font-size: 13.5px; color: var(--text); line-height: 1.7; margin-bottom: 16px; }
 .tos-sec { margin-bottom: 15px; }
 .tos-sec h4 { font-family: var(--font-body); font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); margin-bottom: 5px; }
-.tos-sec p { font-size: 12.5px; color: var(--muted); line-height: 1.65; }
-.tos-agree { padding: 16px 24px; border-bottom: 1px solid var(--line); color: var(--cream); font-size: 13px; }
+.tos-sec p { font-size: 12.5px; color: var(--text); line-height: 1.7; }
+.tos-agree { padding: 16px 24px; border-bottom: 1px solid var(--line); color: #FFFFFF; font-size: 13.5px; }
+.tos-agree b { color: #FFFFFF; }
 .tos-foot { padding: 18px 24px 22px; }
 .tos-foot .btn-dim, .btn[disabled] { opacity: 0.55; cursor: not-allowed; transform: none !important; }
 .btn-dim { filter: grayscale(0.5); }
