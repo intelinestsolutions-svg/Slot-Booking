@@ -122,7 +122,10 @@ img { max-width: 100%; display: block; }
   border-radius: 999px;
   padding: 3px 9px;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
 }
+.app-tag:hover { background: rgba(255, 176, 58, 0.26); border-color: rgba(255, 176, 58, 0.7); }
 .app-tag-static { align-self: flex-start; margin-top: 14px; display: inline-flex; font-size: 10.5px; gap: 6px; }
 .beta-pill, .beta-dot {
   display: inline-block;
@@ -744,6 +747,14 @@ table.data tr:hover td { background: rgba(255, 176, 58, 0.04); }
 .dl-meta { color: var(--muted-2); font-size: 12.5px; }
 .dl-meta b { color: var(--gold); }
 .dl-note { margin-top: 14px; font-size: 12px; color: var(--muted-2); }
+
+/* Quick-jump chips (in-page anchors) */
+.anchor-nav { display: flex; gap: 9px; flex-wrap: wrap; justify-content: center; padding: 4px 0 34px; }
+.anchor-nav .chip { background: rgba(255, 255, 255, 0.04); }
+.anchor-nav .chip:hover { color: var(--gold); border-color: rgba(255, 176, 58, 0.5); }
+
+/* Anchored sections clear the sticky header when scrolled to */
+.dl-band[id], .section[id], .cta-band[id] { scroll-margin-top: calc(var(--nav-h) + 14px); }
 @media (max-width: 760px) {
   .dl-band { padding: 34px 0; }
   .dl-card { grid-template-columns: 1fr; text-align: center; padding: 24px; }

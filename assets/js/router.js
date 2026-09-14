@@ -95,6 +95,7 @@
         }
         document.dispatchEvent(new Event('revealReady'));
         UI.hideLoader();
+        if (window.__scrollToHashTarget) window.__scrollToHashTarget();
         if (window.Reminders && typeof window.Reminders.ensure === 'function') {
           window.Reminders.ensure();
         }

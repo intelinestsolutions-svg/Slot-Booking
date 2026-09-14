@@ -82,4 +82,37 @@
       }, 900);
     });
   });
+
+  window.__scrollToHashTarget = function () {
+    const id = location.hash ? decodeURIComponent(location.hash.replace(/^#/, '')) : '';
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.querySelectorAll('.reveal').forEach(n => n.classList.add('in'));
+    setTimeout(() => {
+      try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { el.scrollIntoView(); }
+    }, 430);
+  };
+
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    const m = (a.getAttribute('href') || '').match(/^(?:\?page=landing)?#(.+)$/);
+    if (!m) return;
+    e.preventDefault();
+    const id = m[1];
+    const current = new URLSearchParams(location.search).get('page') || 'landing';
+    if (current === 'landing') {
+      const el = document.getElementById(id);
+      if (el) {
+        el.querySelectorAll('.reveal').forEach(n => n.classList.add('in'));
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        try { history.replaceState(null, '', '?page=landing#' + id); } catch (e2) {}
+      } else {
+        location.href = '?page=landing#' + id;
+      }
+      return;
+    }
+    location.href = '?page=landing#' + id;
+  });
 })();

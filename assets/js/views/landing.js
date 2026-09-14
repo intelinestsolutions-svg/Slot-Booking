@@ -56,7 +56,7 @@
       </div>
     </section>
 
-    <section class="dl-band">
+    <section class="dl-band" id="muat-turun">
       <div class="container">
         <div class="dl-card reveal">
           <div class="dl-media">
@@ -89,7 +89,7 @@
       </div>
     </div>
 
-    <section class="section">
+    <section class="section" id="kaedah">
       <div class="container">
         <div class="sec-head center reveal">
           <p class="eyebrow">Cara ia berfungsi</p>
@@ -116,7 +116,7 @@
         </div>
 
         ${locPreview.length ? `
-        <div style="margin-top:56px;">
+        <div style="margin-top:56px;" id="lokasi">
           <div class="sec-head center reveal">
             <p class="eyebrow">Lokasi pilihan</p>
             <h2>Spot terbaik <b>bandar raya</b> Kota Kinabalu</h2>
@@ -142,7 +142,7 @@
       </div>
     </section>
 
-    <section class="section" style="padding-top:0;">
+    <section class="section" style="padding-top:0;" id="ciri">
       <div class="container">
         <div class="sec-head center reveal">
           <p class="eyebrow">Dibina untuk buskers</p>
@@ -165,7 +165,7 @@
       </div>
     </section>
 
-    <section class="section" style="padding-top:0;">
+    <section class="section" style="padding-top:0;" id="komuniti">
       <div class="container">
         <div class="panel reveal" style="background:linear-gradient(135deg,rgba(255,122,89,0.08),rgba(242,180,65,0.06))">
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px;align-items:center;">
@@ -188,7 +188,7 @@
       </div>
     </section>
 
-    <section class="section" style="padding-top:0;">
+    <section class="section" style="padding-top:0;" id="perkhidmatan">
       <div class="container">
         <div class="sec-head center reveal">
           <p class="eyebrow">Perkhidmatan kami · dari sabahbuskers.my</p>
@@ -211,7 +211,7 @@
       </div>
     </section>
 
-    <section class="section" style="padding-top:0;">
+    <section class="section" style="padding-top:0;" id="moments">
       <div class="container">
         <div class="sec-head center reveal">
           <p class="eyebrow">Moments</p>
@@ -233,7 +233,7 @@
       </div>
     </section>
 
-    <section class="section" style="padding-top:0;">
+    <section class="section" style="padding-top:0;" id="hubungi">
       <div class="container">
         <div class="sec-head center reveal">
           <p class="eyebrow">Hubungi kami</p>
@@ -248,7 +248,7 @@
       </div>
     </section>
 
-    <section class="section" style="padding-top:0;">
+    <section class="section" style="padding-top:0;" id="yuran">
       <div class="container">
         <div class="sec-head center reveal">
           <p class="eyebrow">Yuran sesi DBKK</p>
@@ -271,7 +271,7 @@
       </div>
     </section>
 
-    <section class="cta-band">
+    <section class="cta-band" id="sertai">
       <div class="container">
         <h2 class="reveal">Bersedia untuk <b>turun ke jalan?</b></h2>
         <p class="reveal">Daftar hari ini dan mula menempah slot persembahan mingguan anda di Kota Kinabalu.</p>
