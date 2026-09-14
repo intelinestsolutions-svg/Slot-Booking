@@ -74,7 +74,7 @@
       if (loginPages.includes(page) && !user) {
         return this.go('login', { next: page });
       }
-      if (['slot-booking', 'tempahan-saya', 'profil', 'kemaskini-profil', 'performance-dashboard', 'inbox', 'tools', 'bersedia'].includes(page) && user && user.role && user.role !== 'busker') {
+      if (['slot-booking', 'tempahan-saya', 'profil', 'performance-dashboard', 'inbox', 'tools', 'bersedia'].includes(page) && user && user.role && user.role !== 'busker') {
         return this.go('landing');
       }
 
