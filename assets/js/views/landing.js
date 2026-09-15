@@ -70,7 +70,7 @@
               <a class="btn btn-primary btn-lg" href="sbc-mobile.apk?v=${Date.now()}" download>📲 Muat Turun APK</a>
               <span class="dl-meta"><b>Versi Beta</b> · 3.6 MB · Android 6.0+</span>
             </div>
-            <p class="dl-note">Aplikasi dalaman SBC. Pasang, dan sedia untuk buka "Saya telah membaca" skrin pertama kali.</p>
+            <p class="dl-note">Aplikasi dalaman SBC. Pasang, dan sedia untuk mula menggunakannya.</p>
           </div>
         </div>
       </div>
