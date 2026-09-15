@@ -9,5 +9,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         registerPlugin(DevicePermissionPlugin.class);
+        registerPlugin(TunerPlugin.class);
+        registerPlugin(NotifierPlugin.class);
     }
 }

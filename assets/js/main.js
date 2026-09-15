@@ -49,6 +49,15 @@
     } catch (e) {}
   }
 
+  function requestNotifPermission() {
+    const P = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Notifier;
+    if (!window.APP.isNative || !P) return;
+    try {
+      P.bootstrap().catch(() => {});
+      P.request().then(() => {}).catch(() => {});
+    } catch (e) {}
+  }
+
   function ensureTos() {
     if (!window.APP.isNative) return;
     if (window.TermsHTML) {
@@ -82,6 +91,7 @@
 
     const tosAccepted = ensureTos();
     if (tosAccepted) setTimeout(requestMicPermission, 1400);
+    setTimeout(requestNotifPermission, 2600);
 
     const reveal = new IntersectionObserver((entries) => {
       entries.forEach((e) => {

@@ -2,6 +2,7 @@
   let modal = null;
   let metTimer = null;
   let tunerRAF = null;
+  let nativeTuner = null;
 
   function openModal(title, bodyHtml) {
     closeModal();
@@ -20,6 +21,10 @@
   function closeModal() {
     if (metTimer) { clearInterval(metTimer); metTimer = null; }
     if (tunerRAF) { cancelAnimationFrame(tunerRAF); tunerRAF = null; }
+    if (nativeTuner) {
+      try { nativeTuner.stop().catch(() => {}); } catch (e) {}
+      nativeTuner = null;
+    }
     if (modal) { modal.remove(); modal = null; }
   }
   window.addEventListener('popstate', closeModal);
@@ -120,6 +125,18 @@
 
     startBtn.addEventListener('click', async () => {
       try {
+        if (window.APP.isNative && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Tuner) {
+          nativeTuner = window.Capacitor.Plugins.Tuner;
+          const st = await nativeTuner.getStatus().catch(() => ({ granted: false }));
+          if (st && st.granted === false) await nativeTuner.requestMicrophone();
+          await nativeTuner.start({ sampleRate: 44100 });
+          const sr = 44100;
+          hintEl.innerHTML = '<span style="color:var(--ok)">Mikrofon aktif.</span> Mainkan satu tali pada satu masa.';
+          startBtn.textContent = 'Penala Berjalan…';
+          startBtn.disabled = true;
+          nativeLoop();
+          return;
+        }
         const devPerm = window.APP.isNative && window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins : null;
         if (devPerm && devPerm.DevicePermission) {
           const st = await devPerm.DevicePermission.getMicrophoneStatus();
@@ -156,6 +173,10 @@
           tunerRAF = requestAnimationFrame(loop);
         }
       } catch (e) {
+        if (nativeTuner) {
+          try { nativeTuner.stop().catch(() => {}); } catch (e2) {}
+          nativeTuner = null;
+        }
         const canAsk = window.APP.isNative && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.DevicePermission;
         const openSettings = canAsk
           ? '<button class="btn btn-ghost" id="tnSettings" type="button" style="margin-top:10px;width:100%;">Buka Tetapan Aplikasi</button>'
@@ -185,6 +206,38 @@
         });
       }
     });
+
+    async function nativeLoop() {
+      try {
+        if (!modal || modal.querySelector('#tnNote') !== noteEl) {
+          try { if (nativeTuner) await nativeTuner.stop(); } catch (e) {}
+          nativeTuner = null;
+          return;
+        }
+        const r = await nativeTuner.read({});
+        const arr = r.samples;
+        if (arr && arr.length) {
+          const buf = new Float32Array(arr.length);
+          for (let i = 0; i < arr.length; i++) buf[i] = Number(arr[i]);
+          const freq = detectPitch(buf, r.sampleRate || 44100);
+          if (freq && freq > 40) {
+            const p = pitchName(freq);
+            noteEl.textContent = p.note;
+            freqEl.textContent = freq.toFixed(1) + ' Hz';
+            needleEl.style.transform = 'rotate(' + Math.max(-48, Math.min(48, p.cents * 2)) + 'deg)';
+          } else {
+            noteEl.textContent = '—';
+            freqEl.textContent = '…';
+            needleEl.style.transform = 'rotate(0deg)';
+          }
+        }
+      } catch (e) {
+        try { if (nativeTuner) await nativeTuner.stop(); } catch (e2) {}
+        nativeTuner = null;
+        return;
+      }
+      if (modal && modal.querySelector('#tnNote') === noteEl) tunerRAF = requestAnimationFrame(nativeLoop);
+    }
   }
 
   /* ---------------- Metronome ---------------- */

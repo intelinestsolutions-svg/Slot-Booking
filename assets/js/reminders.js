@@ -20,11 +20,26 @@
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   }
 
+  function nativeNotifier() {
+    return window.APP.isNative && window.Capacitor && window.Capacitor.Plugins &&
+      window.Capacitor.Plugins.Notifier ? window.Capacitor.Plugins.Notifier : null;
+  }
+
   async function notify(title, body) {
     try { UI.toast(`${title} — ${body}`, 'gold'); } catch (e) {}
+    const N = nativeNotifier();
+    if (N) {
+      try { await N.notify({ title, body }); return; } catch (e) {}
+    }
     if (window.Notification && Notification.permission === 'granted') {
       try { new Notification(title, { body, icon: 'assets/img/sbc-logo.png' }); } catch (e) {}
     }
+  }
+
+  async function scheduleNative(id, when, title, body) {
+    const N = nativeNotifier();
+    if (!N || !when || when <= Date.now()) return;
+    try { await N.schedule({ id: String(id), date: Math.round(when), title, body }); } catch (e) {}
   }
 
   window.Reminders = {
@@ -58,7 +73,10 @@
         } catch (e) { /* retry next tick */ }
       }
 
-      if (this._prayer) this._prayerTick();
+      if (this._prayer) {
+        this._prayerTick();
+        this._schedulePrayers();
+      }
 
       try {
         const r = await API.bookings.mine();
@@ -66,13 +84,33 @@
       } catch (e) { /* silent */ }
     },
 
+    _schedulePrayers() {
+      const p = this._prayer;
+      const d = this._prayerDate;
+      if (!p || !d) return;
+      const midnight = atYmdHm(d, '00:00');
+      (p.prayers || []).forEach(pr => {
+        const key = 'sch:prayer:' + pr.name + ':' + d;
+        if (this._notified[key] === true) return;
+        const isTomorrow = /esok/i.test(pr.name || '');
+        const when = isTomorrow && pr.minutes
+          ? midnight + pr.minutes * 60000
+          : atYmdHm(d, pr.time);
+        if (when && when > now()) {
+          this._notified[key] = true;
+          scheduleNative(key, when, 'Waktu Solat',
+            `Telah masuk waktu solat ${PRAYER_MS[pr.name] || pr.name}. Jika anda sedang busking, sila berhenti seketika.`);
+        }
+      });
+    },
+
     _prayerTick() {
       const p = this._prayer;
       const el = document.getElementById('prayerNowBar');
       if (el) {
         el.innerHTML = p.active
-          ? `${PRAYER_MS[p.active] || p.active} — hentikan busking seketika`,
-           '';
+          ? `${PRAYER_MS[p.active] || p.active} — hentikan busking seketika`
+          : '';
         el.style.display = p.active ? 'flex' : 'none';
       }
       if (p.active && this._notified['prayer:' + p.due.name + ':' + this._prayerDate] !== true) {
@@ -93,12 +131,14 @@
           if (!this._notified[k]) {
             this._notified[k] = true;
             notify('Persembahan', `Persembahan anda di ${b.locationName} akan bermula dalam masa 1 jam.`);
+            scheduleNative(k, m60, 'Persembahan', `Persembahan anda di ${b.locationName} akan bermula dalam masa 1 jam.`);
           }
         } else if (nowMs < start && nowMs >= m15) {
           const k = '15m:' + b.id;
           if (!this._notified[k]) {
             this._notified[k] = true;
             notify('Persediaan', 'Sila bersedia, masa setup anda akan bermula dalam 15 minit.');
+            scheduleNative(k, m15, 'Waktu Setup', 'Sila bersedia, masa setup anda akan bermula dalam 15 minit.');
           }
         }
       });
@@ -191,6 +231,18 @@
     }
 
     document.getElementById('notifBtn').addEventListener('click', async () => {
+      const N = nativeNotifier();
+      if (N) {
+        const st = await N.status().catch(() => ({ granted: false }));
+        if (st && st.granted) {
+          UI.toast('Pemberitahuan sudah diaktifkan.', 'ok');
+          return;
+        }
+        await N.request().catch(() => {});
+        const st2 = await N.status().catch(() => ({ granted: false }));
+        UI.toast(st2 && st2.granted ? 'Pemberitahuan diaktifkan!' : 'Pemberitahuan tidak dibenarkan.', st2 && st2.granted ? 'ok' : 'warn');
+        return;
+      }
       if (!('Notification' in window)) {
         UI.toast('Pelayar anda tidak menyokong pemberitahuan.', 'warn');
         return;
