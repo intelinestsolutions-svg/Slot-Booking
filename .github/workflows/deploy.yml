@@ -1,0 +1,35 @@
+name: Auto Deploy to SBC Hosting
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare deploy package
+        run: |
+          rm -rf deploy-package
+          mkdir -p deploy-package
+          cp index.html deploy-package/
+          cp -R assets deploy-package/
+          cp -R api deploy-package/
+          cp .htaccess deploy-package/ 2>/dev/null || true
+          cp sbc-mobile.apk deploy-package/ 2>/dev/null || true
+          cp data/.htaccess deploy-package/data/.htaccess 2>/dev/null || true
+          test -f deploy-package/index.html && echo "package ok" || exit 1
+
+      - name: Upload to Hostinger (public_html)
+        uses: mradilla/hostinger-deploy@v1
+        with:
+          domain: ${{ secrets.HOSTINGER_DOMAIN }}
+          host: ${{ secrets.HOSTINGER_HOST }}
+          port: ${{ secrets.HOSTINGER_PORT }}
+          username: ${{ secrets.HOSTINGER_USERNAME }}
+          password: ${{ secrets.HOSTINGER_PASSWORD }}
+          source-path: deploy-package
