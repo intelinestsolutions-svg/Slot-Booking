@@ -151,24 +151,24 @@ img { max-width: 100%; display: block; }
 .is-native .app-tag { display: none; }
 .is-native .app-tag-static { display: none; }
 
-/* Native app — clean compact top bar */
-.is-native .site-nav {
+/* Mobile app shell (native OR mobile browser) — clean compact top bar */
+.is-app .site-nav {
   height: calc(54px + env(safe-area-inset-top, 0px));
   padding-top: env(safe-area-inset-top, 0px);
   box-sizing: border-box;
 }
-.is-native .brand { gap: 9px; min-width: 0; flex: 1; }
-.is-native .brand-logo { width: 30px; height: 30px; border-radius: 8px; }
-.is-native .brand-name {
+.is-app .brand { gap: 9px; min-width: 0; flex: 1; }
+.is-app .brand-logo { width: 30px; height: 30px; border-radius: 8px; }
+.is-app .brand-name {
   font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   font-family: var(--font-body); font-weight: 800; min-width: 0;
 }
-.is-native .brand-name small { display: none; }
-.is-native .nav-user .nav-avatar { width: 32px; height: 32px; font-size: 12.5px; }
-.is-native .nav-user .btn-ghost { display: none; }
-.is-native .burger { padding: 7px; }
-.is-native .burger span { width: 20px; height: 2px; }
-.is-native .mobile-menu { top: calc(54px + env(safe-area-inset-top, 0px)); }
+.is-app .brand-name small { display: none; }
+.is-app .nav-user .nav-avatar { width: 32px; height: 32px; font-size: 12.5px; }
+.is-app .nav-user .btn-ghost { display: none; }
+.is-app .burger { padding: 7px; }
+.is-app .burger span { width: 20px; height: 2px; }
+.is-app .mobile-menu { top: calc(54px + env(safe-area-inset-top, 0px)); }
 
 /* Native app home — centred, app-style */
 .app-home {
@@ -214,15 +214,15 @@ img { max-width: 100%; display: block; }
 .aph-card b { font-size: 14px; color: var(--cream); }
 .aph-card small { font-size: 11.5px; color: var(--muted); }
 
-/* Native app — tidy page shell for every page */
-.is-native .page { padding: 20px 18px 24px; }
-.is-native .page-title { margin-bottom: 20px; }
-.is-native .page-title .eyebrow { margin-bottom: 8px; }
-.is-native .page-title h1 { font-size: 24px; }
-.is-native .page-title p { font-size: 13px; }
-.is-native .card { border-radius: 18px; }
-.is-native .grid-3, .is-native .grid-2 { gap: 12px; }
-.is-native .data tbody td, .is-native .data thead th {
+/* Mobile app shell — tidy page shell for every page */
+.is-app .page { padding: 20px 18px 24px; }
+.is-app .page-title { margin-bottom: 20px; }
+.is-app .page-title .eyebrow { margin-bottom: 8px; }
+.is-app .page-title h1 { font-size: 24px; }
+.is-app .page-title p { font-size: 13px; }
+.is-app .card { border-radius: 18px; }
+.is-app .grid-3, .is-app .grid-2 { gap: 12px; }
+.is-app .data tbody td, .is-app .data thead th {
   padding: 11px 10px; font-size: 12.5px;
 }
 .nav-links { display: flex; gap: 26px; list-style: none; font-weight: 600; font-size: 14.5px; }

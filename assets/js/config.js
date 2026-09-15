@@ -17,6 +17,16 @@ window.APP = {
 
 window.APP.isNative = typeof window.Capacitor !== 'undefined' && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
 
+const _ua = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
+window.APP.isMobileBrowser = !window.APP.isNative &&
+  (/Mobi|Android|iPhone|iPod|iPad|Opera Mini|IEMobile|BlackBerry/i.test(_ua) ||
+   Math.min(screen.width, screen.height) <= 979);
+window.APP.isMobile = window.APP.isNative || window.APP.isMobileBrowser;
+
+if (window.APP.isMobile) {
+  document.documentElement.classList.add('is-app');
+}
+
 if (window.APP.isNative) {
   window.APP.apiPrefix = 'https://ghostwhite-bee-423431.hostingersite.com/api/';
   document.documentElement.classList.add('is-native');

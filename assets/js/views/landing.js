@@ -15,8 +15,7 @@
 
   window.viewLanding = async function () {
     const data = await stats();
-    if (window.APP.isNative) {
-      const s = data.stats;
+    const appHome = (s) => {
       const user = Session.user;
       const uName = user ? (user.stageName || user.fullName || user.email || '') : '';
       return `
@@ -48,7 +47,37 @@
           <a class="aph-card" href="?page=ahli-buzzking"><span class="aph-ico">👥</span><b>Komuniti</b><small>Senarai ahli SBC</small></a>
         </div>
       </div>`;
-    }
+    };
+
+    const dlBand = () => `
+    <section class="dl-band" id="muat-turun">
+      <div class="container">
+        <div class="dl-card reveal">
+          <div class="dl-media">
+            <img loading="lazy" src="assets/img/apk-download.jpg?v=20261005" alt="Aplikasi mudah alih ${UI.esc(APP.mobileLabel)}">
+            <span class="dl-badge"><img src="assets/img/sbc-logo.png?v=20261005" alt="">${UI.esc(APP.mobileLabel)} <i class="beta-dot">Beta</i></span>
+          </div>
+          <div class="dl-body">
+            <p class="eyebrow">Aplikasi mudah alih · Android</p>
+            <h2>Muat turun <b>${UI.esc(APP.mobileLabel)}</b> sekarang</h2>
+            <p>Pasang aplikasi Android ini pada telefon anda untuk menempah slot lebih pantas, menerima pemberitahuan dan mengurus persembahan anda di mana sahaja.</p>
+            <ul>
+              <li>Tempah slot busking terus dari telefon</li>
+              <li>Peringatan 1 jam &amp; 15 minit sebelum persembahan</li>
+              <li>Alatan busker — penala gitar &amp; metronom</li>
+            </ul>
+            <div class="dl-actions">
+              <a class="btn btn-primary btn-lg" href="sbc-mobile.apk?v=${Date.now()}" download>📲 Muat Turun APK</a>
+              <span class="dl-meta"><b>Versi Beta</b> · 3.6 MB · Android 6.0+</span>
+            </div>
+            <p class="dl-note">Aplikasi dalaman SBC. Pasang, dan sedia untuk buka "Saya telah membaca" skrin pertama kali.</p>
+          </div>
+        </div>
+      </div>
+    </section>`;
+
+    if (window.APP.isNative) return appHome(data.stats);
+    if (window.APP.isMobileBrowser) return `${appHome(data.stats)}${dlBand()}`;
 
     const locPreview = ((data.locations || []).slice(0, 6));
     const rnd = (a, b) => a + Math.random() * (b - a);
@@ -91,32 +120,7 @@
       </div>
     </section>
 
-    ${window.APP.isNative ? '' : `
-    <section class="dl-band" id="muat-turun">
-      <div class="container">
-        <div class="dl-card reveal">
-          <div class="dl-media">
-            <img loading="lazy" src="assets/img/apk-download.jpg?v=20261005" alt="Aplikasi mudah alih ${UI.esc(APP.mobileLabel)}">
-            <span class="dl-badge"><img src="assets/img/sbc-logo.png?v=20261005" alt="">${UI.esc(APP.mobileLabel)} <i class="beta-dot">Beta</i></span>
-          </div>
-          <div class="dl-body">
-            <p class="eyebrow">Aplikasi mudah alih · Android</p>
-            <h2>Muat turun <b>${UI.esc(APP.mobileLabel)}</b> sekarang</h2>
-            <p>Pasang aplikasi Android ini pada telefon anda untuk menempah slot lebih pantas, menerima pemberitahuan dan mengurus persembahan anda di mana sahaja.</p>
-            <ul>
-              <li>Tempah slot busking terus dari telefon</li>
-              <li>Peringatan 1 jam &amp; 15 minit sebelum persembahan</li>
-              <li>Alatan busker — penala gitar &amp; metronom</li>
-            </ul>
-            <div class="dl-actions">
-              <a class="btn btn-primary btn-lg" href="sbc-mobile.apk?v=${Date.now()}" download>📲 Muat Turun APK</a>
-              <span class="dl-meta"><b>Versi Beta</b> · 3.6 MB · Android 6.0+</span>
-            </div>
-            <p class="dl-note">Aplikasi dalaman SBC. Pasang, dan sedia untuk buka "Saya telah membaca" skrin pertama kali.</p>
-          </div>
-        </div>
-      </div>
-    </section>`}
+    ${dlBand()}
 
     <div class="marquee" aria-hidden="true">
       <div class="marquee-track">
