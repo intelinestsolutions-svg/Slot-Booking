@@ -14,7 +14,7 @@
       ${sec('8. Had Tanggungjawab', '<p>SBC tidak bertanggungjawab atas kerugian akibat penggunaan aplikasi, pembatalan venue, cuaca, atau keadaan di luar kawalan kami.</p>')}
       ${sec('9. Privasi &amp; Data', '<p>Maklumat anda digunakan untuk pengesahan, tempahan dan penyampaian notifikasi sahaja. Lihat dasar privasi untuk butiran penuh.</p>')}
       ${sec('10. Perubahan Terma', '<p>Terma ini boleh dikemas kini dari masa ke masa. Penggunaan berterusan selepas perubahan bermakna anda menerima terma baharu.</p>')}
-      <p class="tos-lead" style="margin:18px 0 0;font-size:12px;color:var(--muted-2);">Dibangunkan oleh <b style="color:var(--muted)">Marwan Haji Beluar</b> untuk Sabah Buskers Community (SBC).</p>`;
+      <p class="tos-lead" style="margin:18px 0 0;font-size:12px;color:var(--muted-2);">© 2026 Sabah Buskers Community (SBC). All rights reserved. Developed by <b style="color:var(--muted)">Studio Pro</b> (Marwan Haji Beluar).</p>`;
   };
 
   /* ============ Halaman Terma ============ */
@@ -57,7 +57,7 @@
       </div>
       <div class="panel" style="margin-top:24px;">
         <h3>Kredit Pembangunan</h3>
-        <p style="color:var(--muted);font-size:14px;margin-top:8px;">Dibangunkan oleh <b style="color:var(--gold)">Marwan Haji Beluar</b> untuk Sabah Buskers Community (SBC).</p>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px;">© 2026 Sabah Buskers Community (SBC). All rights reserved. Developed by <b style="color:var(--gold)">Studio Pro</b> (Marwan Haji Beluar).</p>
       </div>`,
       { eyebrow: 'Kenali kami' });
   };
