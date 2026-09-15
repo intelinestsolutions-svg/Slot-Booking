@@ -15,4 +15,9 @@ Options -Indexes
     Header set Content-Type "application/vnd.android.package-archive"
     Header set Content-Disposition "attachment; filename=sbc-mobile.apk"
   </FilesMatch>
+  <FilesMatch "version\.json$">
+    Header set Access-Control-Allow-Origin "*"
+    Header set Content-Type "application/json; charset=utf-8"
+    Header set Cache-Control "public, max-age=300, must-revalidate"
+  </FilesMatch>
 </IfModule>

@@ -19,6 +19,7 @@ jobs:
           cp index.html deploy-package/
           cp -R assets deploy-package/
           cp -R api deploy-package/
+          cp version.json deploy-package/
           cp .htaccess deploy-package/ 2>/dev/null || true
           cp sbc-mobile.apk deploy-package/ 2>/dev/null || true
           cp data/.htaccess deploy-package/data/.htaccess 2>/dev/null || true
