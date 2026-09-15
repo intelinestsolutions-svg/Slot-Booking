@@ -70,7 +70,8 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('year').textContent = new Date().getFullYear();
+    const yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
 
     if (window.APP.isNative) {
       const lt = document.querySelector('.loader-title a');
