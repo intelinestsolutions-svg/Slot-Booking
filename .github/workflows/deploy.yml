@@ -34,5 +34,5 @@ jobs:
           password: ${{ secrets.HOSTINGER_PASSWORD }}
           protocol: ftp
           timeout: 120000
-          server-dir: .
-          local-dir: deploy-package
+          server-dir: /
+          local-dir: deploy-package/
