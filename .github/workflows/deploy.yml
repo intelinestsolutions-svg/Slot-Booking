@@ -25,12 +25,14 @@ jobs:
           cp data/.htaccess deploy-package/data/.htaccess 2>/dev/null || true
           test -f deploy-package/index.html && echo "package ok" || exit 1
 
-      - name: Upload to Hostinger (public_html)
-        uses: mradilla/hostinger-deploy@v1
+      - name: Upload to Hostinger (FTP)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          domain: ${{ secrets.HOSTINGER_DOMAIN }}
-          host: ${{ secrets.HOSTINGER_HOST }}
+          server: ${{ secrets.HOSTINGER_HOST }}
           port: ${{ secrets.HOSTINGER_PORT }}
           username: ${{ secrets.HOSTINGER_USERNAME }}
           password: ${{ secrets.HOSTINGER_PASSWORD }}
-          source-path: deploy-package
+          protocol: ftp
+          timeout: 120000
+          server-dir: .
+          local-dir: deploy-package
