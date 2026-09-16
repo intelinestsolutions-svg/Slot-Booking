@@ -12,9 +12,9 @@ window.APP = {
   tokenKey: 'sabahbuskers_token',
   userKey: 'sabahbuskers_user',
   langKey: 'sabahbuskers_lang',
-  buildName: '1.3-beta',
-  buildCode: 5,
-  webBuild: '20261026',
+  buildName: '1.4-beta',
+  buildCode: 6,
+  webBuild: '20261027',
   updateUrl: 'https://apps.sabahbuskers.my/version.json',
   downloadUrl: 'https://apps.sabahbuskers.my/sbc-mobile.apk',
   sessions: { 'Slot 1': { label: 'Pagi', time: '06:30–12:00' }, 'Slot 2': { label: 'Petang', time: '14:00–17:30' }, 'Slot 3': { label: 'Malam', time: '17:30–21:00' } },
@@ -33,15 +33,15 @@ if (window.APP.isMobile) {
 }
 
 if (window.APP.isNative) {
-  window.APP.apiPrefix = 'https://ghostwhite-bee-423431.hostingersite.com/api/';
+  window.APP.apiPrefix = 'https://apps.sabahbuskers.my/api/';
   document.documentElement.classList.add('is-native');
 }
 
 window.APP.abs = function (p) {
   if (!p || !window.APP.isNative) return p;
   if (/^https?:\/\//i.test(p)) return p;
-  if (p.startsWith('/')) return 'https://ghostwhite-bee-423431.hostingersite.com' + p;
-  return 'https://ghostwhite-bee-423431.hostingersite.com/' + p;
+  if (p.startsWith('/')) return 'https://apps.sabahbuskers.my' + p;
+  return 'https://apps.sabahbuskers.my/' + p;
 };
 
 window.LOCALE = {
