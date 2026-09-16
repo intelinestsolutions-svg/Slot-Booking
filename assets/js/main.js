@@ -73,6 +73,11 @@
     const yearEl = document.getElementById('year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+    setTimeout(function () {
+      const l = document.getElementById('loader');
+      if (l) l.classList.add('done');
+    }, 12000);
+
     if (window.APP.isNative) {
       const lt = document.querySelector('.loader-title a');
       if (lt) lt.setAttribute('href', '?page=landing');

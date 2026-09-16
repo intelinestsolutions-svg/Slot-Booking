@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261027",
+  "webVersion": "20261028",
   "android": {
-    "version": "1.4-beta",
-    "versionCode": 6,
+    "version": "1.5-beta",
+    "versionCode": 7,
     "url": "https://apps.sabahbuskers.my/sbc-mobile.apk",
-    "notes": "Pembetulan log masuk apl Android (API disambung ke domain rasmi apps.sabahbuskers.my)."
+    "notes": "Kestabilan: muat turun pantas + preloader tidak lagi tersekat apabila sambungan perlahan (timeout API 15s)."
   },
   "updatedAt": "2026-09-16"
 }

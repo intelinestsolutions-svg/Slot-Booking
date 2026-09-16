@@ -21,11 +21,25 @@
       headers['X-Auth-Token'] = token;
     }
 
-    const res = await fetch(url, {
-      method,
-      headers,
-      body: method === 'POST' && body ? JSON.stringify(body) : undefined,
-    });
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 15000);
+
+    let res;
+    try {
+      res = await fetch(url, {
+        method,
+        headers,
+        body: method === 'POST' && body ? JSON.stringify(body) : undefined,
+        signal: ctrl.signal,
+      });
+    } catch (e) {
+      if (e && e.name === 'AbortError') {
+        throw new Error('Sambungan ke pelayan mengambil masa terlalu lama. Sila cuba semula.');
+      }
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
 
     let data = null;
     try { data = await res.json(); } catch (e) { data = null; }
