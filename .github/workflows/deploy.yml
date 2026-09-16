@@ -21,6 +21,7 @@ jobs:
           cp -R api deploy-package/
           cp version.json deploy-package/
           cp .htaccess deploy-package/ 2>/dev/null || true
+          cp maintenance.html deploy-package/ 2>/dev/null || true
           cp sbc-mobile.apk deploy-package/ 2>/dev/null || true
           cp data/.htaccess deploy-package/data/.htaccess 2>/dev/null || true
           test -f deploy-package/index.html && echo "package ok" || exit 1
@@ -36,3 +37,5 @@ jobs:
           timeout: 120000
           server-dir: /
           local-dir: deploy-package/
+          exclude: |
+            **/.maintenance

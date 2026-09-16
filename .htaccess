@@ -4,6 +4,16 @@ SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 
 Options -Indexes
 
+# ---- MAINTENANCE MODE ----
+# Toggle: upload a file named `.maintenance` into the site root (public_html)
+# to show maintenance.html; delete it to go live again.
+# (maintenance.html lives next to this file; assets/api stay reachable for the page.)
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^/maintenance\.html$
+RewriteCond %{REQUEST_URI} !^/assets/
+RewriteCond %{DOCUMENT_ROOT}/.maintenance -f
+RewriteRule ^(.*)$ /maintenance.html [R=302,L]
+
 # Serve Android APK with the correct MIME type and force download.
 <IfModule mod_mime.c>
   AddType application/vnd.android.package-archive .apk
