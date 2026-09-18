@@ -39,3 +39,11 @@ jobs:
           local-dir: deploy-package/
           exclude: |
             **/.maintenance
+
+      - name: Remove stale api/partner.php from server
+        run: |
+          curl -sS --max-time 60 --ftp-pasv \
+            --user "${{ secrets.HOSTINGER_USERNAME }}:${{ secrets.HOSTINGER_PASSWORD }}" \
+            -Q "DELE /api/partner.php" \
+            "ftp://${{ secrets.HOSTINGER_HOST }}/" \
+            && echo "stale partner.php deleted" || echo "delete skipped (already gone or no permission)"
