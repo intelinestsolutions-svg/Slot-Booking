@@ -4,7 +4,7 @@
 
   window.viewLogin = function (q) {
     const role = q.page === 'admin_login' ? 'admin' : q.page === 'partner_login' ? 'partner' : 'busker';
-    const tabNames = { busker: 'Busker', admin: 'Admin', partner: 'Rakan' };
+    const tabNames = { busker: 'Busker', admin: 'Admin' };
     const tabs = Object.keys(tabNames).map(r =>
       `<button class="auth-tab ${r === role ? 'active' : ''}" data-role="${r}">${tabNames[r]}</button>`).join('');
 
