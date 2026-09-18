@@ -145,7 +145,7 @@
     let slots = [], buskers = [];
     try {
       const [r, buskersRes] = await Promise.all([
-        API.partner.dashboard(),
+        API.admin.slotSchedule(),
         API.admin.listBuskers().catch(() => ({ buskers: [] })),
       ]);
       slots = r.slots || [];
@@ -190,7 +190,7 @@
 
     box.querySelectorAll('.st-select').forEach(sel => sel.addEventListener('change', async () => {
       try {
-        await API.partner.setStatus({ slotId: Number(sel.dataset.slot), status: sel.value });
+        await API.admin.setSlotStatus({ slotId: Number(sel.dataset.slot), status: sel.value });
         UI.toast('Status slot dikemas kini.', 'ok');
         Router.replace('pengurusan-slot');
       } catch (e) {

@@ -6,9 +6,7 @@
     login: 'viewLogin',
     'busker_login': 'viewLogin',
     'admin_login': 'viewLogin',
-    'partner_login': 'viewLogin',
     register: 'viewRegister',
-    'partner-register': 'viewPartnerRegister',
     'busker-landing': 'viewLanding',
     'cari-slot': 'viewCariSlot',
     'slot-booking': 'viewSlotBooking',
@@ -24,7 +22,6 @@
     pricing: 'viewPricing',
     terms: 'viewTerms',
     premium: 'viewPremium',
-    'partner-dashboard': 'viewPartnerDashboard',
     'admin-dashboard': 'viewAdmin',
     'admin-finance': 'viewAdminFinance',
     'pengurusan-slot': 'viewAdminSlots',
@@ -82,8 +79,8 @@
       if (['slot-booking', 'tempahan-saya', 'profil', 'performance-dashboard', 'inbox', 'tools', 'bersedia'].includes(page) && user && user.role && user.role !== 'busker') {
         return this.go('landing');
       }
-      if (page === 'partner-dashboard' && (!user || (user.role !== 'partner' && user.role !== 'admin'))) {
-        return this.go('partner_login', { next: 'partner-dashboard' });
+      if (page === 'admin-dashboard' && user && user.role !== 'admin') {
+        return this.go('admin_login');
       }
 
       if (typeof window[viewFn] !== 'function') {
@@ -135,13 +132,6 @@
         return [
           ['?page=admin-dashboard', 'Panel Admin'],
           ['?page=admin-finance', 'Kewangan'],
-          ['?page=pengurusan-slot', 'Slot'],
-          ['?page=kemaskini-profil', 'Profil'],
-        ];
-      }
-      if (role === 'partner') {
-        return [
-          ['?page=partner-dashboard', 'Panel Rakan'],
           ['?page=pengurusan-slot', 'Slot'],
           ['?page=kemaskini-profil', 'Profil'],
         ];
@@ -216,8 +206,6 @@
           login: 'profil',
           register: 'profil',
           'premium': 'tools',
-          'partner-dashboard': 'profil',
-          'partner-register': 'profil',
           'admin-dashboard': 'profil',
           'admin-finance': 'profil',
           'pengurusan-slot': 'profil',

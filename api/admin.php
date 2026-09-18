@@ -122,6 +122,35 @@ switch ($action) {
         ok(['isPremium' => true, 'premiumExpiresAt' => $exp]);
         break;
 
+    case 'slots_schedule':
+        admin_only($pdo);
+        $today = date('Y-m-d');
+        $weekEnd = date('Y-m-d', strtotime('+7 days'));
+        $stmt = $pdo->prepare("SELECT s.id, s.date, s.startTime, s.endTime, s.status, s.price,
+                l.name AS locationName, l.area, u.stageName, u.id AS buskerId
+            FROM slots s
+            JOIN locations l ON l.id = s.locationId
+            LEFT JOIN bookings b ON b.slotId = s.id AND b.status IN ('pending','confirmed','completed')
+            LEFT JOIN users u ON u.id = b.userId
+            WHERE s.date BETWEEN ? AND ?
+            ORDER BY s.date, s.startTime");
+        $stmt->execute([$today, $weekEnd]);
+        ok(['slots' => $stmt->fetchAll()]);
+        break;
+
+    case 'slot_status':
+        admin_only($pdo);
+        $d = body();
+        $slotId = (int)($d['slotId'] ?? 0);
+        $status = $d['status'] ?? '';
+        $allowed = ['Tersedia', 'Ditempah', 'Dibatalkan', 'Selesai'];
+        if (!$slotId || !in_array($status, $allowed, true)) {
+            fail('Parameter tidak sah.');
+        }
+        $pdo->prepare("UPDATE slots SET status=? WHERE id=?")->execute([$status, $slotId]);
+        ok();
+        break;
+
     case 'buskers':
         admin_only($pdo);
         $stmt = $pdo->query("SELECT id, stageName, fullName, phone, email

@@ -4,7 +4,7 @@
   function file(kind) {
     const map = {
       auth: 'auth.php', slots: 'slots.php', bookings: 'bookings.php',
-      community: 'community.php', partner: 'partner.php', admin: 'admin.php',
+      community: 'community.php', admin: 'admin.php',
       prayer: 'prayer.php', premium: 'premium.php',
     };
     return map[kind] || kind;
@@ -89,7 +89,6 @@
       pay: (b) => call('bookings', 'pay', { method: 'POST', body: b }),
       confirmAttendance: (b) => call('bookings', 'confirm_attendance', { method: 'POST', body: b }),
       verifyReturn: (params) => call('bookings', 'verify_return', { params }),
-      partnerList: () => call('bookings', 'partner_bookings'),
     },
     community: {
       buskers: () => call('community', 'busker_list'),
@@ -105,11 +104,6 @@
       verifyReturn: (params) => call('premium', 'verify_return', { params }),
       history: () => call('premium', 'history'),
     },
-    partner: {
-      dashboard: () => call('partner', 'dashboard'),
-      setStatus: (b) => call('partner', 'set_status', { method: 'POST', body: b }),
-      register: (b) => call('partner', 'partner_registration', { method: 'POST', body: b }),
-    },
     prayer: {
       today: () => call('prayer', 'today'),
     },
@@ -121,6 +115,8 @@
       listBuskers: () => call('admin', 'buskers'),
       assignBusker: (b) => call('admin', 'assign_busker', { method: 'POST', body: b }),
       setPremium: (b) => call('admin', 'set_premium', { method: 'POST', body: b }),
+      slotSchedule: () => call('admin', 'slots_schedule'),
+      setSlotStatus: (b) => call('admin', 'slot_status', { method: 'POST', body: b }),
     },
   };
 

@@ -304,23 +304,6 @@ switch ($action) {
         ok(['status' => 'confirmed']);
         break;
 
-    case 'partner_bookings':
-        $user = require_user($pdo);
-        if ($user['role'] !== 'partner' && $user['role'] !== 'admin') {
-            fail('Akses ditolak.', 403);
-        }
-        $today = date('Y-m-d');
-        $sql = "SELECT b.*, s.date AS slotDate, s.startTime, s.endTime, l.name AS locationName
-            FROM bookings b
-            JOIN slots s ON s.id = b.slotId
-            JOIN locations l ON l.id = b.locationId
-            WHERE s.date >= ? AND b.status IN ('pending','confirmed','completed')
-            ORDER BY s.date, s.startTime";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$today]);
-        ok(['bookings' => $stmt->fetchAll()]);
-        break;
-
     default:
         fail('Action tidak dikenali: ' . $action);
 }
