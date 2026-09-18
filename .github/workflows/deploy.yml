@@ -57,10 +57,12 @@ jobs:
           ftp.connect(host, port, timeout=60)
           ftp.login(user, pwd)
           try:
-              ftp.delete("/api/partner.php")
-              print("stale partner.php deleted")
-          except ftplib.error_perm as e:
-              print("delete skipped:", e)
+              for d in ["/", "/api"]:
+                  try:
+                      ftp.cwd(d)
+                      print(d, "->", ftp.nlst())
+                  except Exception as e:
+                      print(d, "ERROR", e)
           finally:
               try:
                   ftp.quit()
