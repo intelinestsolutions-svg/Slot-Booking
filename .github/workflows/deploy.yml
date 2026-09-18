@@ -39,3 +39,36 @@ jobs:
           local-dir: deploy-package/
           exclude: |
             **/.maintenance
+
+      - name: Purge stale api/partner.php copies from server
+        env:
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          PORT: ${{ secrets.HOSTINGER_PORT }}
+          USER: ${{ secrets.HOSTINGER_USERNAME }}
+          PASS: ${{ secrets.HOSTINGER_PASSWORD }}
+        run: |
+          python3 - <<'EOF'
+          import ftplib, os
+          host = os.environ["HOST"]
+          port = int(os.environ["PORT"])
+          user = os.environ["USER"]
+          pwd = os.environ["PASS"]
+          ftp = ftplib.FTP_TLS()
+          ftp.connect(host, port, timeout=60)
+          ftp.login(user, pwd)
+          for target in ["/api", "/public_html/api"]:
+              try:
+                  ftp.cwd(target)
+                  names = ftp.nlst()
+                  if "partner.php" in names:
+                      ftp.delete("partner.php")
+                      print("deleted partner.php at", target)
+                  else:
+                      print("no partner.php at", target)
+              except Exception as e:
+                  print("skipped", target, "->", e)
+          try:
+              ftp.quit()
+          except Exception:
+              pass
+          EOF

@@ -151,17 +151,6 @@ switch ($action) {
         ok();
         break;
 
-    case 'asset_cleanup':
-        $d = body();
-        if (($d['setupKey'] ?? '') !== VERIFY_TOKEN) {
-            admin_only($pdo);
-        }
-        $path = __DIR__ . '/partner.php';
-        $existed = is_file($path);
-        $deleted = $existed ? @unlink($path) : false;
-        ok(['existed' => $existed, 'deleted' => (bool)$deleted]);
-        break;
-
     case 'buskers':
         admin_only($pdo);
         $stmt = $pdo->query("SELECT id, stageName, fullName, phone, email
