@@ -42,8 +42,8 @@ jobs:
 
       - name: Remove stale api/partner.php from server
         run: |
-          curl -sS --max-time 60 --connect-timeout 20 --ftp-pasv --ssl-reqd -k \
+          curl -sS --max-time 60 --connect-timeout 20 --ftp-pasv -k \
             --user "${{ secrets.HOSTINGER_USERNAME }}:${{ secrets.HOSTINGER_PASSWORD }}" \
             -Q "DELE /api/partner.php" \
-            "ftp://${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PORT }}/" \
+            "ftps://${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PORT }}/" \
             && echo "stale partner.php deleted" || echo "delete skipped (already gone or no permission)"
