@@ -57,12 +57,14 @@ jobs:
           ftp.connect(host, port, timeout=60)
           ftp.login(user, pwd)
           try:
-              for d in ["/", "/api"]:
+              print("initial pwd:", ftp.pwd())
+              for d in ["", "/", "public_html", "/public_html", "/api", "api", "/public_html/api", "public_html/api"]:
                   try:
                       ftp.cwd(d)
-                      print(d, "->", ftp.nlst())
+                      items = ftp.nlst()
+                      print("CWD:", ftp.pwd(), "count:", len(items), "local:", [x for x in items if "local" in x], "partner:", [x for x in items if "partner" in x])
                   except Exception as e:
-                      print(d, "ERROR", e)
+                      print("CWD", d, "ERROR", e)
           finally:
               try:
                   ftp.quit()
