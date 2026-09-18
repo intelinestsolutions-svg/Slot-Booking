@@ -63,48 +63,6 @@ switch ($action) {
         ok(['transactions' => $stmt->fetchAll()]);
         break;
 
-    case 'kkia_departure_init':
-        $d = body();
-        if (($d['setupKey'] ?? '') !== VERIFY_TOKEN) {
-            fail('Setup key tidak sah.', 403);
-        }
-        $pdo->prepare("UPDATE locations SET name='KKIA Arrival',
-            description='Lapangan Terbang Antarabangsa Kota Kinabalu — Kawasan Arrival. Slot 4 jam setiap hari.'
-            WHERE slug='kkia'")->execute();
-
-        $stmt = $pdo->prepare("SELECT id FROM locations WHERE slug='kkia-departure'");
-        $stmt->execute();
-        $dep = $stmt->fetch();
-        if (!$dep) {
-            $pdo->prepare("INSERT INTO locations (slug,name,area,city,state,pbt,tier,lat,lng,description)
-                VALUES ('kkia-departure','KKIA Departure','KKIA','Kota Kinabalu','Sabah','DBKK','Coldspot',5.9444,116.0556,
-                'Lapangan Terbang Antarabangsa Kota Kinabalu — Kawasan Departure. Slot 4 jam setiap hari.')")->execute();
-            $depId = $pdo->lastInsertId();
-        } else {
-            $depId = $dep['id'];
-        }
-
-        $everyday = 'Mon,Tue,Wed,Thu,Fri,Sat,Sun';
-        $slotsDef = [
-            ['08:00', '12:00', 'Pagi'],
-            ['12:00', '16:00', 'Tengah Hari'],
-            ['16:00', '20:00', 'Petang'],
-        ];
-        $has = $pdo->prepare("SELECT id FROM slotTemplates WHERE locationId=? AND startTime=?");
-        $ins = $pdo->prepare("INSERT INTO slotTemplates (locationId,days,startTime,endTime,price,sessionLabel)
-            VALUES (?,?,?,?,?,?)");
-        $added = 0;
-        foreach ($slotsDef as $def) {
-            [$start, $end, $label] = $def;
-            $has->execute([$depId, $start]);
-            if (!$has->fetch()) {
-                $ins->execute([$depId, $everyday, $start, $end, 5.00, $label]);
-                $added++;
-            }
-        }
-        ok(['departureLocationId' => $depId, 'templatesAdded' => $added]);
-        break;
-
     case 'register_admin':
         $d = body();
         $setupKey = $d['setupKey'] ?? '';
