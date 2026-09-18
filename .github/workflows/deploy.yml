@@ -42,7 +42,7 @@ jobs:
 
       - name: Remove stale api/partner.php from server
         run: |
-          curl -sS --max-time 60 --ftp-pasv \
+          curl -sS --max-time 60 --ftp-pasv --ssl-reqd \
             --user "${{ secrets.HOSTINGER_USERNAME }}:${{ secrets.HOSTINGER_PASSWORD }}" \
             -Q "DELE /api/partner.php" \
             "ftp://${{ secrets.HOSTINGER_HOST }}/" \
