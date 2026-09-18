@@ -1,7 +1,7 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261032",
+  "webVersion": "20261033",
   "android": {
     "version": "1.6-beta",
     "versionCode": 8,

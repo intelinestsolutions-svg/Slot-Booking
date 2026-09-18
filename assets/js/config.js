@@ -14,7 +14,7 @@ window.APP = {
   langKey: 'sabahbuskers_lang',
   buildName: '1.6-beta',
   buildCode: 8,
-  webBuild: '20261032',
+  webBuild: '20261033',
   updateUrl: 'https://apps.sabahbuskers.my/version.json',
   downloadUrl: 'https://apps.sabahbuskers.my/sbc-mobile.apk',
   sessions: { 'Slot 1': { label: 'Pagi', time: '06:30–12:00' }, 'Slot 2': { label: 'Petang', time: '14:00–17:30' }, 'Slot 3': { label: 'Malam', time: '17:30–21:00' } },

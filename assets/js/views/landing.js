@@ -304,7 +304,8 @@
               <tr><td>Segama Waterfront (Dolphin)</td><td><span class="tag" style="background:rgba(61,220,151,.14);color:var(--ok);">Setiap hari</span></td><td>Petang (17:30–21:00)</td><td><b style="color:var(--gold)">RM 5</b></td></tr>
               <tr><td>Tanjung Lipat, Likas</td><td><span class="tag" style="background:rgba(61,220,151,.14);color:var(--ok);">Setiap hari</span></td><td>Petang (14:00–17:30)</td><td><b style="color:var(--gold)">RM 5</b></td></tr>
               <tr><td>Tanjung Aru</td><td><span class="tag" style="background:rgba(61,220,151,.14);color:var(--ok);">Setiap hari</span></td><td>Petang–2000 (14:00–20:00)</td><td><b style="color:var(--gold)">RM 10</b></td></tr>
-              <tr><td>KKIA (Lapangan Terbang Antarabangsa KK)</td><td><span class="tag" style="background:rgba(61,220,151,.14);color:var(--ok);">Setiap hari</span></td><td>0800–1200; 1200–1600; 1600–2000; 2000–0000</td><td><b style="color:var(--gold)">RM 5</b></td></tr>
+              <tr><td>KKIA Arrival</td><td><span class="tag" style="background:rgba(61,220,151,.14);color:var(--ok);">Setiap hari</span></td><td>0800–1200; 1200–1600; 1600–2000; 2000–0000</td><td><b style="color:var(--gold)">RM 5</b></td></tr>
+              <tr><td>KKIA Departure</td><td><span class="tag" style="background:rgba(61,220,151,.14);color:var(--ok);">Setiap hari</span></td><td>0800–1200; 1200–1600; 1600–2000</td><td><b style="color:var(--gold)">RM 5</b></td></tr>
             </tbody>
           </table>
         </div>

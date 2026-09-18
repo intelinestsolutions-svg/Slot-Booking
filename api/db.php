@@ -214,8 +214,10 @@ function seed(PDO $pdo): void
              'tier' => 'Coldspot','description' => 'Taman tepi pantai Tanjung Lipat, Likas. Ramai penduduk sekitar, petang.'],
             ['slug' => 'tanjung-aru','name' => 'Tanjung Aru','area' => 'Tanjung Aru','pbt' => 'DBKK','lat' => 5.9478,'lng' => 116.0517,
              'tier' => 'Hotspot','description' => 'Pantai Tanjung Aru. Visitor dan pelancong ramai sehingga matahari terbenam.'],
-            ['slug' => 'kkia','name' => 'KKIA (Lapangan Terbang Antarabangsa KK)','area' => 'KKIA','pbt' => 'DBKK','lat' => 5.9444,'lng' => 116.0556,
-             'tier' => 'Coldspot','description' => 'Lapangan Terbang Antarabangsa Kota Kinabalu. Slot 4 jam setiap hari.'],
+            ['slug' => 'kkia','name' => 'KKIA Arrival','area' => 'KKIA','pbt' => 'DBKK','lat' => 5.9444,'lng' => 116.0556,
+             'tier' => 'Coldspot','description' => 'Lapangan Terbang Antarabangsa Kota Kinabalu — Kawasan Arrival. Slot 4 jam setiap hari.'],
+            ['slug' => 'kkia-departure','name' => 'KKIA Departure','area' => 'KKIA','pbt' => 'DBKK','lat' => 5.9444,'lng' => 116.0556,
+             'tier' => 'Coldspot','description' => 'Lapangan Terbang Antarabangsa Kota Kinabalu — Kawasan Departure. Slot 4 jam setiap hari.'],
         ];
 
         $stmt = $pdo->prepare("INSERT INTO locations (slug,name,area,city,state,pbt,tier,lat,lng,description) VALUES (?,?,?,?,?,?,?,?,?,?)");
@@ -244,6 +246,9 @@ function seed(PDO $pdo): void
         $templates[] = [$locIds['kkia'], implode(',', $everyday), '12:00', '16:00', 5.00, 'Tengah Hari'];
         $templates[] = [$locIds['kkia'], implode(',', $everyday), '16:00', '20:00', 5.00, 'Petang'];
         $templates[] = [$locIds['kkia'], implode(',', $everyday), '20:00', '00:00', 5.00, 'Malam'];
+        $templates[] = [$locIds['kkia-departure'], implode(',', $everyday), '08:00', '12:00', 5.00, 'Pagi'];
+        $templates[] = [$locIds['kkia-departure'], implode(',', $everyday), '12:00', '16:00', 5.00, 'Tengah Hari'];
+        $templates[] = [$locIds['kkia-departure'], implode(',', $everyday), '16:00', '20:00', 5.00, 'Petang'];
 
         $tStmt = $pdo->prepare("INSERT INTO slotTemplates (locationId,days,startTime,endTime,price,sessionLabel) VALUES (?,?,?,?,?,?)");
         foreach ($templates as $t) {
