@@ -39,35 +39,3 @@ jobs:
           local-dir: deploy-package/
           exclude: |
             **/.maintenance
-
-      - name: Remove stale api/partner.php from server
-        env:
-          HOST: ${{ secrets.HOSTINGER_HOST }}
-          PORT: ${{ secrets.HOSTINGER_PORT }}
-          USER: ${{ secrets.HOSTINGER_USERNAME }}
-          PASS: ${{ secrets.HOSTINGER_PASSWORD }}
-        run: |
-          python3 - <<'EOF'
-          import ftplib, os
-          host = os.environ["HOST"]
-          port = int(os.environ["PORT"])
-          user = os.environ["USER"]
-          pwd = os.environ["PASS"]
-          ftp = ftplib.FTP_TLS()
-          ftp.connect(host, port, timeout=60)
-          ftp.login(user, pwd)
-          try:
-              print("initial pwd:", ftp.pwd())
-              for d in ["", "/", "public_html", "/public_html", "/api", "api", "/public_html/api", "public_html/api"]:
-                  try:
-                      ftp.cwd(d)
-                      items = ftp.nlst()
-                      print("CWD:", ftp.pwd(), "count:", len(items), "local:", [x for x in items if "local" in x], "partner:", [x for x in items if "partner" in x])
-                  except Exception as e:
-                      print("CWD", d, "ERROR", e)
-          finally:
-              try:
-                  ftp.quit()
-              except Exception:
-                  pass
-          EOF
