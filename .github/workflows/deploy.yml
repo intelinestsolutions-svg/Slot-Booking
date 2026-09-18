@@ -41,9 +41,29 @@ jobs:
             **/.maintenance
 
       - name: Remove stale api/partner.php from server
+        env:
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          PORT: ${{ secrets.HOSTINGER_PORT }}
+          USER: ${{ secrets.HOSTINGER_USERNAME }}
+          PASS: ${{ secrets.HOSTINGER_PASSWORD }}
         run: |
-          curl -sS --max-time 60 --connect-timeout 20 --ftp-pasv -k \
-            --user "${{ secrets.HOSTINGER_USERNAME }}:${{ secrets.HOSTINGER_PASSWORD }}" \
-            -Q "DELE /api/partner.php" \
-            "ftps://${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PORT }}/" \
-            && echo "stale partner.php deleted" || echo "delete skipped (already gone or no permission)"
+          python3 - <<'EOF'
+          import ftplib, os
+          host = os.environ["HOST"]
+          port = int(os.environ["PORT"])
+          user = os.environ["USER"]
+          pwd = os.environ["PASS"]
+          ftp = ftplib.FTP_TLS()
+          ftp.connect(host, port, timeout=60)
+          ftp.login(user, pwd)
+          try:
+              ftp.delete("/api/partner.php")
+              print("stale partner.php deleted")
+          except ftplib.error_perm as e:
+              print("delete skipped:", e)
+          finally:
+              try:
+                  ftp.quit()
+              except Exception:
+                  pass
+          EOF
