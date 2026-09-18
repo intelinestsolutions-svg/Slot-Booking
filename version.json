@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261029",
+  "webVersion": "20261030",
   "android": {
-    "version": "1.5-beta",
-    "versionCode": 7,
+    "version": "1.6-beta",
+    "versionCode": 8,
     "url": "https://apps.sabahbuskers.my/sbc-mobile.apk",
-    "notes": "Kestabilan: muat turun pantas + preloader tidak lagi tersekat apabila sambungan perlahan (timeout API 15s)."
+    "notes": "Baharu: Keahlian Premium (RM120/bulan), ulasan bintang untuk lokasi, dan panel rakan/penyelia lokasi."
   },
-  "updatedAt": "2026-09-16"
+  "updatedAt": "2026-09-18"
 }

@@ -5,7 +5,7 @@
     const map = {
       auth: 'auth.php', slots: 'slots.php', bookings: 'bookings.php',
       community: 'community.php', partner: 'partner.php', admin: 'admin.php',
-      prayer: 'prayer.php',
+      prayer: 'prayer.php', premium: 'premium.php',
     };
     return map[kind] || kind;
   }
@@ -96,6 +96,14 @@
       notifications: () => call('community', 'notifications'),
       markRead: () => call('community', 'mark_read', { method: 'POST' }),
       stats: () => call('community', 'stats'),
+      locationReviews: (locationId) => call('community', 'location_reviews', { params: { locationId } }),
+      addReview: (b) => call('community', 'add_review', { method: 'POST', body: b }),
+    },
+    premium: {
+      status: () => call('premium', 'status'),
+      subscribe: () => call('premium', 'subscribe', { method: 'POST' }),
+      verifyReturn: (params) => call('premium', 'verify_return', { params }),
+      history: () => call('premium', 'history'),
     },
     partner: {
       dashboard: () => call('partner', 'dashboard'),
@@ -112,6 +120,7 @@
       registerAdmin: (b) => call('admin', 'register_admin', { method: 'POST', body: b }),
       listBuskers: () => call('admin', 'buskers'),
       assignBusker: (b) => call('admin', 'assign_busker', { method: 'POST', body: b }),
+      setPremium: (b) => call('admin', 'set_premium', { method: 'POST', body: b }),
     },
   };
 

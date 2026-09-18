@@ -12,7 +12,9 @@ switch ($action) {
         $area = $_GET['area'] ?? '';
         $sql = "SELECT l.*,
                     COALESCE((SELECT MIN(price) FROM slotTemplates t WHERE t.locationId=l.id),0) AS priceFrom,
-                    (SELECT GROUP_CONCAT(DISTINCT sessionLabel) FROM slotTemplates t WHERE t.locationId=l.id) AS sessions
+                    (SELECT GROUP_CONCAT(DISTINCT sessionLabel) FROM slotTemplates t WHERE t.locationId=l.id) AS sessions,
+                    (SELECT COUNT(*) FROM reviews r WHERE r.locationId=l.id) AS ratingCount,
+                    (SELECT ROUND(AVG(rating),1) FROM reviews r WHERE r.locationId=l.id) AS ratingAvg
                 FROM locations l WHERE l.isActive=1";
         $where = [];
         $vals = [];

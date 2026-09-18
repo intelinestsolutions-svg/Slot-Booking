@@ -59,6 +59,9 @@ function schema(PDO $pdo): void
     if (!in_array('avatar', $cols, true)) {
         $pdo->exec("ALTER TABLE users ADD COLUMN avatar TEXT");
     }
+    if (!in_array('premiumExpiresAt', $cols, true)) {
+        $pdo->exec("ALTER TABLE users ADD COLUMN premiumExpiresAt TEXT");
+    }
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS buskerApplications (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -166,6 +169,17 @@ function schema(PDO $pdo): void
         userId INTEGER,
         rating INTEGER,
         comment TEXT,
+        createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+    )");
+    $pdo->exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_location_user ON reviews (locationId, userId)");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS premiumPurchases (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER,
+        billCode TEXT UNIQUE,
+        amount REAL,
+        months INTEGER NOT NULL DEFAULT 1,
+        status TEXT NOT NULL DEFAULT 'pending',
         createdAt TEXT NOT NULL DEFAULT (datetime('now'))
     )");
 

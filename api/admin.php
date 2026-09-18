@@ -91,6 +91,37 @@ switch ($action) {
         ok(['token' => $token, 'user' => ['id' => $id, 'email' => $email, 'role' => 'admin']]);
         break;
 
+    case 'set_premium':
+        admin_only($pdo);
+        $d = body();
+        $userId = (int)($d['userId'] ?? 0);
+        $months = (int)($d['months'] ?? 0);
+        if (!$userId) {
+            fail('Parameter tidak sah.');
+        }
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE id=?");
+        $stmt->execute([$userId]);
+        $target = $stmt->fetch();
+        if (!$target) {
+            fail('Pengguna tidak dijumpai.');
+        }
+        if ($months <= 0) {
+            $pdo->prepare("UPDATE users SET isPremium=0, premiumExpiresAt=NULL WHERE id=?")->execute([$userId]);
+            $pdo->prepare("INSERT INTO notifications (userId,title,body) VALUES (?, 'Keahlian Premium Ditamatkan', 'Keahlian premium anda telah ditamatkan oleh admin.')")
+                ->execute([$userId]);
+            ok(['isPremium' => false]);
+            break;
+        }
+        $base = ($target['premiumExpiresAt'] ?? '') >= date('Y-m-d')
+            ? $target['premiumExpiresAt']
+            : date('Y-m-d');
+        $exp = date('Y-m-d', strtotime($base . ' +' . $months . ' months'));
+        $pdo->prepare("UPDATE users SET isPremium=1, premiumExpiresAt=? WHERE id=?")->execute([$exp, $userId]);
+        $pdo->prepare("INSERT INTO notifications (userId,title,body) VALUES (?, 'Keahlian Premium Diaktifkan', ?)")
+            ->execute([$userId, "Keahlian premium anda telah diaktifkan sehingga {$exp}."]);
+        ok(['isPremium' => true, 'premiumExpiresAt' => $exp]);
+        break;
+
     case 'buskers':
         admin_only($pdo);
         $stmt = $pdo->query("SELECT id, stageName, fullName, phone, email

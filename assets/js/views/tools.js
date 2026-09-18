@@ -37,6 +37,7 @@
         <div class="card tool-tile" data-tool="metronome"><div class="ico">⏱️</div><h3>Metronom</h3><p>Kekalkan tempo yang konsisten semasa berlatih.</p></div>
         <div class="card tool-tile" data-tool="bank"><div class="ico">🎵</div><h3>Bank Lagu</h3><p>Senarai set dan lagu penonton yang mudah dibawa.</p></div>
         <div class="card tool-tile" data-tool="gear"><div class="ico">🎒</div><h3>Senarai Semak Gear</h3><p>Pastikan semua kelengkapan dibawa sebelum keluar.</p></div>
+        <div class="card tool-tile" data-tool="premium"><div class="ico">⭐</div><h3>Keahlian Premium</h3><p>Naik taraf dan urus keahlian premium anda.</p></div>
       </div>`,
       { eyebrow: 'Kotak alat' });
   };
@@ -51,6 +52,7 @@
         else if (t === 'metronome') showMetronome();
         else if (t === 'bank') showBank();
         else if (t === 'gear') showGear();
+        else if (t === 'premium') Router.go('premium');
       });
     });
   };

@@ -92,13 +92,14 @@
         <div class="card price-card">
           <span class="tier tier-warm">⭐ Premium</span>
           <div class="price"><small>RM</small>120<small>/bulan</small></div>
-          <p style="font-size:12.5px;color:var(--muted);">coming soon</p>
+          <p style="font-size:12.5px;color:var(--muted);">untuk ahli berdaftar</p>
           <ul>
             <li>Tempahan slot tanpa had</li>
             <li>Badge Premium dan keutamaan hotspot</li>
             <li>Statistik persembahan lanjutan</li>
             <li>Pautan TikTok/Instagram ditaja</li>
           </ul>
+          <a class="btn btn-primary btn-block" href="?page=premium" style="margin-top:16px;">Naik Taraf</a>
         </div>
       </div>
 

@@ -64,13 +64,22 @@
               ${UI.badge(l.tier)}
               ${(l.sessions || '').split(',').filter(Boolean).map(s => `<span class="tier tier-warm" style="font-weight:700;padding:3px 10px;font-size:10px;">${UI.esc(s)}</span>`).join('')}
             </div>
+            ${Number(l.ratingCount || 0) > 0
+              ? `<div class="loc-rate" style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);margin-top:10px;">
+                  ${UI.stars(l.ratingAvg)}<span><b style="color:var(--gold)">${UI.esc(l.ratingAvg)}</b> · ${UI.esc(l.ratingCount)} ulasan</span>
+                </div>`
+              : `<div class="loc-rate" style="font-size:12.5px;color:var(--muted-2);margin-top:10px;">Belum ada ulasan — jadi yang pertama!</div>`}
             <div class="loc-foot">
               <div class="loc-price"><b>${UI.money(l.priceFrom)}</b><small> / sesi</small></div>
-              <a class="btn btn-${canBook ? 'primary' : 'ghost'} btn-sm" href="?page=slot-booking&locationId=${l.id}">${canBook ? 'Tempah Slot' : 'Lihat Slot'}</a>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-ghost btn-sm" data-review="${l.id}" data-name="${UI.esc(l.name)}">Ulasan</button>
+                <a class="btn btn-${canBook ? 'primary' : 'ghost'} btn-sm" href="?page=slot-booking&locationId=${l.id}">${canBook ? 'Tempah Slot' : 'Lihat Slot'}</a>
+              </div>
             </div>
           </div>
         </article>`).join('');
       RevealObserver && document.querySelectorAll('.reveal').forEach(el => RevealObserver.observe(el));
+      grid.querySelectorAll('[data-review]').forEach(btn => btn.addEventListener('click', () => UI.reviewsModal(Number(btn.dataset.review), btn.dataset.name)));
     };
 
     const filter = () => {

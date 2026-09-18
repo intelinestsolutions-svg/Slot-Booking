@@ -68,6 +68,8 @@
           <button class="btn btn-danger btn-sm" data-cancel="${b.id}">Batal</button>`);
       } else if (b.status === 'confirmed' && b.slotDate === today) {
         actions.push(`<button class="btn btn-primary btn-sm" data-attend="${b.id}">Sahkan Kehadiran</button>`);
+      } else if (b.status === 'completed') {
+        actions.push(`<button class="btn btn-ghost btn-sm" data-review="${b.locationId}" data-name="${UI.esc(b.locationName)}">⭐ Beri Ulasan</button>`);
       }
 
       const photo = b.attendancePhotoUrl
@@ -117,6 +119,8 @@
         UI.toast(e.message, 'err');
       }
     }));
+
+    box.querySelectorAll('[data-review]').forEach(btn => btn.addEventListener('click', () => UI.reviewsModal(Number(btn.dataset.review), btn.dataset.name || 'Lokasi')));
 
     box.querySelectorAll('[data-attend]').forEach(btn => btn.addEventListener('click', async () => {
       const url = (prompt('Pautan gambar kehadiran (URL foto) — contoh: https://...') || '').trim();

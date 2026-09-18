@@ -93,6 +93,14 @@
 
       ${u.verificationStatus !== 'approved' ? UI.notice('Akaun anda masih belum diluluskan admin. Kali terakhir dikemas kini semasa pendaftaran. Sila tunggu pengesahan atau hubungi sokongan.', 'info') : ''}
 
+      <div class="prem-cta" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px 18px;border-radius:18px;background:linear-gradient(120deg, rgba(212,175,55,.16), rgba(212,175,55,.05));border:1px solid rgba(212,175,55,.4);margin-bottom:20px;">
+        <div>
+          <b style="font-size:15px;">${u.isPremium ? '⭐ Anda ahli Premium' : '⭐ Keahlian Premium'}</b>
+          <p style="font-size:12.5px;color:var(--muted);margin-top:2px;">${u.isPremium ? `Aktif sehingga <b style="color:var(--gold)">${UI.esc(u.premiumExpiresAt || '')}</b>.` : 'Naik taraf untuk tempahan tanpa had, badge premium dan keutamaan hotspot.'}</p>
+        </div>
+        <a class="btn btn-${u.isPremium ? 'ghost' : 'primary'} btn-sm" href="?page=premium" style="white-space:nowrap;">${u.isPremium ? 'Urus Keahlian' : 'Naik Taraf'}</a>
+      </div>
+
       <div class="panel" style="margin-top:0;">
         <h3>Maklumat Akaun</h3>
         <div class="summary" style="margin-top:10px;">

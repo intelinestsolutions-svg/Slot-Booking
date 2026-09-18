@@ -862,3 +862,27 @@ table.data tr:hover td { background: rgba(255, 176, 58, 0.04); }
 .sbc-update--hide{opacity:0;pointer-events:none}
 .sbc-update--hide .sbc-update-card{transform:translateY(14px)}
 @keyframes sbcUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+/* Stars + premium (v1.6-beta) */
+.stars { display: inline-flex; gap: 2px; vertical-align: middle; line-height: 1; }
+.stars .star { color: rgba(255,255,255,.22); font-size: 15px; }
+.stars .star.filled { color: var(--gold); text-shadow: 0 0 8px rgba(242,180,65,.45); }
+
+.rv-star { background: transparent; border: 0; font-size: 26px; line-height: 1; color: rgba(255,255,255,.25); cursor: pointer; padding: 0 3px; transition: transform .12s ease, color .12s ease; }
+.rv-star:hover { transform: scale(1.18); }
+.rv-star[data-chosen="1"] { color: var(--gold); }
+
+.prem-card { position: relative; overflow: hidden; }
+.prem-card .price { margin: 4px 0 2px; }
+.prem-active { border-color: rgba(212,175,55,.55); background: linear-gradient(150deg, rgba(212,175,55,.10), transparent 60%); }
+.prem-badge { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: #0B1026; background: var(--gold); border-radius: 999px; padding: 4px 12px; margin-bottom: 10px; }
+.prem-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.prem-list li { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--ink-soft, #d7dcea); }
+.prem-ok { color: var(--gold); font-weight: 800; flex: 0 0 auto; }
+.prem-perk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.prem-perk { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--ink-soft, #d7dcea); background: rgba(212,175,55,.07); border: 1px solid rgba(212,175,55,.25); border-radius: 12px; padding: 10px 12px; }
+@media (max-width: 520px) { .prem-perk-grid { grid-template-columns: 1fr; } }
+
+.rv-modal .modal { width: min(560px, 100%); }
+.rv-item { padding-bottom: 12px; border-bottom: 1px dashed var(--line); }
+.rv-item:last-child { border-bottom: 0; padding-bottom: 0; }
+.st-select { background: var(--bg-1) !important; color: #fff !important; border-color: var(--line) !important; border-radius: 10px; }
