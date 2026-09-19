@@ -138,15 +138,9 @@ switch ($action) {
         if ($email === '' || $password === '') {
             fail('Sila isi email dan kata laluan.');
         }
-        $stmt = $pdo->prepare("SELECT id,email,role,fullName,stageName,phone,avatar,city,state,verificationStatus,isActive FROM users WHERE email = ?");
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
-        $user = $stmt->fetch();
-        $full = $user;
-        if (!$user) {
-            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-            $stmt->execute([$email]);
-            $full = $stmt->fetch();
-        }
+        $full = $stmt->fetch();
         if (!$full || !$full['password'] || !password_verify($password, $full['password'])) {
             fail('Email atau kata laluan salah.', 401);
         }
