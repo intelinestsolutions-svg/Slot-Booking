@@ -40,6 +40,33 @@ jobs:
           exclude: |
             **/.maintenance
 
+      - name: Probe FTP layout (temp)
+        env:
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          PORT: ${{ secrets.HOSTINGER_PORT }}
+          USER: ${{ secrets.HOSTINGER_USERNAME }}
+          PASS: ${{ secrets.HOSTINGER_PASSWORD }}
+        run: |
+          python3 - <<'EOF'
+          import ftplib, os
+          host = os.environ["HOST"]; port = int(os.environ["PORT"])
+          ftp = ftplib.FTP_TLS(); ftp.connect(host, port, timeout=60)
+          ftp.login(os.environ["USER"], os.environ["PASS"])
+          def show(label, d):
+              try:
+                  ftp.cwd(d); names = ftp.nlst()
+                  print(label, "->", ftp.pwd(), "items:", sorted(names))
+              except Exception as e:
+                  print(label, "->", d, "ERROR", e)
+          for d in ["", "/", "/public_html", "/domains",
+                    "/domains/sabahbuskers.my", "/domains/sabahbuskers.my/public_html",
+                    "/domains/apps.sabahbuskers.my", "/domains/apps.sabahbuskers.my/public_html",
+                    "/public_html/apps", "/apps", "/apps.sabahbuskers.my"]:
+              show("LIVE", d)
+          try: ftp.quit()
+          except Exception: pass
+          EOF
+
       - name: Purge stale api/partner.php copies from server
         env:
           HOST: ${{ secrets.HOSTINGER_HOST }}
