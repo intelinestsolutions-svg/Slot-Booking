@@ -79,3 +79,32 @@ jobs:
           except Exception:
               pass
           EOF
+
+      - name: "Probe: locate marketplace dir & shared DB (temporary)"
+        env:
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          PORT: ${{ secrets.HOSTINGER_PORT }}
+          USER: ${{ secrets.HOSTINGER_USERNAME }}
+          PASS: ${{ secrets.HOSTINGER_PASSWORD }}
+        run: |
+          python3 - <<'EOF'
+          import ftplib, os
+          ftp = ftplib.FTP_TLS()
+          ftp.connect(os.environ["HOST"], int(os.environ["PORT"]), timeout=60)
+          ftp.login(os.environ["USER"], os.environ["PASS"])
+          def probe(d):
+              try:
+                  ftp.cwd(d)
+                  items = [x for x in ftp.nlst() if x not in (".","..")]
+                  print("DIR:", d, "->", items)
+              except Exception as e:
+                  print("DIR:", d, "ERROR", e)
+          for d in ["/", "/public_html", "/data", "/public_html/data",
+                    "/marketplace", "/public_html/marketplace",
+                    "/api", "/public_html/api"]:
+              probe(d)
+          try:
+              ftp.quit()
+          except Exception:
+              pass
+          EOF
