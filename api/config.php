@@ -36,6 +36,10 @@ if (!defined('VERIFY_TOKEN')) {
     define('VERIFY_TOKEN', 'change-me-to-a-secret-passphrase');
 }
 
+if (!defined('MPK_VERIFY_KEY')) {
+    define('MPK_VERIFY_KEY', '');
+}
+
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 session_start();

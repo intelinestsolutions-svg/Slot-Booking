@@ -127,6 +127,46 @@ switch ($action) {
         ok();
         break;
 
+    case 'mpk_verify':
+        $d = body();
+        $email = strtolower(trim($d['email'] ?? ''));
+        $password = (string)($d['password'] ?? '');
+        $key = (string)($d['key'] ?? '');
+        if (!defined('MPK_VERIFY_KEY') || MPK_VERIFY_KEY === '' || $key === '' || !hash_equals(MPK_VERIFY_KEY, $key)) {
+            fail('Kebenaran ditolak.', 403);
+        }
+        if ($email === '' || $password === '') {
+            fail('Sila isi email dan kata laluan.');
+        }
+        $stmt = $pdo->prepare("SELECT id,email,role,fullName,stageName,phone,avatar,city,state,verificationStatus,isActive FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+        $full = $user;
+        if (!$user) {
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            $full = $stmt->fetch();
+        }
+        if (!$full || !$full['password'] || !password_verify($password, $full['password'])) {
+            fail('Email atau kata laluan salah.', 401);
+        }
+        ok([
+            'user' => [
+                'id' => (int)($full['id'] ?? 0),
+                'email' => $full['email'],
+                'role' => $full['role'],
+                'fullName' => $full['fullName'],
+                'stageName' => $full['stageName'],
+                'phone' => $full['phone'],
+                'avatar' => $full['avatar'],
+                'city' => $full['city'],
+                'state' => $full['state'],
+                'verificationStatus' => $full['verificationStatus'],
+                'isActive' => (int)$full['isActive'],
+            ],
+        ]);
+        break;
+
     case 'me':
         $user = require_user($pdo);
         ok(['user' => public_user_full($pdo, $user['id'])]);
