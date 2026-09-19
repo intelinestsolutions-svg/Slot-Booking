@@ -862,7 +862,7 @@ table.data tr:hover td { background: rgba(255, 176, 58, 0.04); }
 .sbc-update--hide{opacity:0;pointer-events:none}
 .sbc-update--hide .sbc-update-card{transform:translateY(14px)}
 @keyframes sbcUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-/* Stars + premium (v1.6-beta) */
+/* Stars + premium (v1.7.0-beta) */
 .stars { display: inline-flex; gap: 2px; vertical-align: middle; line-height: 1; }
 .stars .star { color: rgba(255,255,255,.22); font-size: 15px; }
 .stars .star.filled { color: var(--gold); text-shadow: 0 0 8px rgba(242,180,65,.45); }

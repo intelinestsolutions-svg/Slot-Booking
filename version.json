@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261033",
+  "webVersion": "20261034",
   "android": {
-    "version": "1.6-beta",
-    "versionCode": 8,
+    "version": "1.7.0-beta",
+    "versionCode": 9,
     "url": "https://apps.sabahbuskers.my/sbc-mobile.apk",
-    "notes": "Baharu: Keahlian Premium (RM120/bulan), ulasan bintang untuk lokasi, dan slot KKIA Departure."
+    "notes": "Baharu: Nombor WhatsApp untuk peringatan tempahan automatik 1 jam sebelum slot. Slot KKIA Departure masih tersedia."
   },
   "updatedAt": "2026-09-19"
 }

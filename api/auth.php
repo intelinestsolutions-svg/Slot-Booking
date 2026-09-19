@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/whatsapp.php';
 
 $action = $_GET['action'] ?? '';
 $pdo = db();
@@ -31,14 +32,19 @@ switch ($action) {
             fail('Email ini sudah didaftarkan.');
         }
 
+        $whatsapp = normalize_whatsapp((string)($d['whatsappNumber'] ?? ''));
+        if (($d['whatsappNumber'] ?? '') !== '' && $whatsapp === null) {
+            fail('Nombor WhatsApp tidak sah.');
+        }
+
         $appId = 'APP-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
 
         $pdo->beginTransaction();
         try {
             $stmt = $pdo->prepare("INSERT INTO users
                 (email, password, role, fullName, icNumber, phone, state, city, address, postcode,
-                 stageName, genre, description, instagram, tiktok, verificationStatus, isActive, token)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                 stageName, genre, description, instagram, tiktok, verificationStatus, isActive, token, whatsappNumber)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
             $token = bin2hex(random_bytes(24));
             $stmt->execute([
                 $email,
@@ -59,6 +65,7 @@ switch ($action) {
                 'pending',
                 0,
                 $token,
+                $whatsapp,
             ]);
             $userId = $pdo->lastInsertId();
 
@@ -128,7 +135,19 @@ switch ($action) {
     case 'update_profile':
         $user = require_user($pdo);
         $d = body();
-        $allowed = ['fullName', 'phone', 'city', 'address', 'postcode', 'stageName', 'genre', 'description', 'instagram', 'tiktok', 'language'];
+        if (array_key_exists('whatsappNumber', $d)) {
+            $raw = (string)$d['whatsappNumber'];
+            if ($raw === '') {
+                $d['whatsappNumber'] = '';
+            } else {
+                $wx = normalize_whatsapp($raw);
+                if ($wx === null) {
+                    fail('Nombor WhatsApp tidak sah.');
+                }
+                $d['whatsappNumber'] = $wx;
+            }
+        }
+        $allowed = ['fullName', 'phone', 'whatsappNumber', 'city', 'address', 'postcode', 'stageName', 'genre', 'description', 'instagram', 'tiktok', 'language'];
         $set = [];
         $vals = [];
         foreach ($allowed as $f) {
@@ -200,7 +219,7 @@ function public_user(PDO $pdo, int $id): array
 
 function public_user_full(PDO $pdo, int $id): array
 {
-    $stmt = $pdo->prepare("SELECT id,email,role,fullName,icNumber,phone,state,city,address,postcode,
+    $stmt = $pdo->prepare("SELECT id,email,role,fullName,icNumber,phone,whatsappNumber,state,city,address,postcode,
         stageName,genre,description,instagram,tiktok,verificationStatus,isActive,isPremium,isOku,language,avatar,createdAt,premiumExpiresAt
         FROM users WHERE id=?");
     $stmt->execute([$id]);

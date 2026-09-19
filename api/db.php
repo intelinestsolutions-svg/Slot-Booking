@@ -59,6 +59,9 @@ function schema(PDO $pdo): void
     if (!in_array('avatar', $cols, true)) {
         $pdo->exec("ALTER TABLE users ADD COLUMN avatar TEXT");
     }
+    if (!in_array('whatsappNumber', $cols, true)) {
+        $pdo->exec("ALTER TABLE users ADD COLUMN whatsappNumber TEXT");
+    }
     if (!in_array('premiumExpiresAt', $cols, true)) {
         $pdo->exec("ALTER TABLE users ADD COLUMN premiumExpiresAt TEXT");
     }
@@ -142,6 +145,17 @@ function schema(PDO $pdo): void
         buskerPhone TEXT,
         createdAt TEXT NOT NULL DEFAULT (datetime('now'))
     )");
+
+    $bcols = array_column($pdo->query("PRAGMA table_info(bookings)")->fetchAll(), 'name');
+    if (!in_array('reminderSent', $bcols, true)) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN reminderSent INTEGER NOT NULL DEFAULT 0");
+    }
+    if (!in_array('reminderSentAt', $bcols, true)) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN reminderSentAt TEXT");
+    }
+    if (!in_array('reminderAttempts', $bcols, true)) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN reminderAttempts INTEGER NOT NULL DEFAULT 0");
+    }
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

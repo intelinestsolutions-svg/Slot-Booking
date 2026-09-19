@@ -1,6 +1,6 @@
 {
   "name": "sabah-buskers-mobile",
-  "version": "1.0.0",
+  "version": "1.7.0-beta",
   "description": "Sabah Buskers Community mobile app (Capacitor wrapper)",
   "private": true,
   "scripts": {
