@@ -25,7 +25,8 @@ FTP to the apps subdomain.
 
 The workflow builds `deploy-package/` and uploads `index.html`, `assets/`,
 `api/`, `version.json`, `.htaccess`, and `sbc-mobile.apk` to
-`apps.sabahbuskers.my` (FTP, incremental — nothing is deleted).
+`apps.sabahbuskers.my` (`server-dir: /public_html/` — the apps subdomain's
+docroot inside the hosting account; FTP incremental, nothing is deleted).
 
 ## Verify the deploy
 
