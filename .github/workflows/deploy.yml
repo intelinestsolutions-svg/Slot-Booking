@@ -67,6 +67,13 @@ jobs:
                       print("no partner.php at", target)
               except Exception as e:
                   print("skipped", target, "->", e)
+          for root in ["/", "/public_html"]:
+              try:
+                  ftp.cwd(root)
+                  ftp.delete(".maintenance")
+                  print("removed .maintenance at", root)
+              except Exception as e:
+                  print(".maintenance not at", root, "->", e)
           try:
               ftp.quit()
           except Exception:
