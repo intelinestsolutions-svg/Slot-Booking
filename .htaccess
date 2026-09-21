@@ -1,3 +1,14 @@
+# ---- SECURE CONNECTION ONLY (HTTPS) ----
+# Force every request over HTTPS; never serve this app over plain HTTP.
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+<IfModule mod_headers.c>
+  # Tell browsers to never attempt a plain-HTTP connection to this host.
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
 # Ensure the Authorization (Bearer token) header reaches PHP.
 # Required on Apache mod_rewrite / FastCGI setups (common on free hosts).
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1

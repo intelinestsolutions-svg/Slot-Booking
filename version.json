@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261034",
+  "webVersion": "20261035",
   "android": {
-    "version": "1.7.0-beta",
-    "versionCode": 9,
+    "version": "1.8.0-beta",
+    "versionCode": 10,
     "url": "https://apps.sabahbuskers.my/sbc-mobile.apk",
-    "notes": "Baharu: Nombor WhatsApp untuk peringatan tempahan automatik 1 jam sebelum slot. Slot KKIA Departure masih tersedia."
+    "notes": "Pembaikan: Waktu solat kini dimuatkan dari Waktu Solat Malaysia (JAKIM, zon Kota Kinabalu SBH07) dan pemberitahuan tempatan boleh diaktifkan."
   },
-  "updatedAt": "2026-09-19"
+  "updatedAt": "2026-09-21"
 }
