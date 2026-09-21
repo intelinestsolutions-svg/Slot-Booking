@@ -683,6 +683,28 @@ table.data tr:hover td { background: rgba(255, 176, 58, 0.04); }
 .modal-x:hover { color: var(--danger); border-color: var(--danger); }
 .modal-body { padding: 22px; }
 
+/* sound picker: fixed-height internal scroll so the "Guna" footer stays visible */
+.sound-list {
+  max-height: 34vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 4px;
+  margin-bottom: 4px;
+}
+.sound-list .snd-opt {
+  width: 100%; text-align: left; margin-top: 8px;
+  padding: 13px 15px;
+  border: 1px solid var(--line); border-radius: 13px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--cream); font: inherit; font-size: 14.5px; cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.sound-list .snd-opt:active { transform: scale(0.99); }
+.sound-list .snd-selected {
+  border-color: var(--gold);
+  background: rgba(255, 170, 60, 0.14);
+}
+
 /* ---------- Terms of Use ---------- */
 .tos-overlay { z-index: 850; }
 .tos-modal { width: min(560px, 100%); }

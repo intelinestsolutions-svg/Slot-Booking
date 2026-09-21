@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261040",
+  "webVersion": "20261041",
   "android": {
-    "version": "2.0.3-beta",
-    "versionCode": 15,
+    "version": "2.0.4-beta",
+    "versionCode": 16,
     "url": "https://apps.sabahbuskers.my/sbc-mobile.apk",
-    "notes": "Pemilih bunyi baharu di dalam aplikasi: pratonton bunyi peranti sebelum memilih, dengan pilihan lalai & senyap. Setiap bunyi kini menggunakan saluran berasingan supaya bunyi baharu sentiasa berbunyi. Pautan luar kini dibuka dalam pelayar sebenar dan iklan tetingkap baharu disekat."
+    "notes": "Pemilih bunyi dalam aplikasi disusun kemas: senarai bunyi boleh skrol, butang 'Guna' sentiasa kelihatan di bawah. Pratonton bunyi dan pilih lalai/senyap terus dari aplikasi."
   },
   "updatedAt": "2026-09-21"
 }

@@ -331,6 +331,23 @@
 
       const list = modal.querySelector('.sound-list');
       if (!list) return;
+      const useBtn = document.createElement('button');
+      useBtn.className = 'btn btn-primary';
+      useBtn.textContent = 'Guna';
+      useBtn.style.cssText = 'flex:1;margin-top:14px;width:100%;';
+      list.insertAdjacentElement('afterend', useBtn);
+      useBtn.addEventListener('click', async () => {
+        if (!selected) {
+          UI.toast('Ketuk bunyi dahulu untuk pilih.', 'warn');
+          return;
+        }
+        const { mode, uri } = selected;
+        await N.setSound({ mode, uri: uri || '' }).catch(() => null);
+        close(false);
+        UI.toast(mode === 'silent' ? 'Bunyi ditetapkan kepada senyap.' : 'Bunyi pemberitahuan dikemas kini.', 'ok');
+        renderSoundLabel();
+      });
+
       let sList = { sounds: [] };
       let sCur = { uri: '', default: true, silent: false };
       N.listSounds().catch(() => sList).then(r => { sList = r; render(); });
@@ -338,50 +355,34 @@
       render();
 
       function render() {
-        list.innerHTML = '';
-        let anyRendered = 0;
+        [...list.querySelectorAll('.snd-opt')].forEach(el => el.remove());
         addOption('Lalai — Penggera Kuat', 'default', '');
         addOption('Senyap — Tanpa Bunyi', 'silent', '');
         (sList.sounds || []).forEach(sd => {
-          if (sd && sd.uri) { addOption(sd.title || 'Bunyi peranti', 'custom', sd.uri); anyRendered++; }
-        });
-        const pick = document.createElement('div');
-        pick.style.cssText = 'display:flex;gap:10px;margin-top:16px;';
-        const useBtn = document.createElement('button');
-        useBtn.className = 'btn btn-primary';
-        useBtn.textContent = 'Guna';
-        useBtn.style.cssText = 'flex:1;';
-        pick.appendChild(useBtn);
-        list.appendChild(pick);
-        useBtn.addEventListener('click', async () => {
-          if (!selected) return;
-          const { mode, uri } = selected;
-          await N.setSound({ mode, uri: uri || '' }).catch(() => null);
-          close(false);
-          UI.toast(mode === 'silent' ? 'Bunyi ditetapkan kepada senyap.' : 'Bunyi pemberitahuan dikemas kini.', 'ok');
-          renderSoundLabel();
+          if (sd && sd.uri) addOption(sd.title || 'Bunyi peranti', 'custom', sd.uri);
         });
       }
 
       function addOption(label, mode, uri) {
         const row = document.createElement('button');
         row.type = 'button';
-        row.style.cssText = 'display:block;width:100%;text-align:left;padding:11px 14px;margin-top:8px;border:1px solid var(--line);border-radius:12px;background:var(--card, rgba(255,255,255,0.06));color:var(--cream);font:inherit;font-size:14px;cursor:pointer;';
+        row.className = 'snd-opt';
         row.textContent = label;
         const isSelected = mode === 'default' ? (sCur.default && !sCur.silent)
           : mode === 'silent' ? (!!sCur.silent)
           : (!sCur.default && !sCur.silent && sCur.uri === uri);
         if (isSelected) {
           selected = { mode, uri };
-          row.style.borderColor = 'var(--gold)';
-          row.style.background = 'rgba(255,170,60,0.12)';
+          row.classList.add('snd-selected');
           row.textContent = '✓ ' + label;
         }
         row.addEventListener('click', async () => {
           selected = { mode, uri };
-          [...list.querySelectorAll('button')].forEach(b => { b.style.borderColor = 'var(--line)'; b.style.background = 'var(--card, rgba(255,255,255,0.06))'; b.textContent = b.textContent.replace(/^✓ /, ''); });
-          row.style.borderColor = 'var(--gold)';
-          row.style.background = 'rgba(255,170,60,0.12)';
+          [...list.querySelectorAll('.snd-opt')].forEach(b => {
+            b.classList.remove('snd-selected');
+            b.textContent = b.textContent.replace(/^✓ /, '');
+          });
+          row.classList.add('snd-selected');
           row.textContent = '✓ ' + label;
           if (mode === 'custom' && uri) {
             lastSoundTitle = label;
