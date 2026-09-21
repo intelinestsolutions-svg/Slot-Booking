@@ -8,6 +8,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioAttributes;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 
@@ -32,14 +34,27 @@ public class NotifierPlugin extends Plugin {
 
     private static final String CHANNEL_ID = "sb_reminders";
     private static final int BASE_REQ = 4000;
+    private static final Uri CHANNEL_SOUND = Settings.System.DEFAULT_ALARM_ALERT_URI;
 
     private void ensureChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager nm = getContext().getSystemService(NotificationManager.class);
+            NotificationChannel existing = nm.getNotificationChannel(CHANNEL_ID);
+            if (existing != null && !CHANNEL_SOUND.equals(existing.getSound())) {
+                nm.deleteNotificationChannel(CHANNEL_ID);
+            }
             NotificationChannel ch = new NotificationChannel(
                 CHANNEL_ID, "Peringatan & Waktu Solat", NotificationManager.IMPORTANCE_HIGH);
             ch.setDescription("Peringatan tempahan slot, waktu setup dan waktu solat.");
             ch.enableVibration(true);
-            getContext().getSystemService(NotificationManager.class).createNotificationChannel(ch);
+            ch.setVibrationPattern(new long[]{800, 600, 800, 600, 1200});
+            ch.setSound(CHANNEL_SOUND,
+                new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
+                    .build());
+            nm.createNotificationChannel(ch);
         }
     }
 
@@ -78,7 +93,12 @@ public class NotifierPlugin extends Plugin {
             .setContentText(body)
             .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
             .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_HIGH);
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_ALARM);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            b.setSound(CHANNEL_SOUND);
+            b.setVibrate(new long[]{800, 600, 800, 600, 1200});
+        }
         try {
             NotificationManagerCompat.from(getContext())
                 .notify((int) (Math.abs(hash(title + body)) % 100000), b.build());
