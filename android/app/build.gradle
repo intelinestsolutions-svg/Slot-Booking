@@ -13,7 +13,7 @@ android {
         applicationId "my.sabahbuskers.community"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-versionCode 16
+versionCode 17
        versionName "2.0.4-beta"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

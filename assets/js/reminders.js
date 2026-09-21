@@ -84,22 +84,31 @@
       } catch (e) { /* silent */ }
     },
 
+    _prayerStartMs(name) {
+      const p = this._prayer;
+      const d = this._prayerDate;
+      if (!p || !d || !name) return 0;
+      const midnight = atYmdHm(d, '00:00');
+      const pr = (p.prayers || []).find(x => x.name === name);
+      if (!pr) return 0;
+      return /esok/i.test(pr.name || '') && pr.minutes
+        ? midnight + pr.minutes * 60000
+        : atYmdHm(d, pr.time);
+    },
+
     _schedulePrayers() {
       const p = this._prayer;
       const d = this._prayerDate;
       if (!p || !d) return;
-      const midnight = atYmdHm(d, '00:00');
       (p.prayers || []).forEach(pr => {
         const key = 'sch:prayer:' + pr.name + ':' + d;
         if (this._notified[key] === true) return;
-        const isTomorrow = /esok/i.test(pr.name || '');
-        const when = isTomorrow && pr.minutes
-          ? midnight + pr.minutes * 60000
-          : atYmdHm(d, pr.time);
-        if (when && when > now()) {
+        const when = this._prayerStartMs(pr.name);
+        const remindAt = when ? when - 900000 : 0; // 15 minit sebelum waktu solat
+        if (remindAt > now()) {
           this._notified[key] = true;
-          scheduleNative(key, when, 'Waktu Solat',
-            `Telah masuk waktu solat ${PRAYER_MS[pr.name] || pr.name}. Jika anda sedang busking, sila berhenti seketika.`);
+          scheduleNative(key, remindAt, 'Waktu Solat',
+            `Waktu solat ${PRAYER_MS[pr.name] || pr.name} akan masuk dalam 15 minit.`);
         }
       });
     },
@@ -113,9 +122,14 @@
           : '';
         el.style.display = p.active ? 'flex' : 'none';
       }
-      if (p.active && this._notified['prayer:' + p.due.name + ':' + this._prayerDate] !== true) {
-        this._notified['prayer:' + p.due.name + ':' + this._prayerDate] = true;
-        notify('Waktu solat', `Telah masuk waktu solat ${PRAYER_MS[p.active] || p.active}. Jika anda sedang busking, sila berhenti seketika.`);
+      // Hanya beritahu dalam 15 minit selepas waktu masuk; tiada notifikasi lewat.
+      if (p.active) {
+        const startMs = this._prayerStartMs(p.active);
+        const inWindow = !startMs || now() <= startMs + 900000;
+        if (inWindow && this._notified['prayer:' + p.active + ':' + this._prayerDate] !== true) {
+          this._notified['prayer:' + p.active + ':' + this._prayerDate] = true;
+          notify('Waktu solat', `Telah masuk waktu solat ${PRAYER_MS[p.active] || p.active}. Jika anda sedang busking, sila berhenti seketika.`);
+        }
       }
     },
 
@@ -158,9 +172,9 @@
         <h3>Pemberitahuan</h3>
         <p style="color:var(--muted);font-size:14px;margin:6px 0;">Aktifkan pemberitahuan penyemak imbas supaya anda menerima amaran 1 jam &amp; 15 minit sebelum slot bermula, walaupun aplikasi tidak dibuka penuh.</p>
         <button class="btn btn-primary mt" id="notifBtn">Aktifkan Pemberitahuan</button>
-        <div id="soundRow" style="display:none;margin-top:12px;">
-          <button class="btn btn-outline" id="soundBtn">Pilih Bunyi Pemberitahuan (Bunyi Peranti)</button>
-          <p id="soundLabel" style="color:var(--muted-2);font-size:12px;margin-top:6px;"></p>
+        <div id="soundRow" style="display:none;margin-top:14px;">
+          <button class="btn btn-ghost" id="soundBtn" style="width:100%;white-space:normal;text-align:center;padding:13px 18px;border-radius:12px;">Pilih Bunyi Pemberitahuan (Bunyi Peranti)</button>
+          <p id="soundLabel" style="color:var(--muted-2);font-size:12px;margin-top:8px;"></p>
         </div>
       </div>`,
       { eyebrow: 'Kawalan Masa' });
@@ -302,10 +316,13 @@
       const N = nativeNotifier();
       if (!N) return;
       const s = await N.getSound().catch(() => null);
-      const isSilent = s && (s.silent === true || s.uri === '');
-      soundLabel.textContent = isSilent
-        ? 'Bunyi: Senyap (tanpa bunyi).'
-        : (lastSoundTitle && s && s.uri ? `Bunyi: ${lastSoundTitle}` : (s && s.uri ? 'Bunyi tersuai dipilih.' : 'Bunyi: Lalai sistem (penggera kuat).'));
+      if (!s) return;
+      let txt;
+      if (s.silent) txt = 'Bunyi: Senyap (tanpa bunyi).';
+      else if (s.default || !s.uri) txt = 'Bunyi: Lalai (penggera kuat).';
+      else if (lastSoundTitle) txt = `Bunyi: ${lastSoundTitle}`;
+      else txt = 'Bunyi tersuai dipilih.';
+      soundLabel.textContent = txt;
     }
     function openSoundPicker(N) {
       const overlay = document.createElement('div');
