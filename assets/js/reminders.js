@@ -158,6 +158,10 @@
         <h3>Pemberitahuan</h3>
         <p style="color:var(--muted);font-size:14px;margin:6px 0;">Aktifkan pemberitahuan penyemak imbas supaya anda menerima amaran 1 jam &amp; 15 minit sebelum slot bermula, walaupun aplikasi tidak dibuka penuh.</p>
         <button class="btn btn-primary mt" id="notifBtn">Aktifkan Pemberitahuan</button>
+        <div id="soundRow" style="display:none;margin-top:12px;">
+          <button class="btn btn-outline" id="soundBtn">Pilih Bunyi Pemberitahuan (Bunyi Peranti)</button>
+          <p id="soundLabel" style="color:var(--muted-2);font-size:12px;margin-top:6px;"></p>
+        </div>
       </div>`,
       { eyebrow: 'Kawalan Masa' });
   };
@@ -241,6 +245,7 @@
         await N.request().catch(() => {});
         const st2 = await N.status().catch(() => ({ granted: false }));
         UI.toast(st2 && st2.granted ? 'Pemberitahuan diaktifkan!' : 'Pemberitahuan tidak dibenarkan.', st2 && st2.granted ? 'ok' : 'warn');
+        afterNotif();
         return;
       }
       if (!('Notification' in window)) {
@@ -249,6 +254,48 @@
       }
       const perm = await Notification.requestPermission();
       UI.toast(perm === 'granted' ? 'Pemberitahuan diaktifkan!' : 'Pemberitahuan tidak dibenarkan.', perm === 'granted' ? 'ok' : 'warn');
+      afterNotif();
     });
+
+    const soundRow = document.getElementById('soundRow');
+    const soundLabel = document.getElementById('soundLabel');
+    function afterNotif() {
+      if (soundRow && nativeNotifier()) {
+        soundRow.style.display = 'block';
+        renderSoundLabel();
+      }
+    }
+    async function renderSoundLabel() {
+      if (!soundLabel) return;
+      const N = nativeNotifier();
+      if (!N) return;
+      const s = await N.getSound().catch(() => null);
+      const isSilent = s && (s.silent === true || s.uri === '');
+      soundLabel.textContent = isSilent
+        ? 'Bunyi: Senyap (tanpa bunyi).'
+        : (s && s.uri ? `Bunyi tersuai dipilih.` : 'Bunyi: Lalai sistem (penggera kuat).');
+    }
+    const sb = document.getElementById('soundBtn');
+    if (sb) {
+      sb.addEventListener('click', async () => {
+        const N = nativeNotifier();
+        if (!N) {
+          UI.toast('Hanya tersedia dalam aplikasi Android.', 'warn');
+          return;
+        }
+        const st = await N.status().catch(() => ({ granted: false }));
+        if (!st || !st.granted) {
+          UI.toast('Aktifkan pemberitahuan dahulu.', 'warn');
+          return;
+        }
+        const res = await N.pickSound().catch(() => null);
+        if (res) {
+          if (res.silent) UI.toast('Bunyi ditetapkan kepada senyap.', 'ok');
+          else UI.toast('Bunyi pemberitahuan dikemas kini.', 'ok');
+          renderSoundLabel();
+        }
+      });
+    }
+    afterNotif();
   };
 })();

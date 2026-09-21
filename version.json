@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261037",
+  "webVersion": "20261038",
   "android": {
-    "version": "2.0.0-beta",
-    "versionCode": 12,
+    "version": "2.0.1-beta",
+    "versionCode": 13,
     "url": "https://apps.sabahbuskers.my/sbc-mobile.apk",
-    "notes": "Pembaikan: Waktu solat kini dimuatkan dari Waktu Solat Malaysia (JAKIM, zon Kota Kinabalu SBH07), bunyi penggera kuat pada pemberitahuan, dan peringatan kekal hidup selepas but semula telefon."
+    "notes": "Baharu: Pilih bunyi pemberitahuan daripada perpustakaan bunyi telefon anda (bunyi penggera / senyap / bunyi tersuai). Waktu solat JAKIM Kota Kinabalu, pemberitahuan bunyi kuat apt dipelihara selepas but semula."
   },
   "updatedAt": "2026-09-21"
 }

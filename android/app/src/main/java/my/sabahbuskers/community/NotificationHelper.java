@@ -30,15 +30,39 @@ public final class NotificationHelper {
     private static final int BASE_REQ = 4000;
     private static final Uri CHANNEL_SOUND = Settings.System.DEFAULT_ALARM_ALERT_URI;
     private static final String PREFS = "sb_scheduled_alarms";
+    private static final String PREFS_SOUND = "sb_notif_sound";
+    private static final String KEY_SOUND_URI = "sound_uri";
 
     private NotificationHelper() {
+    }
+
+    public static void setSound(Context ctx, Uri uri) {
+        ctx.getSharedPreferences(PREFS_SOUND, Context.MODE_PRIVATE)
+            .edit().putString(KEY_SOUND_URI, uri == null ? null : uri.toString()).apply();
+    }
+
+    public static Uri getSound(Context ctx) {
+        String s = ctx.getSharedPreferences(PREFS_SOUND, Context.MODE_PRIVATE)
+            .getString(KEY_SOUND_URI, null);
+        return s == null || s.isEmpty() ? null : Uri.parse(s);
+    }
+
+    /** Rebuild the channel once so it picks up a newly chosen custom sound. */
+    public static void recreateChannel(Context ctx) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager nm = ctx.getSystemService(NotificationManager.class);
+            nm.deleteNotificationChannel(CHANNEL_ID);
+            ensureChannel(ctx);
+        }
     }
 
     public static void ensureChannel(Context ctx) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager nm = ctx.getSystemService(NotificationManager.class);
+            Uri custom = getSound(ctx);
+            Uri effectiveSound = custom != null ? custom : CHANNEL_SOUND;
             NotificationChannel existing = nm.getNotificationChannel(CHANNEL_ID);
-            if (existing != null && !CHANNEL_SOUND.equals(existing.getSound())) {
+            if (existing != null && !effectiveSound.equals(existing.getSound())) {
                 nm.deleteNotificationChannel(CHANNEL_ID);
             }
             NotificationChannel ch = new NotificationChannel(
@@ -46,7 +70,7 @@ public final class NotificationHelper {
             ch.setDescription("Peringatan tempahan slot, waktu setup dan waktu solat.");
             ch.enableVibration(true);
             ch.setVibrationPattern(new long[]{800, 600, 800, 600, 1200});
-            ch.setSound(CHANNEL_SOUND,
+            ch.setSound(effectiveSound,
                 new AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_ALARM)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
