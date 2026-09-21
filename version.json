@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261038",
+  "webVersion": "20261039",
   "android": {
-    "version": "2.0.1-beta",
-    "versionCode": 13,
+    "version": "2.0.2-beta",
+    "versionCode": 14,
     "url": "https://apps.sabahbuskers.my/sbc-mobile.apk",
-    "notes": "Baharu: Pilih bunyi pemberitahuan daripada perpustakaan bunyi telefon anda (bunyi penggera / senyap / bunyi tersuai). Waktu solat JAKIM Kota Kinabalu, pemberitahuan bunyi kuat apt dipelihara selepas but semula."
+    "notes": "Reka bentuk kaca (glass) di seluruh aplikasi web & Android. Pembaikan: waktu solat & slot 'akan datang' kekal dipaparkan walaupun sesi log masuk tamat. Pilih bunyi pemberitahuan, bunyi penggera kuat, dipelihara selepas but semula."
   },
   "updatedAt": "2026-09-21"
 }

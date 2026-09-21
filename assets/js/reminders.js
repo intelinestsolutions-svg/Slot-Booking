@@ -224,14 +224,45 @@
     const prayerBox = document.getElementById('bersediaPrayer');
     if (!nextBox || !prayerBox) return;
 
+    // Waktu solat = data awam (prayer.php tidak memerlukan log masuk).
+    // Jangan biarkan isu sesi slot menutup kad ini.
     try {
-      const [mine, pr] = await Promise.all([API.bookings.mine(), API.prayer.today()]);
-      renderNext(mine.bookings);
+      const pr = await API.prayer.today();
       renderPrayer(pr, prayerBox);
       Reminders._prayer = pr;
     } catch (e) {
-      nextBox.innerHTML = UI.notice(e.message, 'error');
       prayerBox.innerHTML = UI.notice(e.message, 'error');
+    }
+
+    // Slot akan datang memerlukan log masuk; sekali cuba segarkan sesi jika token lapuk.
+    const loadBookings = async () => {
+      try {
+        const mine = await API.bookings.mine();
+        renderNext(mine.bookings);
+      } catch (e) {
+        const user = Session.user;
+        if (user && /log masuk/i.test(e.message || '')) {
+          try {
+            const me = await API.auth.me();
+            if (me && me.user) Session.setUser(me.user);
+            const retry = await API.bookings.mine();
+            renderNext(retry.bookings);
+            return;
+          } catch (e2) {
+            renderSlotsLoginError(nextBox);
+            return;
+          }
+        }
+        renderSlotsLoginError(nextBox);
+      }
+    };
+    await loadBookings();
+
+    function renderSlotsLoginError(box) {
+      box.innerHTML = '<div class="e-ico" style="font-size:30px;">🔐</div>' +
+        '<h3 style="margin-top:8px;">Sila log masuk semula</h3>' +
+        '<p style="color:var(--muted);font-size:14px;margin-top:6px;">Sesi anda telah tamat. Tekan butang di bawah untuk log masuk supaya slot akan datang dapat dipaparkan.</p>' +
+        '<button class="btn btn-primary mt" onclick="location.href=\'?page=login&next=bersedia\'">Log Masuk</button>';
     }
 
     document.getElementById('notifBtn').addEventListener('click', async () => {
