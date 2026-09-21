@@ -290,6 +290,7 @@
 
     const soundRow = document.getElementById('soundRow');
     const soundLabel = document.getElementById('soundLabel');
+    let lastSoundTitle = '';
     function afterNotif() {
       if (soundRow && nativeNotifier()) {
         soundRow.style.display = 'block';
@@ -304,11 +305,97 @@
       const isSilent = s && (s.silent === true || s.uri === '');
       soundLabel.textContent = isSilent
         ? 'Bunyi: Senyap (tanpa bunyi).'
-        : (s && s.uri ? `Bunyi tersuai dipilih.` : 'Bunyi: Lalai sistem (penggera kuat).');
+        : (lastSoundTitle && s && s.uri ? `Bunyi: ${lastSoundTitle}` : (s && s.uri ? 'Bunyi tersuai dipilih.' : 'Bunyi: Lalai sistem (penggera kuat).'));
     }
-    const sb = document.getElementById('soundBtn');
-    if (sb) {
-      sb.addEventListener('click', async () => {
+    function openSoundPicker(N) {
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      modal.setAttribute('aria-label', 'Pilih bunyi pemberitahuan');
+      modal.innerHTML =
+        '<div class="modal-head"><h3>Pilih Bunyi Pemberitahuan</h3><button class="modal-x" aria-label="Tutup">✕</button></div>' +
+        '<div class="modal-body"><p style="color:var(--muted);font-size:13px;margin-bottom:12px;">Ketuk bunyi untuk pratonton, kemudian tekan "Guna" untuk memilihnya.</p><div class="sound-list"></div></div>';
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+
+      let selected = null;
+      function close(stopPreview) {
+        if (stopPreview !== false) N.stopPreview().catch(() => {});
+        overlay.remove();
+      }
+      modal.querySelector('.modal-x').addEventListener('click', () => close());
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+      const list = modal.querySelector('.sound-list');
+      if (!list) return;
+      let sList = { sounds: [] };
+      let sCur = { uri: '', default: true, silent: false };
+      N.listSounds().catch(() => sList).then(r => { sList = r; render(); });
+      N.getSound().catch(() => sCur).then(r => { sCur = r; render(); });
+      render();
+
+      function render() {
+        list.innerHTML = '';
+        let anyRendered = 0;
+        addOption('Lalai — Penggera Kuat', 'default', '');
+        addOption('Senyap — Tanpa Bunyi', 'silent', '');
+        (sList.sounds || []).forEach(sd => {
+          if (sd && sd.uri) { addOption(sd.title || 'Bunyi peranti', 'custom', sd.uri); anyRendered++; }
+        });
+        const pick = document.createElement('div');
+        pick.style.cssText = 'display:flex;gap:10px;margin-top:16px;';
+        const useBtn = document.createElement('button');
+        useBtn.className = 'btn btn-primary';
+        useBtn.textContent = 'Guna';
+        useBtn.style.cssText = 'flex:1;';
+        pick.appendChild(useBtn);
+        list.appendChild(pick);
+        useBtn.addEventListener('click', async () => {
+          if (!selected) return;
+          const { mode, uri } = selected;
+          await N.setSound({ mode, uri: uri || '' }).catch(() => null);
+          close(false);
+          UI.toast(mode === 'silent' ? 'Bunyi ditetapkan kepada senyap.' : 'Bunyi pemberitahuan dikemas kini.', 'ok');
+          renderSoundLabel();
+        });
+      }
+
+      function addOption(label, mode, uri) {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.style.cssText = 'display:block;width:100%;text-align:left;padding:11px 14px;margin-top:8px;border:1px solid var(--line);border-radius:12px;background:var(--card, rgba(255,255,255,0.06));color:var(--cream);font:inherit;font-size:14px;cursor:pointer;';
+        row.textContent = label;
+        const isSelected = mode === 'default' ? (sCur.default && !sCur.silent)
+          : mode === 'silent' ? (!!sCur.silent)
+          : (!sCur.default && !sCur.silent && sCur.uri === uri);
+        if (isSelected) {
+          selected = { mode, uri };
+          row.style.borderColor = 'var(--gold)';
+          row.style.background = 'rgba(255,170,60,0.12)';
+          row.textContent = '✓ ' + label;
+        }
+        row.addEventListener('click', async () => {
+          selected = { mode, uri };
+          [...list.querySelectorAll('button')].forEach(b => { b.style.borderColor = 'var(--line)'; b.style.background = 'var(--card, rgba(255,255,255,0.06))'; b.textContent = b.textContent.replace(/^✓ /, ''); });
+          row.style.borderColor = 'var(--gold)';
+          row.style.background = 'rgba(255,170,60,0.12)';
+          row.textContent = '✓ ' + label;
+          if (mode === 'custom' && uri) {
+            lastSoundTitle = label;
+            N.previewSound({ uri }).catch(() => {});
+          } else {
+            N.stopPreview().catch(() => {});
+          }
+        });
+        list.appendChild(row);
+      }
+    }
+    const sbBtn = document.getElementById('soundBtn');
+    if (sbBtn) {
+      sbBtn.addEventListener('click', async () => {
         const N = nativeNotifier();
         if (!N) {
           UI.toast('Hanya tersedia dalam aplikasi Android.', 'warn');
@@ -319,12 +406,7 @@
           UI.toast('Aktifkan pemberitahuan dahulu.', 'warn');
           return;
         }
-        const res = await N.pickSound().catch(() => null);
-        if (res) {
-          if (res.silent) UI.toast('Bunyi ditetapkan kepada senyap.', 'ok');
-          else UI.toast('Bunyi pemberitahuan dikemas kini.', 'ok');
-          renderSoundLabel();
-        }
+        openSoundPicker(N);
       });
     }
     afterNotif();

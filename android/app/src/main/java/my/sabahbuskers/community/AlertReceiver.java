@@ -19,7 +19,7 @@ public class AlertReceiver extends BroadcastReceiver {
         if (title == null) title = "SBC";
         if (body == null) body = "";
         NotificationHelper.ensureChannel(context);
-        NotificationCompat.Builder b = new NotificationCompat.Builder(context, NotificationHelper.CHANNEL_ID)
+        NotificationCompat.Builder b = new NotificationCompat.Builder(context, NotificationHelper.channelId(context))
             .setSmallIcon(R.mipmap.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(body)
@@ -27,7 +27,7 @@ public class AlertReceiver extends BroadcastReceiver {
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && !NotificationHelper.isSilent(context)) {
             Uri custom = NotificationHelper.getSound(context);
             b.setSound(custom != null ? custom : Settings.System.DEFAULT_ALARM_ALERT_URI);
             b.setVibrate(new long[]{800, 600, 800, 600, 1200});

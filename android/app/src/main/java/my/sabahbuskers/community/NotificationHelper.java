@@ -36,46 +36,80 @@ public final class NotificationHelper {
     private NotificationHelper() {
     }
 
-    public static void setSound(Context ctx, Uri uri) {
-        ctx.getSharedPreferences(PREFS_SOUND, Context.MODE_PRIVATE)
-            .edit().putString(KEY_SOUND_URI, uri == null ? null : uri.toString()).apply();
+    /** Stored value: absent/"default" = system default alarm, "silent" = no sound, else a sound URI. */
+    private static String getSoundValue(Context ctx) {
+        return ctx.getSharedPreferences(PREFS_SOUND, Context.MODE_PRIVATE)
+            .getString(KEY_SOUND_URI, null);
+    }
+
+    public static boolean isSilent(Context ctx) {
+        return "silent".equals(getSoundValue(ctx));
     }
 
     public static Uri getSound(Context ctx) {
-        String s = ctx.getSharedPreferences(PREFS_SOUND, Context.MODE_PRIVATE)
-            .getString(KEY_SOUND_URI, null);
-        return s == null || s.isEmpty() ? null : Uri.parse(s);
+        String s = getSoundValue(ctx);
+        if (s == null || s.isEmpty() || "default".equals(s) || "silent".equals(s)) return null;
+        return Uri.parse(s);
     }
 
-    /** Rebuild the channel once so it picks up a newly chosen custom sound. */
-    public static void recreateChannel(Context ctx) {
+    /**
+     * Versioned channel id: every distinct sound keeps its own channel, so once a channel is
+     * created Android never needs to mutate its sound (which is not reliably applied) — picking
+     * a new library sound simply starts using the matching channel and the new sound always plays.
+     */
+    public static String channelId(Context ctx) {
+        String v = getSoundValue(ctx);
+        if (v == null || v.isEmpty() || "default".equals(v)) return CHANNEL_ID;
+        if ("silent".equals(v)) return CHANNEL_ID + "_silent";
+        return CHANNEL_ID + "_" + Integer.toHexString(v.hashCode());
+    }
+
+    /** Persist a sound choice and rebuild the channel set so the change applies immediately. */
+    public static void applySound(Context ctx, String value) {
+        ctx.getSharedPreferences(PREFS_SOUND, Context.MODE_PRIVATE)
+            .edit().putString(KEY_SOUND_URI, value == null || value.isEmpty() ? "default" : value).apply();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager nm = ctx.getSystemService(NotificationManager.class);
-            nm.deleteNotificationChannel(CHANNEL_ID);
-            ensureChannel(ctx);
+            for (NotificationChannel ch : nm.getNotificationChannels()) {
+                if (ch != null && ch.getId().startsWith(CHANNEL_ID)) {
+                    nm.deleteNotificationChannel(ch.getId());
+                }
+            }
         }
+        ensureChannel(ctx);
     }
 
     public static void ensureChannel(Context ctx) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager nm = ctx.getSystemService(NotificationManager.class);
+            String id = channelId(ctx);
             Uri custom = getSound(ctx);
-            Uri effectiveSound = custom != null ? custom : CHANNEL_SOUND;
-            NotificationChannel existing = nm.getNotificationChannel(CHANNEL_ID);
-            if (existing != null && !effectiveSound.equals(existing.getSound())) {
-                nm.deleteNotificationChannel(CHANNEL_ID);
+            boolean silent = isSilent(ctx);
+            Uri effectiveSound = silent ? null : (custom != null ? custom : CHANNEL_SOUND);
+            NotificationChannel existing = nm.getNotificationChannel(id);
+            if (existing != null) {
+                boolean soundOk = effectiveSound == null
+                    ? existing.getSound() == null
+                    : effectiveSound.equals(existing.getSound());
+                if (soundOk && existing.getImportance() == NotificationManager.IMPORTANCE_HIGH) return;
+                nm.deleteNotificationChannel(id);
             }
             NotificationChannel ch = new NotificationChannel(
-                CHANNEL_ID, "Peringatan & Waktu Solat", NotificationManager.IMPORTANCE_HIGH);
+                id, "Peringatan & Waktu Solat", NotificationManager.IMPORTANCE_HIGH);
             ch.setDescription("Peringatan tempahan slot, waktu setup dan waktu solat.");
-            ch.enableVibration(true);
-            ch.setVibrationPattern(new long[]{800, 600, 800, 600, 1200});
-            ch.setSound(effectiveSound,
-                new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ALARM)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
-                    .build());
+            if (silent) {
+                ch.setSound(null, null);
+                ch.enableVibration(false);
+            } else {
+                ch.enableVibration(true);
+                ch.setVibrationPattern(new long[]{800, 600, 800, 600, 1200});
+                ch.setSound(effectiveSound,
+                    new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
+                        .build());
+            }
             nm.createNotificationChannel(ch);
         }
     }

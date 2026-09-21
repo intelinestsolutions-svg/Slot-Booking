@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261039",
+  "webVersion": "20261040",
   "android": {
-    "version": "2.0.2-beta",
-    "versionCode": 14,
+    "version": "2.0.3-beta",
+    "versionCode": 15,
     "url": "https://apps.sabahbuskers.my/sbc-mobile.apk",
-    "notes": "Reka bentuk kaca (glass) di seluruh aplikasi web & Android. Pembaikan: waktu solat & slot 'akan datang' kekal dipaparkan walaupun sesi log masuk tamat. Pilih bunyi pemberitahuan, bunyi penggera kuat, dipelihara selepas but semula."
+    "notes": "Pemilih bunyi baharu di dalam aplikasi: pratonton bunyi peranti sebelum memilih, dengan pilihan lalai & senyap. Setiap bunyi kini menggunakan saluran berasingan supaya bunyi baharu sentiasa berbunyi. Pautan luar kini dibuka dalam pelayar sebenar dan iklan tetingkap baharu disekat."
   },
   "updatedAt": "2026-09-21"
 }
