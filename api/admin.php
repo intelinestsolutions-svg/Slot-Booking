@@ -88,6 +88,7 @@ switch ($action) {
                 $d['fullName'] ?? 'Admin', 'approved', 1, $token,
             ]);
         $id = $pdo->lastInsertId();
+        issue_session($pdo, $id, $token);
         ok(['token' => $token, 'user' => ['id' => $id, 'email' => $email, 'role' => 'admin']]);
         break;
 

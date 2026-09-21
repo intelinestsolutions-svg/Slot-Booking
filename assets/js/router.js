@@ -71,8 +71,17 @@
         viewFn = 'viewSchedule';
       }
 
-      const user = Session.user;
       const loginPages = ['slot-booking', 'tempahan-saya', 'profil', 'kemaskini-profil', 'performance-dashboard', 'inbox', 'tools', 'bersedia', 'premium'];
+      let user = Session.user;
+      if (!user && loginPages.includes(page) && Session.token) {
+        try {
+          const r = await API.auth.me();
+          if (r && r.user) {
+            Session.setUser(r.user);
+            user = Session.user;
+          }
+        } catch (e) {}
+      }
       if (loginPages.includes(page) && !user) {
         return this.go('login', { next: page });
       }

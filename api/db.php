@@ -66,6 +66,13 @@ function schema(PDO $pdo): void
         $pdo->exec("ALTER TABLE users ADD COLUMN premiumExpiresAt TEXT");
     }
 
+    $pdo->exec("CREATE TABLE IF NOT EXISTS sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER NOT NULL,
+        token TEXT UNIQUE NOT NULL,
+        createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+    )");
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS buskerApplications (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         userId INTEGER,
@@ -326,7 +333,7 @@ function day_of_week(string $date): string
     return date('D', strtotime($date));
 }
 
-function current_user(PDO $pdo): ?array
+function bearer_token(): string
 {
     $auth = $_SERVER['HTTP_AUTHORIZATION'] ?? ($_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '');
     if ($auth === '' && function_exists('getallheaders')) {
@@ -343,12 +350,29 @@ function current_user(PDO $pdo): ?array
     if ($token === '') {
         $token = isset($_GET['token']) ? (string)$_GET['token'] : '';
     }
+    return $token;
+}
+
+function issue_session(PDO $pdo, int $userId, string $token): void
+{
+    $pdo->prepare("INSERT INTO sessions (userId, token) VALUES (?, ?)")
+        ->execute([$userId, $token]);
+}
+
+function current_user(PDO $pdo): ?array
+{
+    $token = bearer_token();
     if ($token === '') {
         return null;
     }
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE token = ?");
+    $stmt = $pdo->prepare("SELECT u.* FROM users u JOIN sessions s ON s.userId = u.id WHERE s.token = ?");
     $stmt->execute([$token]);
     $user = $stmt->fetch();
+    if (!$user) {
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE token = ?");
+        $stmt->execute([$token]);
+        $user = $stmt->fetch();
+    }
     return $user ?: null;
 }
 

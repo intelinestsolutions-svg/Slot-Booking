@@ -68,6 +68,7 @@ switch ($action) {
                 $whatsapp,
             ]);
             $userId = $pdo->lastInsertId();
+            issue_session($pdo, $userId, $token);
 
             $pdo->prepare("INSERT INTO buskerApplications
                 (userId, appId, fullName, icNumber, phone, email, state, city, address, postcode,
@@ -109,7 +110,7 @@ switch ($action) {
         }
 
         $token = bin2hex(random_bytes(24));
-        $pdo->prepare("UPDATE users SET token = ? WHERE id = ?")->execute([$token, $user['id']]);
+        issue_session($pdo, (int)$user['id'], $token);
 
         if ($user['role'] === 'busker' && $user['verificationStatus'] !== 'approved') {
             ok(['token' => $token, 'user' => public_user($pdo, $user['id']), 'pending' => true]);
@@ -120,9 +121,9 @@ switch ($action) {
         break;
 
     case 'logout':
-        $user = current_user($pdo);
-        if ($user) {
-            $pdo->prepare("UPDATE users SET token = NULL WHERE id = ?")->execute([$user['id']]);
+        $token = bearer_token();
+        if ($token !== '') {
+            $pdo->prepare("DELETE FROM sessions WHERE token = ?")->execute([$token]);
         }
         ok();
         break;
