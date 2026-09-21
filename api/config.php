@@ -11,7 +11,7 @@ if (is_file($__local)) {
 }
 
 if (!defined('SITE_URL')) {
-    define('SITE_URL', 'https://sabahbuskers.my');
+    define('SITE_URL', 'https://apps.sabahbuskers.my');
 }
 
 date_default_timezone_set('Asia/Kuching');
