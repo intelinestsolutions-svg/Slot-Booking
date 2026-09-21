@@ -9,7 +9,7 @@ function create_toyyibpay_bill(array $slot, array $user, int $slotId): array
     $loc->execute([$slot['locationId']]);
     $loc = $loc->fetch();
 
-    $billName = ($loc['name'] ?? 'Slot') . ' - ' . $slot['date'] . ' ' . $slot['startTime'];
+    $billName = 'Bayaran Tempahan SBC';
     $billDescription = "Tempahan slot busking: {$loc['name']} pada {$slot['date']} ({$slot['startTime']}-{$slot['endTime']})";
     $returnUrl = SITE_URL . '/?page=tempahan-saya&verify=1&billCode=';
     $callbackUrl = SITE_URL . '/api/bookings.php?action=callback';

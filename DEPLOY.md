@@ -44,6 +44,15 @@ Old Android APKs (older `versionCode`) will prompt "Versi Baharu Tersedia" with 
   - `HOSTINGER_PORT` = `21`
   - `HOSTINGER_USERNAME` = `u382882503.apps.sabahbuskers.my`
   - `HOSTINGER_PASSWORD` = FTP password (masked)
+  - `TOYYIBPAY_MODE` = `live` (or `sandbox` for testing)
+  - `TOYYIBPAY_USER_SECRET_KEY` = your ToyyibPay user secret key
+  - `TOYYIBPAY_CATEGORY_CODE` = your category code (e.g. `9d3qxmne`)
+  - `VERIFY_TOKEN` = app verify token (must match `VERIFY_TOKEN` in local config)
+  - `DEFAULT_ADMIN_EMAIL` / `DEFAULT_ADMIN_PASSWORD` = default admin login
+  - `WHATSAPP_GATEWAY` = `ultramsg` | `chatapi` | empty to disable
+  - `WHATSAPP_INSTANCE_ID`, `WHATSAPP_TOKEN`, `WHATSAPP_TO` = WhatsApp alert config
+  - The deploy workflow writes `api/config.local.php` from these secrets before
+    uploading, so the live keys never need to live in git.
 - Workflow file: `.github/workflows/deploy.yml`
 - The pushing token needs **Contents** and **Workflows** permissions
   (Read and write).
