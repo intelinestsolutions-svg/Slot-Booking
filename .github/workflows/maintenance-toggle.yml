@@ -1,0 +1,66 @@
+name: Maintenance Toggle (apps.sabahbuskers.my)
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'pause = under maintenance · resume = live · diag = inspect FTP layout'
+        required: true
+        default: diag
+        type: choice
+        options:
+          - diag
+          - pause
+          - resume
+
+jobs:
+  toggle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Toggle .maintenance marker on Hostinger
+        env:
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          PORT: ${{ secrets.HOSTINGER_PORT }}
+          USER: ${{ secrets.HOSTINGER_USERNAME }}
+          PASS: ${{ secrets.HOSTINGER_PASSWORD }}
+          MODE: ${{ github.event.inputs.mode }}
+        run: |
+          python3 - <<'EOF'
+          import ftplib, io, os, sys
+          host = os.environ["HOST"]; port = int(os.environ["PORT"])
+          user = os.environ["USER"]; pwd = os.environ["PASS"]; mode = os.environ["MODE"]
+          ftp = ftplib.FTP(); ftp.connect(host, port, timeout=60); ftp.login(user, pwd)
+
+          candidates = ["/public_html", "/public_html/apps", "/"]
+
+          if mode == "diag":
+              for t in candidates:
+                  try:
+                      ftp.cwd(t)
+                      n = ftp.nlst()
+                      print(t or "/", "->", [i for i in n if i in ("index.html", "maintenance.html", ".htaccess", "public_html", "apps")] or n[:15])
+                  except Exception as e:
+                      print(t, "ERR", e)
+              ftp.quit(); sys.exit(0)
+
+          docroot = None
+          for t in candidates:
+              try:
+                  ftp.cwd(t)
+                  if "index.html" in ftp.nlst():
+                      docroot = t; break
+              except Exception:
+                  pass
+          if docroot is None:
+              print("DOCROOT NOT FOUND"); ftp.quit(); sys.exit(1)
+          print("docroot =", docroot)
+
+          if mode == "pause":
+              ftp.sendcmd("TYPE I")
+              ftp.storbinary("STOR .maintenance", io.BytesIO(b"maintenance"))
+              print("PAUSED: .maintenance created at", docroot)
+          elif mode == "resume":
+              ftp.delete(".maintenance")
+              print("RESUMED: .maintenance removed at", docroot)
+          ftp.quit()
+          EOF
