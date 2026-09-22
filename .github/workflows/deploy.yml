@@ -18,6 +18,7 @@ jobs:
           TP_KEY: ${{ secrets.TOYYIBPAY_USER_SECRET_KEY }}
           TP_CAT: ${{ secrets.TOYYIBPAY_CATEGORY_CODE }}
           VTOKEN: ${{ secrets.VERIFY_TOKEN }}
+          MVKEY: ${{ secrets.MPK_VERIFY_KEY }}
           ADMIN_EMAIL: ${{ secrets.DEFAULT_ADMIN_EMAIL }}
           ADMIN_PASS: ${{ secrets.DEFAULT_ADMIN_PASSWORD }}
           WA_GATEWAY: ${{ secrets.WHATSAPP_GATEWAY }}
@@ -33,6 +34,7 @@ jobs:
           define('TOYYIBPAY_USER_SECRET_KEY', '${TP_KEY}');
           define('TOYYIBPAY_CATEGORY_CODE', '${TP_CAT}');
           define('VERIFY_TOKEN', '${VTOKEN}');
+          define('MPK_VERIFY_KEY', '${MVKEY}');
           define('DEFAULT_ADMIN_EMAIL', '${ADMIN_EMAIL}');
           define('DEFAULT_ADMIN_PASSWORD', '${ADMIN_PASS}');
           define('WHATSAPP_GATEWAY', '${WA_GATEWAY}');
