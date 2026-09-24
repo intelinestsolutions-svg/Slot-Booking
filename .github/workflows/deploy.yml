@@ -88,24 +88,17 @@ jobs:
           ftp = ftplib.FTP_TLS()
           ftp.connect(host, port, timeout=60)
           ftp.login(user, pwd)
-          for target in ["/api", "/public_html/api"]:
+          for root in ["/api", "/public_html/api"]:
               try:
-                  ftp.cwd(target)
+                  ftp.cwd(root)
                   names = ftp.nlst()
                   if "partner.php" in names:
                       ftp.delete("partner.php")
-                      print("deleted partner.php at", target)
+                      print("deleted partner.php at", root)
                   else:
-                      print("no partner.php at", target)
+                      print("no partner.php at", root)
               except Exception as e:
-                  print("skipped", target, "->", e)
-          for root in ["/", "/public_html"]:
-              try:
-                  ftp.cwd(root)
-                  ftp.delete(".maintenance")
-                  print("removed .maintenance at", root)
-              except Exception as e:
-                  print(".maintenance not at", root, "->", e)
+                  print("skipped", root, "->", e)
           try:
               ftp.quit()
           except Exception:
