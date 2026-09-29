@@ -17,6 +17,10 @@ jobs:
   toggle:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout (for maintenance.html / .htaccess self-heal)
+        if: github.event.inputs.mode == 'pause'
+        uses: actions/checkout@v4
+
       - name: Toggle .maintenance marker on Hostinger
         env:
           HOST: ${{ secrets.HOSTINGER_HOST }}
@@ -27,18 +31,31 @@ jobs:
         run: |
           python3 - <<'EOF'
           import ftplib, io, os, sys
+
           host = os.environ["HOST"]; port = int(os.environ["PORT"])
           user = os.environ["USER"]; pwd = os.environ["PASS"]; mode = os.environ["MODE"]
-          ftp = ftplib.FTP(); ftp.connect(host, port, timeout=60); ftp.login(user, pwd)
+          ftp = ftplib.FTP()
+          ftp.connect(host, port, timeout=60)
+          print(ftp.login(user, pwd))
 
           candidates = ["/public_html", "/public_html/apps", "/"]
+
+          def go_root():
+              try:
+                  ftp.cwd("/")
+              except Exception:
+                  pass
+
+          def list_dir(t):
+              go_root()
+              ftp.cwd(t)
+              return ftp.nlst()
 
           if mode == "diag":
               for t in candidates:
                   try:
-                      ftp.cwd(t)
-                      n = ftp.nlst()
-                      print(t or "/", "->", [i for i in n if i in ("index.html", "maintenance.html", ".htaccess", "public_html", "apps")] or n[:15])
+                      n = list_dir(t)
+                      print(t, "->", [i for i in n if i in ("index.html", "maintenance.html", ".htaccess", "public_html", "apps")] or n[:15])
                   except Exception as e:
                       print(t, "ERR", e)
               ftp.quit(); sys.exit(0)
@@ -46,8 +63,7 @@ jobs:
           docroot = None
           for t in candidates:
               try:
-                  ftp.cwd(t)
-                  if "index.html" in ftp.nlst():
+                  if "index.html" in list_dir(t):
                       docroot = t; break
               except Exception:
                   pass
@@ -55,12 +71,65 @@ jobs:
               print("DOCROOT NOT FOUND"); ftp.quit(); sys.exit(1)
           print("docroot =", docroot)
 
+          MAINT_RULE = (
+              "\n# ---- MAINTENANCE MODE ----\n"
+              "RewriteCond %{REQUEST_URI} !^/maintenance\\.html$\n"
+              "RewriteCond %{REQUEST_URI} !^/assets/\n"
+              "RewriteCond %{DOCUMENT_ROOT}/.maintenance -f\n"
+              "RewriteRule ^(.*)$ /maintenance.html [R=302,L]\n"
+          )
+
           if mode == "pause":
+              go_root(); ftp.cwd(docroot)
+              # Self-heal: ensure maintenance.html exists on server (upload from repo if missing).
+              try:
+                  names = ftp.nlst()
+              except Exception as e:
+                  print("NLST failed:", e); ftp.quit(); sys.exit(1)
+              ftp.sendcmd("TYPE I")
+              if "maintenance.html" not in names:
+                  if os.path.isfile("maintenance.html"):
+                      with open("maintenance.html", "rb") as f:
+                          ftp.storbinary("STOR maintenance.html", f)
+                      print("uploaded maintenance.html from repo")
+                  else:
+                      print("WARN: maintenance.html missing locally and on server")
+              # Self-heal: ensure .htaccess contains the maintenance rule.
+              ftp.sendcmd("TYPE A")
+              lines = []
+              try:
+                  ftp.retrlines("RETR .htaccess", lines.append)
+              except Exception:
+                  lines = []
+              ht = "\n".join(l.rstrip() for l in lines)
+              if ".maintenance" not in ht:
+                  if os.path.isfile(".htaccess"):
+                      with open(".htaccess", "r") as f:
+                          ht = f.read().rstrip() + "\n"
+                      print("using .htaccess from repo (already has maintenance rule)")
+                  else:
+                      ht = ht.rstrip() + MAINT_RULE
+                      print("appended maintenance rule to server .htaccess")
+                  ftp.sendcmd("TYPE I")
+                  ftp.storbinary("STOR .htaccess", io.BytesIO(ht.encode()))
               ftp.sendcmd("TYPE I")
               ftp.storbinary("STOR .maintenance", io.BytesIO(b"maintenance"))
               print("PAUSED: .maintenance created at", docroot)
           elif mode == "resume":
-              ftp.delete(".maintenance")
-              print("RESUMED: .maintenance removed at", docroot)
+              removed = False
+              for d in [docroot, "/"]:
+                  try:
+                      go_root(); ftp.cwd(d)
+                      ftp.delete(".maintenance")
+                      print("RESUMED: .maintenance removed at", d)
+                      removed = True
+                  except ftplib.error_perm as e:
+                      print("skip", d, "->", e)
+                  except Exception as e:
+                      print("skip", d, "->", e)
+              if not removed:
+                  print("NOTE: no .maintenance marker found (already live?)")
+          else:
+              print("unknown mode:", mode); ftp.quit(); sys.exit(1)
           ftp.quit()
           EOF
