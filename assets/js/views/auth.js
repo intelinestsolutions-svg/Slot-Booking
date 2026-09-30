@@ -314,12 +314,25 @@
     form.querySelectorAll('.next').forEach(btn => {
       btn.addEventListener('click', () => {
         const panel = btn.closest('.wiz-panel');
-        if (valid(panel)) {
-          show(Number(panel.dataset.panel) + 1);
-          if (Number(panel.dataset.panel) + 1 === 3) fillSummary();
-        } else {
+        if (!valid(panel)) {
           UI.toast('Sila betulkan ruangan yang bertanda merah.', 'warn');
+          return;
         }
+        // Dari Langkah 1 (Butiran Peribadi): TIDAK boleh mara selagi
+        // nombor belum disahkan dengan kod OTP — tanpa sebarang pengecualian.
+        if (panel.dataset.panel === '0') {
+          const pr = window.__regProof;
+          const curEmail = document.getElementById('email').value.trim();
+          const curPhone = document.getElementById('phone').value.trim();
+          if (!pr || pr.email !== curEmail || pr.phone !== curPhone || !pr.proof) {
+            document.getElementById('phone').closest('.field').classList.add('invalid');
+            UI.toast('Sahkan nombor telefon anda dahulu: tekan "Hantar Kod", isi kod SMS, tekan "Sahkan Kod".', 'warn');
+            document.getElementById('regOtpSend').focus();
+            return;
+          }
+        }
+        show(Number(panel.dataset.panel) + 1);
+        if (Number(panel.dataset.panel) + 1 === 3) fillSummary();
       });
     });
     form.querySelectorAll('.back').forEach(btn => {
