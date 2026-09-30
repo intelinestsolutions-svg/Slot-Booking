@@ -39,17 +39,17 @@ switch ($action) {
             fail('Nombor WhatsApp tidak sah.');
         }
 
-        // Nombor telefon pendaftaran MESTI nombor WhatsApp Malaysia yang sah
+        // Nombor telefon pendaftaran MESTI nombor mudah alih Malaysia yang sah
         // kerana kod pengesahan OTP dihantar ke nombor ini.
         $waPhone = normalize_whatsapp((string)$d['phone']);
         if ($waPhone === null) {
-            fail('Nombor telefon tidak sah. Gunakan nombor WhatsApp Malaysia, cth: 012-3456789.');
+            fail('Nombor telefon tidak sah. Gunakan nombor telefon Malaysia, cth: 012-3456789.');
         }
 
         $dupPhone = $pdo->prepare("SELECT id FROM users WHERE phone = ?");
         $dupPhone->execute([$waPhone]);
         if ($dupPhone->fetch()) {
-            fail('Nombor WhatsApp ini sudah digunakan pada akaun lain.', 409);
+            fail('Nombor telefon ini sudah digunakan pada akaun lain.', 409);
         }
 
         $appId = 'APP-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
@@ -110,7 +110,7 @@ switch ($action) {
             'email' => $email,
             'phoneMasked' => otp_mask($waPhone),
             'message' => $sent['success']
-                ? 'Kod pengesahan 6-digit telah dihantar ke WhatsApp anda.'
+                ? 'Kod pengesahan 6-digit telah dihantar melalui SMS.'
                 : 'Akaun dicipta tetapi kod gagal dihantar — tekan Hantar Semula Kod.',
             'otpSent' => $sent['success'],
         ]);
@@ -174,7 +174,7 @@ switch ($action) {
         if (!$sent['success']) {
             fail($sent['error'], 502);
         }
-        ok(['email' => $email, 'phoneMasked' => otp_mask((string)$user['phone']), 'message' => 'Kod pengesahan baharu telah dihantar ke WhatsApp anda.']);
+        ok(['email' => $email, 'phoneMasked' => otp_mask((string)$user['phone']), 'message' => 'Kod pengesahan baharu telah dihantar melalui SMS.']);
         break;
 
     case 'forgot_password':
@@ -193,11 +193,11 @@ switch ($action) {
             ok([
                 'email' => $email,
                 'phoneMasked' => otp_mask((string)$user['phone']),
-                'message' => 'Jika email ini berdaftar, kod tetapan semula telah dihantar ke WhatsApp anda.',
+                'message' => 'Jika email ini berdaftar, kod tetapan semula telah dihantar melalui SMS.',
             ]);
             break;
         }
-        ok(['message' => 'Jika email ini berdaftar, kod tetapan semula telah dihantar ke WhatsApp anda.']);
+        ok(['message' => 'Jika email ini berdaftar, kod tetapan semula telah dihantar melalui SMS.']);
         break;
 
     case 'reset_password':
@@ -246,7 +246,7 @@ switch ($action) {
                 fail('Email atau kata laluan salah.', 401);
             }
             if ((int)($user['phoneVerified'] ?? 0) !== 1) {
-                json_out(['success' => false, 'error' => 'Sila sahkan nombor WhatsApp anda dahulu.', 'needPhoneVerify' => true, 'email' => $user['email'], 'phoneMasked' => otp_mask((string)$user['phone'])], 403);
+                json_out(['success' => false, 'error' => 'Sila sahkan nombor telefon anda dahulu.', 'needPhoneVerify' => true, 'email' => $user['email'], 'phoneMasked' => otp_mask((string)$user['phone'])], 403);
             }
         }
 
@@ -314,7 +314,7 @@ switch ($action) {
         break;
 
     case 'change_password':
-        // Keselamatan: mesti lulus KEDUA-DUA — kata laluan semasa + OTP WhatsApp segar.
+        // Keselamatan: mesti lulus KEDUA-DUA — kata laluan semasa + OTP SMS segar.
         $user = require_user($pdo);
         $d = body();
         $chk = otp_check($pdo, $user, (string)($d['otp'] ?? ''));
@@ -340,10 +340,10 @@ switch ($action) {
         break;
 
     case 'request_password_otp':
-        // Hantar OTP segar ke nombor WhatsApp yang telah disahkan (untuk pertukaran kata laluan).
+        // Hantar OTP segar ke nombor telefon yang telah disahkan (untuk pertukaran kata laluan).
         $user = require_user($pdo);
         if (empty($user['phone'])) {
-            fail('Tiada nombor WhatsApp pada akaun anda.', 403);
+            fail('Tiada nombor telefon pada akaun anda.', 403);
         }
         if (($wait = otp_cooldown_wait($user['phoneOtpSentAt'] ?? null)) > 0) {
             json_out(['success' => false, 'error' => "Sila tunggu $wait saat sebelum meminta kod baharu.", 'retryAfter' => $wait], 429);
@@ -352,7 +352,7 @@ switch ($action) {
         if (!$sent['success']) {
             fail($sent['error'], 502);
         }
-        ok(['phoneMasked' => otp_mask((string)$user['phone']), 'message' => 'Kod pengesahan telah dihantar ke WhatsApp anda.']);
+        ok(['phoneMasked' => otp_mask((string)$user['phone']), 'message' => 'Kod pengesahan telah dihantar melalui SMS.']);
         break;
 
     case 'upload_avatar':

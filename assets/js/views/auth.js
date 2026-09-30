@@ -125,9 +125,9 @@
                 <span class="error">Sila masukkan nombor IC yang sah.</span>
               </div>
               <div class="field">
-                <label for="phone">Telefon (WhatsApp) <em>*</em></label>
+                <label for="phone">Telefon <em>*</em></label>
                 <input class="input" id="phone" name="phone" maxlength="15" placeholder="01X-XXXXXXX" autocomplete="tel" required>
-                <span class="hint">Nombor WhatsApp Malaysia — kod pengesahan 6-digit akan dihantar ke nombor ini.</span>
+                <span class="hint">Nombor telefon Malaysia — kod pengesahan 6-digit dihantar melalui SMS ke nombor ini.</span>
                 <span class="error">Sila masukkan nombor telefon yang sah.</span>
               </div>
               <div class="field span-2">
@@ -254,8 +254,8 @@
 
         <section class="wiz-panel" data-panel="verify">
           <div class="wiz-card">
-            <h2>Sahkan Nombor WhatsApp</h2>
-            <p class="sub">Kod pengesahan 6-digit telah dihantar ke WhatsApp <b id="otpMask">anda</b>. Kod luput dalam 10 minit.</p>
+            <h2>Sahkan Nombor Telefon</h2>
+            <p class="sub">Kod pengesahan 6-digit telah dihantar melalui SMS ke <b id="otpMask">anda</b>. Kod luput dalam 10 minit.</p>
             <div id="otpNotice"></div>
             <div class="form-grid">
               <div class="field span-2">
@@ -403,7 +403,7 @@
           if (data.message) document.getElementById('otpNotice').innerHTML = UI.notice(data.message, 'info');
           show('verify');
           Nav.update();
-          UI.toast('Sahkan nombor WhatsApp anda untuk melengkapkan pendaftaran.', 'ok');
+          UI.toast('Sahkan nombor telefon anda untuk melengkapkan pendaftaran.', 'ok');
           return;
         }
         Session.setToken(data.token);
@@ -474,15 +474,15 @@
   window.viewVerifyPhone = function (q) {
     const mode = q.mode === 'forgot' ? 'forgot' : 'verify';
     const isForgot = mode === 'forgot';
-    const title = isForgot ? 'Lupa Kata Laluan' : 'Sahkan Nombor WhatsApp';
+    const title = isForgot ? 'Lupa Kata Laluan' : 'Sahkan Nombor Telefon';
     const subtitle = isForgot
-      ? 'Kod tetapan semula dihantar ke nombor WhatsApp berdaftar anda.'
+      ? 'Kod tetapan semula dihantar melalui SMS ke nombor berdaftar anda.'
       : 'Lengkapkan pengesahan untuk mengaktifkan akaun anda.';
 
     return UI.page(title, subtitle,
       `<div class="auth-wrap">
         <div class="auth-card">
-          <div id="vpNotice">${q.email && !isForgot ? UI.notice('Kod 6-digit dihantar ke WhatsApp anda. Kod luput dalam 10 minit.', 'info') : ''}</div>
+          <div id="vpNotice">${q.email && !isForgot ? UI.notice('Kod 6-digit dihantar melalui SMS. Kod luput dalam 10 minit.', 'info') : ''}</div>
           <form id="vpForm">
             <div class="field">
               <label for="vpEmail">Email ${isForgot ? '<em>*</em>' : ''}</label>
@@ -511,7 +511,7 @@
           </p>
         </div>
       </div>`,
-      { eyebrow: isForgot ? 'Tetapan semula kata laluan' : 'Pengesahan WhatsApp' });
+      { eyebrow: isForgot ? 'Tetapan semula kata laluan' : 'Pengesahan SMS' });
   };
 
   window.ViewHooks.viewVerifyPhone = function (q) {
@@ -534,7 +534,7 @@
           document.getElementById('vpNewWrap').style.display = '';
           document.getElementById('vpNew2Wrap').style.display = '';
           btn.textContent = 'Tukar Kata Laluan';
-          noticeBox.innerHTML = UI.notice(r.message || 'Kod dihantar ke WhatsApp anda.', 'ok');
+          noticeBox.innerHTML = UI.notice(r.message || 'Kod dihantar melalui SMS.', 'ok');
         } else if (isForgot) {
           const code = document.getElementById('vpOtp').value.replace(/\D/g, '');
           const nw = document.getElementById('vpNew').value;
@@ -553,7 +553,7 @@
           Session.setToken(data.token);
           Session.setUser(data.user);
           noticeBox.innerHTML = UI.notice('Nombor disahkan! Anda boleh meneruskan.', 'ok');
-          UI.toast('Nombor WhatsApp disahkan.', 'ok');
+          UI.toast('Nombor telefon disahkan.', 'ok');
           setTimeout(() => Router.go('cari-slot'), 1200);
         }
       } catch (err) {
