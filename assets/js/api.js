@@ -5,7 +5,7 @@
     const map = {
       auth: 'auth.php', slots: 'slots.php', bookings: 'bookings.php',
       community: 'community.php', admin: 'admin.php',
-      prayer: 'prayer.php', premium: 'premium.php',
+      prayer: 'prayer.php',
     };
     return map[kind] || kind;
   }
@@ -108,12 +108,6 @@
       locationReviews: (locationId) => call('community', 'location_reviews', { params: { locationId } }),
       addReview: (b) => call('community', 'add_review', { method: 'POST', body: b }),
     },
-    premium: {
-      status: () => call('premium', 'status'),
-      subscribe: () => call('premium', 'subscribe', { method: 'POST' }),
-      verifyReturn: (params) => call('premium', 'verify_return', { params }),
-      history: () => call('premium', 'history'),
-    },
     prayer: {
       today: () => call('prayer', 'today'),
     },
@@ -124,7 +118,6 @@
       registerAdmin: (b) => call('admin', 'register_admin', { method: 'POST', body: b }),
       listBuskers: () => call('admin', 'buskers'),
       assignBusker: (b) => call('admin', 'assign_busker', { method: 'POST', body: b }),
-      setPremium: (b) => call('admin', 'set_premium', { method: 'POST', body: b }),
       slotSchedule: () => call('admin', 'slots_schedule'),
       setSlotStatus: (b) => call('admin', 'slot_status', { method: 'POST', body: b }),
     },

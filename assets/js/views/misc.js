@@ -12,7 +12,7 @@
       ${sec('6. Bayaran &amp; Yuran', '<p>Yuran sesi RM5–RM10 mengikut tier lokasi dibayar secara atas talian. Semua transaksi direkodkan; tempahan yang tidak dibayar akan dilepaskan.</p>')}
       ${sec('7. Harta Intelek &amp; Kerahsiaan', '<p>Kandungan aplikasi (logo, teks, imej, data internal) adalah hak milik SBC dan dianggap sulit. Tidak dibenarkan berkongsi cetakan skrin atau data dalaman kepada pihak luar.</p>')}
       ${sec('8. Had Tanggungjawab', '<p>SBC tidak bertanggungjawab atas kerugian akibat penggunaan aplikasi, pembatalan venue, cuaca, atau keadaan di luar kawalan kami.</p>')}
-      ${sec('9. Privasi &amp; Data', '<p>Maklumat anda digunakan untuk pengesahan, tempahan dan penyampaian notifikasi sahaja. Lihat dasar privasi untuk butiran penuh.</p>')}
+      ${sec('9. Privasi &amp; Data', '<p>Maklumat anda digunakan untuk pengesahan, tempahan dan penyampaian notifikasi sahaja. Baca <a href="?page=privacy">Dasar Privasi (PDPA)</a> penuh kami.</p>')}
       ${sec('10. Perubahan Terma', '<p>Terma ini boleh dikemas kini dari masa ke masa. Penggunaan berterusan selepas perubahan bermakna anda menerima terma baharu.</p>')}
       <p class="tos-lead" style="margin:18px 0 0;font-size:12px;color:var(--muted-2);">© 2026 Sabah Buskers Community (SBC). All rights reserved. Developed by <b style="color:var(--muted)">Studio Pro</b> (Marwan Haji Beluar).</p>`;
   };
@@ -24,6 +24,7 @@
       <div class="panel">${TermsHTML()}</div>
       <div style="margin-top:20px;">
         <a class="btn btn-primary" href="?page=landing">Kembali ke Laman Utama</a>
+        <a class="btn btn-ghost" href="?page=privacy" style="margin-left:10px;">Dasar Privasi</a>
         <a class="btn btn-ghost" href="mailto:hello@sabahbuskers.my" style="margin-left:10px;">Soalan? Hubungi Kami</a>
       </div>`,
       { eyebrow: 'Perundangan' });
@@ -88,18 +89,6 @@
             <li>Tanjung Aru — pelancong sehingga matahari terbenam</li>
             <li>Jumaat &amp; Sabtu malam; Ahad pagi</li>
           </ul>
-        </div>
-        <div class="card price-card">
-          <span class="tier tier-warm">⭐ Premium</span>
-          <div class="price"><small>RM</small>120<small>/bulan</small></div>
-          <p style="font-size:12.5px;color:var(--muted);">untuk ahli berdaftar</p>
-          <ul>
-            <li>Tempahan slot tanpa had</li>
-            <li>Badge Premium dan keutamaan hotspot</li>
-            <li>Statistik persembahan lanjutan</li>
-            <li>Pautan TikTok/Instagram ditaja</li>
-          </ul>
-          <a class="btn btn-primary btn-block" href="?page=premium" style="margin-top:16px;">Naik Taraf</a>
         </div>
       </div>
 

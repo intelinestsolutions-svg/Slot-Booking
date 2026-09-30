@@ -13,7 +13,7 @@ window.APP = {
   userKey: 'sabahbuskers_user',
   langKey: 'sabahbuskers_lang',
 buildName: '2.0.4-beta',
-  buildCode: 18,
+  buildCode: 19,
   webBuild: '20261042',
   updateUrl: 'https://apps.sabahbuskers.my/version.json',
   downloadUrl: 'https://apps.sabahbuskers.my/sbc-mobile.apk',

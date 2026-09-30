@@ -23,7 +23,6 @@
     pricing: 'viewPricing',
     terms: 'viewTerms',
     privacy: 'viewPrivacy',
-    premium: 'viewPremium',
     'admin-dashboard': 'viewAdmin',
     'admin-finance': 'viewAdminFinance',
     'pengurusan-slot': 'viewAdminSlots',
@@ -73,7 +72,7 @@
         viewFn = 'viewSchedule';
       }
 
-      const loginPages = ['slot-booking', 'tempahan-saya', 'profil', 'kemaskini-profil', 'performance-dashboard', 'inbox', 'tools', 'bersedia', 'premium'];
+      const loginPages = ['slot-booking', 'tempahan-saya', 'profil', 'kemaskini-profil', 'performance-dashboard', 'inbox', 'tools', 'bersedia'];
       let user = Session.user;
       if (!user && loginPages.includes(page) && Session.token) {
         try {
@@ -217,7 +216,6 @@
           login: 'profil',
           register: 'profil',
           'verify-phone': 'profil',
-          'premium': 'tools',
           'admin-dashboard': 'profil',
           'admin-finance': 'profil',
           'pengurusan-slot': 'profil',

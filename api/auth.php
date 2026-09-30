@@ -507,7 +507,7 @@ function public_user(PDO $pdo, int $id): array
 function public_user_full(PDO $pdo, int $id): array
 {
     $stmt = $pdo->prepare("SELECT id,email,role,fullName,icNumber,phone,whatsappNumber,state,city,address,postcode,
-        stageName,genre,description,instagram,tiktok,verificationStatus,isActive,isPremium,isOku,language,avatar,createdAt,premiumExpiresAt
+        stageName,genre,description,instagram,tiktok,verificationStatus,isActive,isOku,language,avatar,createdAt
         FROM users WHERE id=?");
     $stmt->execute([$id]);
     return $stmt->fetch() ?: [];
