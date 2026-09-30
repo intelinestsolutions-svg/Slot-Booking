@@ -33,17 +33,17 @@ function otp_ts($v): int
 
 function otp_configured(): bool
 {
-    if (defined('WHATSAPP_TEST_MODE') && WHATSAPP_TEST_MODE) {
+    if (defined('SMS_TEST_MODE') && SMS_TEST_MODE) {
         return true;
     }
-    $gateway = defined('WHATSAPP_GATEWAY') ? (string)WHATSAPP_GATEWAY : '';
+    $gateway = defined('SMS_GATEWAY') ? (string)SMS_GATEWAY : '';
     if ($gateway === 'sms') {
-        $user = defined('WHATSAPP_SMS_USER') ? (string)WHATSAPP_SMS_USER : '';
-        $pass = defined('WHATSAPP_SMS_PASS') ? (string)WHATSAPP_SMS_PASS : '';
+        $user = defined('SMS_USER') ? (string)SMS_USER : '';
+        $pass = defined('SMS_PASS') ? (string)SMS_PASS : '';
         return $user !== '' && $pass !== '';
     }
-    $token = defined('WHATSAPP_TOKEN') ? (string)WHATSAPP_TOKEN : '';
-    $instance = defined('WHATSAPP_INSTANCE_ID') ? (string)WHATSAPP_INSTANCE_ID : '';
+    $token = defined('SMS_TOKEN') ? (string)SMS_TOKEN : '';
+    $instance = defined('SMS_INSTANCE_ID') ? (string)SMS_INSTANCE_ID : '';
     return $gateway !== '' && $token !== '' && $instance !== '';
 }
 

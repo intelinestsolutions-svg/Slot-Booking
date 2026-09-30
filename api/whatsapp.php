@@ -10,8 +10,8 @@ function send_whatsapp(string $to, string $message): bool
     }
 
     // Mod ujian: log sahaja, jangan hantar ke rangkaian.
-    if (defined('WHATSAPP_TEST_MODE') && WHATSAPP_TEST_MODE) {
-        $log = defined('WHATSAPP_TEST_LOG') ? (string)WHATSAPP_TEST_LOG : '';
+    if (defined('SMS_TEST_MODE') && SMS_TEST_MODE) {
+        $log = defined('SMS_TEST_LOG') ? (string)SMS_TEST_LOG : '';
         if ($log !== '') {
             $dir = dirname($log);
             if (!is_dir($dir)) {
@@ -26,16 +26,16 @@ function send_whatsapp(string $to, string $message): bool
         return true;
     }
 
-    $gateway = defined('WHATSAPP_GATEWAY') ? WHATSAPP_GATEWAY : '';
-    $token   = defined('WHATSAPP_TOKEN') ? WHATSAPP_TOKEN : '';
-    $instance = defined('WHATSAPP_INSTANCE_ID') ? WHATSAPP_INSTANCE_ID : '';
+    $gateway = defined('SMS_GATEWAY') ? SMS_GATEWAY : '';
+    $token   = defined('SMS_TOKEN') ? SMS_TOKEN : '';
+    $instance = defined('SMS_INSTANCE_ID') ? SMS_INSTANCE_ID : '';
 
     // Telefon prepaid sendiri — SMS Gateway for Android (sms-gate.app),
     // mod Cloud. Auth: Basic (username + password dari skrin Home aplikasi).
     if ($gateway === 'sms') {
-        $url = defined('WHATSAPP_SMS_URL') ? rtrim((string)WHATSAPP_SMS_URL, '/') : 'https://api.sms-gate.app/3rdparty/v1/messages';
-        $user = defined('WHATSAPP_SMS_USER') ? (string)WHATSAPP_SMS_USER : '';
-        $pass = defined('WHATSAPP_SMS_PASS') ? (string)WHATSAPP_SMS_PASS : '';
+        $url = defined('SMS_URL') ? rtrim((string)SMS_URL, '/') : 'https://api.sms-gate.app/3rdparty/v1/messages';
+        $user = defined('SMS_USER') ? (string)SMS_USER : '';
+        $pass = defined('SMS_PASS') ? (string)SMS_PASS : '';
         if ($user === '' || $pass === '') {
             return false;
         }
@@ -66,7 +66,7 @@ function send_whatsapp(string $to, string $message): bool
         $url = "https://api.chat-api.com/instance{$instance}/sendMessage";
         $params = ['token' => $token, 'chatId' => $to . '@c.us', 'body' => $message];
     } elseif ($gateway === 'evolution') {
-        $base = defined('WHATSAPP_BASE') ? WHATSAPP_BASE : '';
+        $base = defined('SMS_BASE') ? SMS_BASE : '';
         if ($base === '') {
             return false;
         }
@@ -110,7 +110,7 @@ function send_whatsapp(string $to, string $message): bool
 
 function whatsapp_target(): string
 {
-    $to = defined('WHATSAPP_TO') ? WHATSAPP_TO : '';
+    $to = defined('SMS_TO') ? SMS_TO : '';
     return preg_replace('/[^0-9]/', '', $to);
 }
 

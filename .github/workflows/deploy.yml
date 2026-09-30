@@ -21,13 +21,13 @@ jobs:
           MVKEY: ${{ secrets.MPK_VERIFY_KEY }}
           ADMIN_EMAIL: ${{ secrets.DEFAULT_ADMIN_EMAIL }}
           ADMIN_PASS: ${{ secrets.DEFAULT_ADMIN_PASSWORD }}
-          WA_GATEWAY: ${{ secrets.WHATSAPP_GATEWAY }}
-          WA_INSTANCE: ${{ secrets.WHATSAPP_INSTANCE_ID }}
-          WA_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
-          WA_SMS_URL: ${{ secrets.WHATSAPP_SMS_URL }}
-          WA_SMS_USER: ${{ secrets.WHATSAPP_SMS_USER }}
-          WA_SMS_PASS: ${{ secrets.WHATSAPP_SMS_PASS }}
-          WA_TO: ${{ secrets.WHATSAPP_TO }}
+          SMS_GATEWAY: ${{ secrets.SMS_GATEWAY }}
+          SMS_INSTANCE: ${{ secrets.SMS_INSTANCE_ID }}
+          SMS_TOKEN: ${{ secrets.SMS_TOKEN }}
+          SMS_URL: ${{ secrets.SMS_URL }}
+          SMS_USER: ${{ secrets.SMS_USER }}
+          SMS_PASS: ${{ secrets.SMS_PASS }}
+          SMS_TO: ${{ secrets.SMS_TO }}
         run: |
           cat > api/config.local.php <<EOF
           <?php
@@ -40,13 +40,13 @@ jobs:
           define('MPK_VERIFY_KEY', '${MVKEY}');
           define('DEFAULT_ADMIN_EMAIL', '${ADMIN_EMAIL}');
           define('DEFAULT_ADMIN_PASSWORD', '${ADMIN_PASS}');
-          define('WHATSAPP_GATEWAY', '${WA_GATEWAY}');
-          define('WHATSAPP_INSTANCE_ID', '${WA_INSTANCE}');
-          define('WHATSAPP_TOKEN', '${WA_TOKEN}');
-          define('WHATSAPP_SMS_URL', '${WA_SMS_URL}');
-          define('WHATSAPP_SMS_USER', '${WA_SMS_USER}');
-          define('WHATSAPP_SMS_PASS', '${WA_SMS_PASS}');
-          define('WHATSAPP_TO', '${WA_TO}');
+          define('SMS_GATEWAY', '${SMS_GATEWAY}');
+          define('SMS_INSTANCE_ID', '${SMS_INSTANCE}');
+          define('SMS_TOKEN', '${SMS_TOKEN}');
+          define('SMS_URL', '${SMS_URL}');
+          define('SMS_USER', '${SMS_USER}');
+          define('SMS_PASS', '${SMS_PASS}');
+          define('SMS_TO', '${SMS_TO}');
           EOF
           test -s api/config.local.php || { echo "config.local.php not written"; exit 1; }
 

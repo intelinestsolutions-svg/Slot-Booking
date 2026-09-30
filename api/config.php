@@ -43,11 +43,11 @@ if (!defined('MPK_VERIFY_KEY')) {
 // ====== Pengesahan WhatsApp (OTP 6-digit semasa pendaftaran busker) ======
 // Pendaftaran baharu wajib mengesahkan nombor WhatsApp Malaysia melalui OTP
 // sebelum sesi log masuk dikeluarkan. Akaun sedia ada dikecualikan automatik.
-if (!defined('WHATSAPP_TEST_MODE')) {
-    define('WHATSAPP_TEST_MODE', false);  // true = log OTP ke fail, jangan hantar
+if (!defined('SMS_TEST_MODE')) {
+    define('SMS_TEST_MODE', false);  // true = log OTP ke fail, jangan hantar
 }
-if (!defined('WHATSAPP_TEST_LOG')) {
-    define('WHATSAPP_TEST_LOG', DB_DIR . '/whatsapp-test.log');
+if (!defined('SMS_TEST_LOG')) {
+    define('SMS_TEST_LOG', DB_DIR . '/sms-test.log');
 }
 // Polisi OTP: sah 10 minit, maks 5 cubaan, hantar semula selepas 60 saat.
 if (!defined('OTP_TTL')) {
@@ -65,16 +65,16 @@ if (!defined('PROOF_TTL')) {
 }
 
 // Telefon prepaid sendiri — SMS Gateway for Android (sms-gate.app), mod Cloud.
-// Digunakan apabila WHATSAPP_GATEWAY = 'sms'. Username + password dari
+// Digunakan apabila SMS_GATEWAY = 'sms'. Username + password dari
 // skrin Home aplikasi (Basic auth).
-if (!defined('WHATSAPP_SMS_URL')) {
-    define('WHATSAPP_SMS_URL', 'https://api.sms-gate.app/3rdparty/v1/messages');
+if (!defined('SMS_URL')) {
+    define('SMS_URL', 'https://api.sms-gate.app/3rdparty/v1/messages');
 }
-if (!defined('WHATSAPP_SMS_USER')) {
-    define('WHATSAPP_SMS_USER', '');
+if (!defined('SMS_USER')) {
+    define('SMS_USER', '');
 }
-if (!defined('WHATSAPP_SMS_PASS')) {
-    define('WHATSAPP_SMS_PASS', '');
+if (!defined('SMS_PASS')) {
+    define('SMS_PASS', '');
 }
 
 ini_set('display_errors', '0');
