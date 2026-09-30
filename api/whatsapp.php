@@ -30,14 +30,45 @@ function send_whatsapp(string $to, string $message): bool
     $token   = defined('WHATSAPP_TOKEN') ? WHATSAPP_TOKEN : '';
     $instance = defined('WHATSAPP_INSTANCE_ID') ? WHATSAPP_INSTANCE_ID : '';
 
+    // Telefon prepaid sendiri (aplikasi SMS gateway di telefon lama).
+    // WHATSAPP_TOKEN di sini ialah kunci API aplikasi gateway tersebut.
+    if ($gateway === 'sms') {
+        $url = defined('WHATSAPP_SMS_URL') ? rtrim((string)WHATSAPP_SMS_URL, '/') : '';
+        $key = defined('WHATSAPP_SMS_KEY') ? (string)WHATSAPP_SMS_KEY : '';
+        if ($url === '' || $key === '') {
+            return false;
+        }
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode(['to' => $to, 'message' => $message]),
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Authorization: Bearer ' . $key],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_TIMEOUT => 20,
+        ]);
+        $resp = curl_exec($ch);
+        $err = curl_error($ch);
+        curl_close($ch);
+        if ($err || $resp === false) {
+            return false;
+        }
+        $j = json_decode((string)$resp, true);
+        if (!is_array($j)) {
+            return false;
+        }
+        if (!empty($j['success'])) {
+            return true;
+        }
+        $st = strtolower((string)($j['status'] ?? ''));
+        return in_array($st, ['sent', 'queued', 'success', 'ok'], true);
+    }
+
     if ($gateway === '' || $token === '' || $instance === '' || trim($to) === '') {
         return false;
     }
 
-    if ($gateway === 'ultramsg') {
-        $url = "https://api.ultramsg.com/{$instance}/messages/chat";
-        $params = ['token' => $token, 'to' => $to, 'body' => $message];
-    } elseif ($gateway === 'chatapi') {
+    if ($gateway === 'chatapi') {
         $url = "https://api.chat-api.com/instance{$instance}/sendMessage";
         $params = ['token' => $token, 'chatId' => $to . '@c.us', 'body' => $message];
     } elseif ($gateway === 'evolution') {

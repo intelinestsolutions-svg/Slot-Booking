@@ -60,6 +60,15 @@ if (!defined('OTP_RESEND_COOLDOWN')) {
     define('OTP_RESEND_COOLDOWN', 60);
 }
 
+// Telefon prepaid sendiri (aplikasi SMS gateway di telefon lama).
+// Digunakan apabila WHATSAPP_GATEWAY = 'sms'.
+if (!defined('WHATSAPP_SMS_URL')) {
+    define('WHATSAPP_SMS_URL', '');
+}
+if (!defined('WHATSAPP_SMS_KEY')) {
+    define('WHATSAPP_SMS_KEY', '');
+}
+
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 session_start();

@@ -1,7 +1,7 @@
 <?php
-// ====== OTP WhatsApp — pengesahan nombor & tetapan semula kata laluan ======
+// ====== OTP SMS — pengesahan nombor & tetapan semula kata laluan ======
 // Digunakan oleh api/auth.php (pendaftaran, pengesahan, lupa kata laluan).
-// Penghantaran melalui send_whatsapp() (ultramsg | chatapi | evolution).
+// Penghantaran melalui send_whatsapp() (chatapi | evolution).
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/whatsapp.php';
@@ -37,6 +37,11 @@ function otp_configured(): bool
         return true;
     }
     $gateway = defined('WHATSAPP_GATEWAY') ? (string)WHATSAPP_GATEWAY : '';
+    if ($gateway === 'sms') {
+        $url = defined('WHATSAPP_SMS_URL') ? (string)WHATSAPP_SMS_URL : '';
+        $key = defined('WHATSAPP_SMS_KEY') ? (string)WHATSAPP_SMS_KEY : '';
+        return $url !== '' && $key !== '';
+    }
     $token = defined('WHATSAPP_TOKEN') ? (string)WHATSAPP_TOKEN : '';
     $instance = defined('WHATSAPP_INSTANCE_ID') ? (string)WHATSAPP_INSTANCE_ID : '';
     return $gateway !== '' && $token !== '' && $instance !== '';
@@ -50,20 +55,20 @@ function otp_message(string $otp): string
 }
 
 /**
- * Jana OTP 6-digit, simpan hash + luput, hantar melalui WhatsApp.
+ * Jana OTP 6-digit, simpan hash + luput, hantar melalui SMS.
  * @return array{success:bool,error?:string}
  */
 function otp_issue(PDO $pdo, int $userId, string $phone): array
 {
     if (!otp_configured()) {
-        return ['success' => false, 'error' => 'Perkhidmatan WhatsApp belum disediakan. Sila hubungi admin.'];
+        return ['success' => false, 'error' => 'Perkhidmatan SMS belum disediakan. Sila hubungi admin.'];
     }
     $otp = (string)random_int(100000, 999999);
     $expires = time() + (defined('OTP_TTL') ? OTP_TTL : 600);
     $pdo->prepare("UPDATE users SET phoneOtpHash = ?, phoneOtpExpires = ?, phoneOtpAttempts = 0, phoneOtpSentAt = ? WHERE id = ?")
         ->execute([password_hash($otp, PASSWORD_DEFAULT), (string)$expires, (string)time(), $userId]);
     if (!send_whatsapp($phone, otp_message($otp))) {
-        return ['success' => false, 'error' => 'Gagal menghantar kod WhatsApp. Sila cuba hantar semula.'];
+        return ['success' => false, 'error' => 'Gagal menghantar kod SMS. Sila cuba hantar semula.'];
     }
     return ['success' => true];
 }

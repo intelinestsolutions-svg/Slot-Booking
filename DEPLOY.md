@@ -49,8 +49,9 @@ Old Android APKs (older `versionCode`) will prompt "Versi Baharu Tersedia" with 
   - `TOYYIBPAY_CATEGORY_CODE` = your category code (e.g. `9d3qxmne`)
   - `VERIFY_TOKEN` = app verify token (must match `VERIFY_TOKEN` in local config)
   - `DEFAULT_ADMIN_EMAIL` / `DEFAULT_ADMIN_PASSWORD` = default admin login
-  - `WHATSAPP_GATEWAY` = `ultramsg` | `chatapi` | empty to disable
+  - `WHATSAPP_GATEWAY` = `chatapi` | `evolution` | `sms` | empty to disable
   - `WHATSAPP_INSTANCE_ID`, `WHATSAPP_TOKEN`, `WHATSAPP_TO` = WhatsApp alert config
+  - `WHATSAPP_SMS_URL`, `WHATSAPP_SMS_KEY` = prepaid-phone SMS gateway (when `WHATSAPP_GATEWAY` = `sms`)
   - The deploy workflow writes `api/config.local.php` from these secrets before
     uploading, so the live keys never need to live in git.
 - Workflow file: `.github/workflows/deploy.yml`

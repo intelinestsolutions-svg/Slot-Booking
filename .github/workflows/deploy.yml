@@ -24,6 +24,8 @@ jobs:
           WA_GATEWAY: ${{ secrets.WHATSAPP_GATEWAY }}
           WA_INSTANCE: ${{ secrets.WHATSAPP_INSTANCE_ID }}
           WA_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+          WA_SMS_URL: ${{ secrets.WHATSAPP_SMS_URL }}
+          WA_SMS_KEY: ${{ secrets.WHATSAPP_SMS_KEY }}
           WA_TO: ${{ secrets.WHATSAPP_TO }}
         run: |
           cat > api/config.local.php <<EOF
@@ -40,6 +42,8 @@ jobs:
           define('WHATSAPP_GATEWAY', '${WA_GATEWAY}');
           define('WHATSAPP_INSTANCE_ID', '${WA_INSTANCE}');
           define('WHATSAPP_TOKEN', '${WA_TOKEN}');
+          define('WHATSAPP_SMS_URL', '${WA_SMS_URL}');
+          define('WHATSAPP_SMS_KEY', '${WA_SMS_KEY}');
           define('WHATSAPP_TO', '${WA_TO}');
           EOF
           test -s api/config.local.php || { echo "config.local.php not written"; exit 1; }
