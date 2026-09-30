@@ -163,13 +163,13 @@
           <div class="field"><label for="pwCurrent">Kata Laluan Semasa</label><input class="input" type="password" id="pwCurrent" autocomplete="current-password"></div>
           <div class="field" style="margin-top:14px;"><label for="pwNew">Kata Laluan Baru</label><input class="input" type="password" id="pwNew" autocomplete="new-password"></div>
           <div class="field" style="margin-top:14px;"><label for="pwNew2">Sahkan Kata Laluan Baru</label><input class="input" type="password" id="pwNew2" autocomplete="new-password"></div>
-          <div class="field" style="margin-top:14px;"><label for="pwOtp">Kod SMS (6-digit)</label>
+          <div class="field" style="margin-top:14px;"><label for="pwOtp">Kod SMS (6-digit) — Langkah 1: tekan "Hantar Kod", Langkah 2: isi kod di sini</label>
             <div style="display:flex;gap:8px;">
               <input class="input" type="text" id="pwOtp" maxlength="6" inputmode="numeric" placeholder="123456" style="letter-spacing:3px;text-align:center;">
               <button class="btn btn-ghost" type="button" id="pwOtpBtn" style="white-space:nowrap;">Hantar Kod</button>
             </div>
           </div>
-          <button class="btn btn-ghost" type="submit" id="pwSave" style="margin-top:12px;">Tukar Kata Laluan</button>
+          <button class="btn btn-ghost" type="submit" id="pwSave" style="margin-top:12px;" disabled>Tukar Kata Laluan</button>
         </form>
       </div>`,
       { eyebrow: 'Butiran anda' });
@@ -317,6 +317,7 @@
       try {
         const r = await API.auth.requestPasswordOtp();
         document.getElementById('pwNotice').innerHTML = UI.notice(r.message || 'Kod dihantar melalui SMS.', 'ok');
+        document.getElementById('pwSave').disabled = false;
         let wait = 60;
         btn.textContent = 'Tunggu ' + wait + 's...';
         const t = setInterval(() => {
