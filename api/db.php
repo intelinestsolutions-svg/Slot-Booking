@@ -52,6 +52,11 @@ function schema(PDO $pdo): void
         language TEXT NOT NULL DEFAULT 'ms',
         avatar TEXT,
         token TEXT,
+        phoneVerified INTEGER NOT NULL DEFAULT 0,
+        phoneOtpHash TEXT,
+        phoneOtpExpires TEXT,
+        phoneOtpAttempts INTEGER NOT NULL DEFAULT 0,
+        phoneOtpSentAt TEXT,
         createdAt TEXT NOT NULL DEFAULT (datetime('now'))
     )");
 
@@ -64,6 +69,27 @@ function schema(PDO $pdo): void
     }
     if (!in_array('premiumExpiresAt', $cols, true)) {
         $pdo->exec("ALTER TABLE users ADD COLUMN premiumExpiresAt TEXT");
+    }
+    // Pengesahan WhatsApp (OTP). Akaun sedia ada dikecualikan automatik
+    // supaya tidak dikunci keluar; pendaftaran baharu bermula 0.
+    $needGrandfather = !in_array('phoneVerified', $cols, true);
+    foreach ([
+        'phoneVerified' => "ALTER TABLE users ADD COLUMN phoneVerified INTEGER NOT NULL DEFAULT 0",
+        'phoneOtpHash' => "ALTER TABLE users ADD COLUMN phoneOtpHash TEXT",
+        'phoneOtpExpires' => "ALTER TABLE users ADD COLUMN phoneOtpExpires TEXT",
+        'phoneOtpAttempts' => "ALTER TABLE users ADD COLUMN phoneOtpAttempts INTEGER NOT NULL DEFAULT 0",
+        'phoneOtpSentAt' => "ALTER TABLE users ADD COLUMN phoneOtpSentAt TEXT",
+    ] as $col => $sql) {
+        if (!in_array($col, $cols, true)) {
+            try {
+                $pdo->exec($sql);
+            } catch (Throwable $e) {
+                // Perlumbaan migrasi serentak — lajur mungkin sudah ditambah.
+            }
+        }
+    }
+    if ($needGrandfather) {
+        $pdo->exec("UPDATE users SET phoneVerified = 1 WHERE phoneVerified = 0");
     }
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS sessions (
@@ -430,6 +456,9 @@ function require_user(PDO $pdo): array
     $user = current_user($pdo);
     if (!$user) {
         fail('Sila log masuk dahulu.', 401);
+    }
+    if ($user['role'] === 'busker' && (int)($user['phoneVerified'] ?? 0) !== 1) {
+        json_out(['success' => false, 'error' => 'Sila sahkan nombor WhatsApp anda dahulu.', 'needPhoneVerify' => true, 'email' => $user['email']], 403);
     }
     return $user;
 }

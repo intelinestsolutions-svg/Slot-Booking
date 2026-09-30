@@ -28,7 +28,10 @@
             </div>
             <button class="btn btn-primary btn-block" style="margin-top:20px;" id="loginBtn">Log Masuk</button>
           </form>
-          <p style="text-align:center;margin-top:18px;font-size:13px;color:var(--muted)">
+          <p style="text-align:center;margin-top:14px;font-size:13px;color:var(--muted)">
+            <a href="?page=verify-phone&mode=forgot" style="color:var(--gold);">Lupa kata laluan?</a>
+          </p>
+          <p style="text-align:center;margin-top:10px;font-size:13px;color:var(--muted)">
             Belum ada akaun? <a href="?page=register" style="color:var(--gold);font-weight:700;">Daftar sebagai busker</a>
           </p>
         </div>
@@ -70,6 +73,10 @@
         const roleHome = data.user.role === 'admin' ? 'admin-dashboard' : 'cari-slot';
         Router.go(next || roleHome);
       } catch (err) {
+        if (err && err.data && err.data.needPhoneVerify) {
+          Router.go('verify-phone', { mode: 'verify', email: err.data.email || email });
+          return;
+        }
         noticeBox.innerHTML = UI.notice(err.message, 'error');
       } finally {
         btn.disabled = false;
@@ -118,9 +125,9 @@
                 <span class="error">Sila masukkan nombor IC yang sah.</span>
               </div>
               <div class="field">
-                <label for="phone">Telefon <em>*</em></label>
+                <label for="phone">Telefon (WhatsApp) <em>*</em></label>
                 <input class="input" id="phone" name="phone" maxlength="15" placeholder="01X-XXXXXXX" autocomplete="tel" required>
-                <span class="hint">Format: 01X-XXXXXXX</span>
+                <span class="hint">Nombor WhatsApp Malaysia — kod pengesahan 6-digit akan dihantar ke nombor ini.</span>
                 <span class="error">Sila masukkan nombor telefon yang sah.</span>
               </div>
               <div class="field span-2">
@@ -234,7 +241,7 @@
 
               <label class="consent-row span-2">
                 <input type="checkbox" id="consent">
-                <span>Saya mengesahkan maklumat yang diberikan adalah benar dan mematuhi <a href="?page=about-buzzking" style="text-decoration:underline;">Syarat &amp; Terma</a> platform. Akaun saya akan diaktifkan selepas semakan admin.</span>
+                <span>Saya mengesahkan maklumat yang diberikan adalah benar dan bersetuju dengan <a href="?page=terms" style="text-decoration:underline;">Terma &amp; Syarat</a> serta <a href="?page=privacy" style="text-decoration:underline;">Dasar Privasi (PDPA)</a> platform, termasuk pengumpulan MyKad untuk pengesahan. Akaun saya akan diaktifkan selepas semakan admin.</span>
               </label>
               <span class="error" id="consentErr" style="display:none;color:var(--danger);font-size:12.5px;">Sila tandakan persetujuan anda.</span>
             </div>
@@ -242,6 +249,24 @@
           <div class="wiz-nav">
             <button type="button" class="btn btn-ghost back">← Kembali</button>
             <button type="submit" class="btn btn-primary" id="submitBtn"><span class="btn-label">Hantar Permohonan</span><span aria-hidden="true">→</span></button>
+          </div>
+        </section>
+
+        <section class="wiz-panel" data-panel="verify">
+          <div class="wiz-card">
+            <h2>Sahkan Nombor WhatsApp</h2>
+            <p class="sub">Kod pengesahan 6-digit telah dihantar ke WhatsApp <b id="otpMask">anda</b>. Kod luput dalam 10 minit.</p>
+            <div id="otpNotice"></div>
+            <div class="form-grid">
+              <div class="field span-2">
+                <label for="otpCode">Kod Pengesahan (6-digit)</label>
+                <input class="input" id="otpCode" maxlength="6" inputmode="numeric" placeholder="123456" style="letter-spacing:4px;text-align:center;font-size:20px;">
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;">
+              <button type="button" class="btn btn-primary" id="otpVerifyBtn">Sahkan Nombor</button>
+              <button type="button" class="btn btn-ghost" id="otpResendBtn">Hantar Semula Kod</button>
+            </div>
           </div>
         </section>
 
@@ -371,6 +396,16 @@
           tiktok: document.getElementById('tiktok').value.trim(),
           password: pass1,
         });
+        if (data && data.needPhoneVerify) {
+          window.__pendingOtp = { email: data.email, masked: data.phoneMasked, appId: data.appId };
+          const m = document.getElementById('otpMask');
+          if (m && data.phoneMasked) m.textContent = data.phoneMasked;
+          if (data.message) document.getElementById('otpNotice').innerHTML = UI.notice(data.message, 'info');
+          show('verify');
+          Nav.update();
+          UI.toast('Sahkan nombor WhatsApp anda untuk melengkapkan pendaftaran.', 'ok');
+          return;
+        }
         Session.setToken(data.token);
         Session.setUser(data.user);
         document.getElementById('appId').textContent = data.appId;
@@ -383,6 +418,171 @@
       } finally {
         btn.disabled = false;
         btn.querySelector('.btn-label').textContent = 'Hantar Permohonan';
+      }
+    });
+
+    async function doWizardVerify() {
+      const code = document.getElementById('otpCode').value.replace(/\D/g, '');
+      const notice = document.getElementById('otpNotice');
+      const p = window.__pendingOtp || {};
+      if (code.length !== 6) {
+        notice.innerHTML = UI.notice('Isi kod 6-digit.', 'error');
+        return;
+      }
+      const btn = document.getElementById('otpVerifyBtn');
+      btn.disabled = true;
+      try {
+        const data = await API.auth.verifyPhone({ email: p.email, otp: code });
+        Session.setToken(data.token);
+        Session.setUser(data.user);
+        document.getElementById('appId').textContent = data.appId || p.appId || '';
+        window.__pendingOtp = null;
+        show('success');
+        Nav.update();
+        UI.toast('Nombor disahkan! Permohonan berjaya dihantar.', 'ok');
+      } catch (err) {
+        notice.innerHTML = UI.notice(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function doWizardResend(e) {
+      const btn = e.currentTarget;
+      const notice = document.getElementById('otpNotice');
+      const p = window.__pendingOtp || {};
+      btn.disabled = true;
+      try {
+        const r = await API.auth.resendOtp({ email: p.email });
+        notice.innerHTML = UI.notice(r.message || 'Kod baharu dihantar.', 'ok');
+        let wait = 60;
+        btn.textContent = 'Tunggu ' + wait + 's...';
+        const t = setInterval(() => {
+          wait -= 1;
+          if (wait <= 0) { clearInterval(t); btn.disabled = false; btn.textContent = 'Hantar Semula Kod'; }
+          else btn.textContent = 'Tunggu ' + wait + 's...';
+        }, 1000);
+      } catch (err) {
+        notice.innerHTML = UI.notice(err.message, 'error');
+        btn.disabled = false;
+      }
+    }
+
+    document.getElementById('otpVerifyBtn').addEventListener('click', doWizardVerify);
+    document.getElementById('otpResendBtn').addEventListener('click', doWizardResend);
+  };
+  window.viewVerifyPhone = function (q) {
+    const mode = q.mode === 'forgot' ? 'forgot' : 'verify';
+    const isForgot = mode === 'forgot';
+    const title = isForgot ? 'Lupa Kata Laluan' : 'Sahkan Nombor WhatsApp';
+    const subtitle = isForgot
+      ? 'Kod tetapan semula dihantar ke nombor WhatsApp berdaftar anda.'
+      : 'Lengkapkan pengesahan untuk mengaktifkan akaun anda.';
+
+    return UI.page(title, subtitle,
+      `<div class="auth-wrap">
+        <div class="auth-card">
+          <div id="vpNotice">${q.email && !isForgot ? UI.notice('Kod 6-digit dihantar ke WhatsApp anda. Kod luput dalam 10 minit.', 'info') : ''}</div>
+          <form id="vpForm">
+            <div class="field">
+              <label for="vpEmail">Email ${isForgot ? '<em>*</em>' : ''}</label>
+              <input class="input" id="vpEmail" type="email" placeholder="nama@contoh.com" autocomplete="email" value="${UI.esc(q.email || '')}" ${isForgot ? '' : 'readonly'} required>
+            </div>
+            ${isForgot ? `<div class="field" id="vpOtpWrap" style="margin-top:14px;display:none;">
+              <label for="vpOtp">Kod Pengesahan (6-digit) <em>*</em></label>
+              <input class="input" id="vpOtp" maxlength="6" inputmode="numeric" placeholder="123456" style="letter-spacing:4px;text-align:center;font-size:20px;">
+            </div>
+            <div class="field" id="vpNewWrap" style="margin-top:14px;display:none;">
+              <label for="vpNew">Kata Laluan Baharu <em>*</em></label>
+              <input class="input" id="vpNew" type="password" minlength="6" placeholder="Minimum 6 aksara" autocomplete="new-password">
+            </div>
+            <div class="field" id="vpNew2Wrap" style="margin-top:14px;display:none;">
+              <label for="vpNew2">Sahkan Kata Laluan Baharu <em>*</em></label>
+              <input class="input" id="vpNew2" type="password" minlength="6" placeholder="Ulang kata laluan">
+            </div>` : `<div class="field" style="margin-top:14px;">
+              <label for="vpOtp">Kod Pengesahan (6-digit) <em>*</em></label>
+              <input class="input" id="vpOtp" maxlength="6" inputmode="numeric" placeholder="123456" style="letter-spacing:4px;text-align:center;font-size:20px;" required>
+            </div>`}
+            <button class="btn btn-primary btn-block" style="margin-top:20px;" id="vpBtn">${isForgot ? 'Hantar Kod Tetapan Semula' : 'Sahkan Nombor'}</button>
+            <button class="btn btn-ghost btn-block" style="margin-top:10px;" id="vpResend" type="button">Hantar Semula Kod</button>
+          </form>
+          <p style="text-align:center;margin-top:18px;font-size:13px;color:var(--muted)">
+            <a href="?page=login" style="color:var(--gold);">← Kembali log masuk</a>
+          </p>
+        </div>
+      </div>`,
+      { eyebrow: isForgot ? 'Tetapan semula kata laluan' : 'Pengesahan WhatsApp' });
+  };
+
+  window.ViewHooks.viewVerifyPhone = function (q) {
+    const mode = q.mode === 'forgot' ? 'forgot' : 'verify';
+    const isForgot = mode === 'forgot';
+    const noticeBox = document.getElementById('vpNotice');
+    const btn = document.getElementById('vpBtn');
+    let otpSent = !isForgot;
+
+    document.getElementById('vpForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('vpEmail').value.trim();
+      btn.disabled = true;
+      noticeBox.innerHTML = '';
+      try {
+        if (isForgot && !otpSent) {
+          const r = await API.auth.forgotPassword({ email });
+          otpSent = true;
+          document.getElementById('vpOtpWrap').style.display = '';
+          document.getElementById('vpNewWrap').style.display = '';
+          document.getElementById('vpNew2Wrap').style.display = '';
+          btn.textContent = 'Tukar Kata Laluan';
+          noticeBox.innerHTML = UI.notice(r.message || 'Kod dihantar ke WhatsApp anda.', 'ok');
+        } else if (isForgot) {
+          const code = document.getElementById('vpOtp').value.replace(/\D/g, '');
+          const nw = document.getElementById('vpNew').value;
+          const nw2 = document.getElementById('vpNew2').value;
+          if (code.length !== 6) { noticeBox.innerHTML = UI.notice('Isi kod 6-digit.', 'error'); return; }
+          if (!nw || nw.length < 6) { noticeBox.innerHTML = UI.notice('Kata laluan baharu min. 6 aksara.', 'error'); return; }
+          if (nw !== nw2) { noticeBox.innerHTML = UI.notice('Pengesahan kata laluan tidak sepadan.', 'error'); return; }
+          const r = await API.auth.resetPassword({ email, otp: code, new: nw });
+          noticeBox.innerHTML = UI.notice(r.message || 'Kata laluan ditukar. Sila log masuk.', 'ok');
+          UI.toast('Kata laluan berjaya ditukar.', 'ok');
+          setTimeout(() => Router.go('login'), 1600);
+        } else {
+          const code = document.getElementById('vpOtp').value.replace(/\D/g, '');
+          if (code.length !== 6) { noticeBox.innerHTML = UI.notice('Isi kod 6-digit.', 'error'); return; }
+          const data = await API.auth.verifyPhone({ email, otp: code });
+          Session.setToken(data.token);
+          Session.setUser(data.user);
+          noticeBox.innerHTML = UI.notice('Nombor disahkan! Anda boleh meneruskan.', 'ok');
+          UI.toast('Nombor WhatsApp disahkan.', 'ok');
+          setTimeout(() => Router.go('cari-slot'), 1200);
+        }
+      } catch (err) {
+        noticeBox.innerHTML = UI.notice(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById('vpResend').addEventListener('click', async (e) => {
+      const b = e.currentTarget;
+      const email = document.getElementById('vpEmail').value.trim();
+      if (!email) { noticeBox.innerHTML = UI.notice('Isi email dahulu.', 'error'); return; }
+      b.disabled = true;
+      try {
+        const r = isForgot
+          ? await API.auth.forgotPassword({ email })
+          : await API.auth.resendOtp({ email });
+        otpSent = true;
+        if (isForgot) {
+          document.getElementById('vpOtpWrap').style.display = '';
+          document.getElementById('vpNewWrap').style.display = '';
+          document.getElementById('vpNew2Wrap').style.display = '';
+          btn.textContent = 'Tukar Kata Laluan';
+        }
+        noticeBox.innerHTML = UI.notice(r.message || 'Kod baharu dihantar.', 'ok');
+      } catch (err) {
+        noticeBox.innerHTML = UI.notice(err.message, 'error');
+        b.disabled = false;
       }
     });
   };

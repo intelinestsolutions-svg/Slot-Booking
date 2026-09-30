@@ -4,6 +4,28 @@ require_once __DIR__ . '/db.php';
 
 function send_whatsapp(string $to, string $message): bool
 {
+    $to = preg_replace('/[^0-9]/', '', $to);
+    if (trim($to) === '') {
+        return false;
+    }
+
+    // Mod ujian: log sahaja, jangan hantar ke rangkaian.
+    if (defined('WHATSAPP_TEST_MODE') && WHATSAPP_TEST_MODE) {
+        $log = defined('WHATSAPP_TEST_LOG') ? (string)WHATSAPP_TEST_LOG : '';
+        if ($log !== '') {
+            $dir = dirname($log);
+            if (!is_dir($dir)) {
+                mkdir($dir, 0775, true);
+            }
+            file_put_contents(
+                $log,
+                date('Y-m-d H:i:s') . " TO=$to MSG=" . str_replace("\n", ' | ', $message) . "\n",
+                FILE_APPEND | LOCK_EX
+            );
+        }
+        return true;
+    }
+
     $gateway = defined('WHATSAPP_GATEWAY') ? WHATSAPP_GATEWAY : '';
     $token   = defined('WHATSAPP_TOKEN') ? WHATSAPP_TOKEN : '';
     $instance = defined('WHATSAPP_INSTANCE_ID') ? WHATSAPP_INSTANCE_ID : '';
@@ -76,7 +98,8 @@ function normalize_whatsapp(string $v): ?string
     if (str_starts_with($d, '0')) {
         $d = '60' . substr($d, 1);
     }
-    if (strlen($d) !== 12 || !str_starts_with($d, '60')) {
+    // Mudah alih Malaysia: 60 + 1 + 8-9 digit (cth: 60123456789, 601112345678).
+    if (!preg_match('/^601\d{8,9}$/', $d)) {
         return null;
     }
     return $d;

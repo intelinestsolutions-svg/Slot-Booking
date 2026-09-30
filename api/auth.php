@@ -2,6 +2,8 @@
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/whatsapp.php';
+require_once __DIR__ . '/otp.php';
+require_once __DIR__ . '/otp.php';
 
 $action = $_GET['action'] ?? '';
 $pdo = db();
@@ -37,22 +39,35 @@ switch ($action) {
             fail('Nombor WhatsApp tidak sah.');
         }
 
+        // Nombor telefon pendaftaran MESTI nombor WhatsApp Malaysia yang sah
+        // kerana kod pengesahan OTP dihantar ke nombor ini.
+        $waPhone = normalize_whatsapp((string)$d['phone']);
+        if ($waPhone === null) {
+            fail('Nombor telefon tidak sah. Gunakan nombor WhatsApp Malaysia, cth: 012-3456789.');
+        }
+
+        $dupPhone = $pdo->prepare("SELECT id FROM users WHERE phone = ?");
+        $dupPhone->execute([$waPhone]);
+        if ($dupPhone->fetch()) {
+            fail('Nombor WhatsApp ini sudah digunakan pada akaun lain.', 409);
+        }
+
         $appId = 'APP-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
 
         $pdo->beginTransaction();
         try {
             $stmt = $pdo->prepare("INSERT INTO users
                 (email, password, role, fullName, icNumber, phone, state, city, address, postcode,
-                 stageName, genre, description, instagram, tiktok, verificationStatus, isActive, token, whatsappNumber)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-            $token = bin2hex(random_bytes(24));
+                 stageName, genre, description, instagram, tiktok, verificationStatus, isActive, token, whatsappNumber, phoneVerified)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0)");
+            // Sesi log masuk HANYA dikeluarkan selepas OTP disahkan — tiada token lagi.
             $stmt->execute([
                 $email,
                 password_hash($d['password'], PASSWORD_DEFAULT),
                 'busker',
                 $d['fullName'],
                 preg_replace('/[^0-9]/', '', $d['icNumber']),
-                $d['phone'],
+                $waPhone,
                 $d['state'],
                 $d['city'],
                 $d['address'],
@@ -64,18 +79,17 @@ switch ($action) {
                 $d['tiktok'] ?? '',
                 'pending',
                 0,
-                $token,
+                null,
                 $whatsapp,
             ]);
             $userId = $pdo->lastInsertId();
-            issue_session($pdo, $userId, $token);
 
             $pdo->prepare("INSERT INTO buskerApplications
                 (userId, appId, fullName, icNumber, phone, email, state, city, address, postcode,
                  stageName, genre, description, instagram, tiktok, status)
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")->execute([
                 $userId, $appId, $d['fullName'], preg_replace('/[^0-9]/', '', $d['icNumber']),
-                $d['phone'], $email, $d['state'], $d['city'], $d['address'], $d['postcode'] ?? '',
+                $waPhone, $email, $d['state'], $d['city'], $d['address'], $d['postcode'] ?? '',
                 $d['stageName'], $d['genre'], $d['description'] ?? '', $d['instagram'] ?? '', $d['tiktok'] ?? '',
                 'pending',
             ]);
@@ -89,7 +103,131 @@ switch ($action) {
             fail($e->getMessage(), 500);
         }
 
-        ok(['appId' => $appId, 'token' => $token, 'user' => public_user($pdo, $userId)]);
+        $sent = otp_issue($pdo, (int)$userId, $waPhone);
+        ok([
+            'appId' => $appId,
+            'needPhoneVerify' => true,
+            'email' => $email,
+            'phoneMasked' => otp_mask($waPhone),
+            'message' => $sent['success']
+                ? 'Kod pengesahan 6-digit telah dihantar ke WhatsApp anda.'
+                : 'Akaun dicipta tetapi kod gagal dihantar — tekan Hantar Semula Kod.',
+            'otpSent' => $sent['success'],
+        ]);
+        break;
+
+    case 'verify_phone':
+        $d = body();
+        $email = strtolower(trim((string)($d['email'] ?? '')));
+        $code = (string)($d['otp'] ?? ($d['code'] ?? ''));
+        if ($email === '' || $code === '') {
+            fail('Sila isi email dan kod pengesahan 6-digit.');
+        }
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+        if (!$user) {
+            fail('Akaun tidak dijumpai.', 404);
+        }
+        if ((int)($user['phoneVerified'] ?? 0) === 1) {
+            $token = bin2hex(random_bytes(24));
+            issue_session($pdo, (int)$user['id'], $token);
+            $appRow = $pdo->prepare("SELECT appId FROM buskerApplications WHERE userId = ? ORDER BY id DESC LIMIT 1");
+            $appRow->execute([$user['id']]);
+            $app = $appRow->fetch();
+            ok(['token' => $token, 'user' => public_user($pdo, (int)$user['id']), 'appId' => $app['appId'] ?? null]);
+            break;
+        }
+        $chk = otp_check($pdo, $user, $code);
+        if (!$chk['success']) {
+            fail($chk['error'], $chk['code'] ?? 400);
+        }
+        $token = bin2hex(random_bytes(24));
+        $pdo->prepare("UPDATE users SET phoneVerified = 1, phoneOtpHash = NULL, phoneOtpExpires = NULL, phoneOtpAttempts = 0 WHERE id = ?")
+            ->execute([$user['id']]);
+        issue_session($pdo, (int)$user['id'], $token);
+        $appRow = $pdo->prepare("SELECT appId FROM buskerApplications WHERE userId = ? ORDER BY id DESC LIMIT 1");
+        $appRow->execute([$user['id']]);
+        $app = $appRow->fetch();
+        ok(['token' => $token, 'user' => public_user($pdo, (int)$user['id']), 'appId' => $app['appId'] ?? null]);
+        break;
+
+    case 'resend_otp':
+        $d = body();
+        $email = strtolower(trim((string)($d['email'] ?? '')));
+        if ($email === '') {
+            fail('Sila isi email.');
+        }
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+        if (!$user) {
+            fail('Akaun tidak dijumpai.', 404);
+        }
+        if ((int)($user['phoneVerified'] ?? 0) === 1) {
+            fail('Nombor anda telah disahkan. Sila log masuk.', 409);
+        }
+        if (($wait = otp_cooldown_wait($user['phoneOtpSentAt'] ?? null)) > 0) {
+            json_out(['success' => false, 'error' => "Sila tunggu $wait saat sebelum meminta kod baharu.", 'retryAfter' => $wait], 429);
+        }
+        $sent = otp_issue($pdo, (int)$user['id'], (string)$user['phone']);
+        if (!$sent['success']) {
+            fail($sent['error'], 502);
+        }
+        ok(['email' => $email, 'phoneMasked' => otp_mask((string)$user['phone']), 'message' => 'Kod pengesahan baharu telah dihantar ke WhatsApp anda.']);
+        break;
+
+    case 'forgot_password':
+        $d = body();
+        $email = strtolower(trim((string)($d['email'] ?? '')));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            fail('Sila isi email yang sah.');
+        }
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+        if ($user && !empty($user['phone'])) {
+            if (otp_cooldown_wait($user['phoneOtpSentAt'] ?? null) <= 0) {
+                otp_issue($pdo, (int)$user['id'], (string)$user['phone']);
+            }
+            ok([
+                'email' => $email,
+                'phoneMasked' => otp_mask((string)$user['phone']),
+                'message' => 'Jika email ini berdaftar, kod tetapan semula telah dihantar ke WhatsApp anda.',
+            ]);
+            break;
+        }
+        ok(['message' => 'Jika email ini berdaftar, kod tetapan semula telah dihantar ke WhatsApp anda.']);
+        break;
+
+    case 'reset_password':
+        $d = body();
+        $email = strtolower(trim((string)($d['email'] ?? '')));
+        $code = (string)($d['otp'] ?? ($d['code'] ?? ''));
+        $new = (string)($d['new'] ?? '');
+        if ($email === '' || $code === '') {
+            fail('Sila isi email dan kod pengesahan 6-digit.');
+        }
+        if (strlen($new) < 6) {
+            fail('Kata laluan baharu sekurang-kurangnya 6 aksara.');
+        }
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+        if (!$user) {
+            fail('Kod pengesahan salah atau telah luput.', 401);
+        }
+        $chk = otp_check($pdo, $user, $code);
+        if (!$chk['success']) {
+            fail($chk['error'], $chk['code'] ?? 400);
+        }
+        // OTP membuktikan pemilikan nombor — selesaikan pengesahan sekali gus,
+        // tukar kata laluan dan tamatkan semua sesi sedia ada.
+        $pdo->prepare("UPDATE users SET password = ?, phoneVerified = 1, token = NULL,
+            phoneOtpHash = NULL, phoneOtpExpires = NULL, phoneOtpAttempts = 0 WHERE id = ?")
+            ->execute([password_hash($new, PASSWORD_DEFAULT), $user['id']]);
+        $pdo->prepare("DELETE FROM sessions WHERE userId = ?")->execute([$user['id']]);
+        ok(['message' => 'Kata laluan berjaya ditukar. Sila log masuk dengan kata laluan baharu.']);
         break;
 
     case 'login':
@@ -106,6 +244,9 @@ switch ($action) {
             $user = $stmt->fetch();
             if (!$user || !$user['password'] || !password_verify($password, $user['password'])) {
                 fail('Email atau kata laluan salah.', 401);
+            }
+            if ((int)($user['phoneVerified'] ?? 0) !== 1) {
+                json_out(['success' => false, 'error' => 'Sila sahkan nombor WhatsApp anda dahulu.', 'needPhoneVerify' => true, 'email' => $user['email'], 'phoneMasked' => otp_mask((string)$user['phone'])], 403);
             }
         }
 
@@ -129,37 +270,11 @@ switch ($action) {
         break;
 
     case 'mpk_verify':
-        $d = body();
-        $email = strtolower(trim($d['email'] ?? ''));
-        $password = (string)($d['password'] ?? '');
-        $key = (string)($d['key'] ?? '');
-        if (!defined('MPK_VERIFY_KEY') || MPK_VERIFY_KEY === '' || $key === '' || !hash_equals(MPK_VERIFY_KEY, $key)) {
-            fail('Kebenaran ditolak.', 403);
-        }
-        if ($email === '' || $password === '') {
-            fail('Sila isi email dan kata laluan.');
-        }
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        $full = $stmt->fetch();
-        if (!$full || !$full['password'] || !password_verify($password, $full['password'])) {
-            fail('Email atau kata laluan salah.', 401);
-        }
-        ok([
-            'user' => [
-                'id' => (int)($full['id'] ?? 0),
-                'email' => $full['email'],
-                'role' => $full['role'],
-                'fullName' => $full['fullName'],
-                'stageName' => $full['stageName'],
-                'phone' => $full['phone'],
-                'avatar' => $full['avatar'],
-                'city' => $full['city'],
-                'state' => $full['state'],
-                'verificationStatus' => $full['verificationStatus'],
-                'isActive' => (int)$full['isActive'],
-            ],
-        ]);
+        // DITAMATKAN 2026-10-01: Marketplace mempunyai akaun sendiri
+        // (daftar/log masuk di marketplace.sabahbuskers.my sahaja).
+        // Laluan pengesahan silang ini dikekalkan supaya pemanggil lama
+        // menerima mesej yang jelas, bukan "action tidak dikenali".
+        fail('Integrasi SSO marketplace telah ditamatkan. Pendaftaran & log masuk Marketplace hanya di marketplace.sabahbuskers.my.', 410);
         break;
 
     case 'me':
@@ -199,17 +314,45 @@ switch ($action) {
         break;
 
     case 'change_password':
+        // Keselamatan: mesti lulus KEDUA-DUA — kata laluan semasa + OTP WhatsApp segar.
         $user = require_user($pdo);
         $d = body();
+        $chk = otp_check($pdo, $user, (string)($d['otp'] ?? ''));
+        if (!$chk['success']) {
+            $msg = $chk['code'] === 410
+                ? 'Tiada kod aktif atau kod telah luput. Sila tekan "Hantar Kod" dahulu.'
+                : $chk['error'];
+            fail($msg, $chk['code'] ?? 400);
+        }
         if (!password_verify($d['current'] ?? '', $user['password'])) {
             fail('Kata laluan semasa salah.');
         }
         if (strlen($d['new'] ?? '') < 6) {
             fail('Kata laluan baru sekurang-kurangnya 6 aksara.');
         }
-        $pdo->prepare("UPDATE users SET password = ? WHERE id = ?")
+        $pdo->prepare("UPDATE users SET password = ?,
+            phoneOtpHash = NULL, phoneOtpExpires = NULL, phoneOtpAttempts = 0 WHERE id = ?")
             ->execute([password_hash($d['new'], PASSWORD_DEFAULT), $user['id']]);
-        ok();
+        $pdo->prepare("DELETE FROM sessions WHERE userId = ?")->execute([$user['id']]);
+        $token = bin2hex(random_bytes(24));
+        issue_session($pdo, (int)$user['id'], $token);
+        ok(['token' => $token, 'user' => public_user($pdo, (int)$user['id'])]);
+        break;
+
+    case 'request_password_otp':
+        // Hantar OTP segar ke nombor WhatsApp yang telah disahkan (untuk pertukaran kata laluan).
+        $user = require_user($pdo);
+        if (empty($user['phone'])) {
+            fail('Tiada nombor WhatsApp pada akaun anda.', 403);
+        }
+        if (($wait = otp_cooldown_wait($user['phoneOtpSentAt'] ?? null)) > 0) {
+            json_out(['success' => false, 'error' => "Sila tunggu $wait saat sebelum meminta kod baharu.", 'retryAfter' => $wait], 429);
+        }
+        $sent = otp_issue($pdo, (int)$user['id'], (string)$user['phone']);
+        if (!$sent['success']) {
+            fail($sent['error'], 502);
+        }
+        ok(['phoneMasked' => otp_mask((string)$user['phone']), 'message' => 'Kod pengesahan telah dihantar ke WhatsApp anda.']);
         break;
 
     case 'upload_avatar':
@@ -247,9 +390,13 @@ switch ($action) {
 
 function public_user(PDO $pdo, int $id): array
 {
-    $stmt = $pdo->prepare("SELECT id,email,role,fullName,phone,stageName,genre,city,state,verificationStatus,isActive FROM users WHERE id=?");
+    $stmt = $pdo->prepare("SELECT id,email,role,fullName,phone,stageName,genre,city,state,verificationStatus,isActive,phoneVerified FROM users WHERE id=?");
     $stmt->execute([$id]);
-    return $stmt->fetch() ?: [];
+    $u = $stmt->fetch() ?: [];
+    if ($u) {
+        $u['phoneVerified'] = (int)($u['phoneVerified'] ?? 0);
+    }
+    return $u;
 }
 
 function public_user_full(PDO $pdo, int $id): array

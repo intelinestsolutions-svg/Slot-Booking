@@ -44,7 +44,10 @@
     let data = null;
     try { data = await res.json(); } catch (e) { data = null; }
     if (data && data.success === false) {
-      throw new Error(data.error || 'Ralat berlaku.');
+      const err = new Error(data.error || 'Ralat berlaku.');
+      err.status = res.status;
+      err.data = data;
+      throw err;
     }
     return data;
   }
@@ -53,10 +56,15 @@
     auth: {
       register: (b) => call('auth', 'register', { method: 'POST', body: b }),
       login: (b) => call('auth', 'login', { method: 'POST', body: b }),
+      verifyPhone: (b) => call('auth', 'verify_phone', { method: 'POST', body: b }),
+      resendOtp: (b) => call('auth', 'resend_otp', { method: 'POST', body: b }),
+      forgotPassword: (b) => call('auth', 'forgot_password', { method: 'POST', body: b }),
+      resetPassword: (b) => call('auth', 'reset_password', { method: 'POST', body: b }),
       me: () => call('auth', 'me'),
       logout: () => call('auth', 'logout'),
       updateProfile: (b) => call('auth', 'update_profile', { method: 'POST', body: b }),
       changePassword: (b) => call('auth', 'change_password', { method: 'POST', body: b }),
+      requestPasswordOtp: () => call('auth', 'request_password_otp', { method: 'POST' }),
       uploadAvatar: (jpeg) => {
         const fd = new FormData();
         fd.append('avatar', jpeg);

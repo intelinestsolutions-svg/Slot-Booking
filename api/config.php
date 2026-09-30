@@ -40,6 +40,26 @@ if (!defined('MPK_VERIFY_KEY')) {
     define('MPK_VERIFY_KEY', '');
 }
 
+// ====== Pengesahan WhatsApp (OTP 6-digit semasa pendaftaran busker) ======
+// Pendaftaran baharu wajib mengesahkan nombor WhatsApp Malaysia melalui OTP
+// sebelum sesi log masuk dikeluarkan. Akaun sedia ada dikecualikan automatik.
+if (!defined('WHATSAPP_TEST_MODE')) {
+    define('WHATSAPP_TEST_MODE', false);  // true = log OTP ke fail, jangan hantar
+}
+if (!defined('WHATSAPP_TEST_LOG')) {
+    define('WHATSAPP_TEST_LOG', DB_DIR . '/whatsapp-test.log');
+}
+// Polisi OTP: sah 10 minit, maks 5 cubaan, hantar semula selepas 60 saat.
+if (!defined('OTP_TTL')) {
+    define('OTP_TTL', 600);
+}
+if (!defined('OTP_MAX_ATTEMPTS')) {
+    define('OTP_MAX_ATTEMPTS', 5);
+}
+if (!defined('OTP_RESEND_COOLDOWN')) {
+    define('OTP_RESEND_COOLDOWN', 60);
+}
+
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 session_start();
