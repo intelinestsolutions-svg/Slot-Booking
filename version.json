@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261042",
+  "webVersion": "20261043",
   "android": {
-    "version": "2.0.4-beta",
-    "versionCode": 17,
+    "version": "2.0.5-beta",
+    "versionCode": 18,
     "url": "https://apps.sabahbuskers.my/sbc-mobile.apk",
-    "notes": "Notifikasi solat kini dalam tetingkap 30 minit: amaran 15 minit sebelum waktu, dan tiada notifikasi selepas 15 minit berlalu. Label bunyi dipaparkan betul mengikut pilihan (Lalai/Senyap/Bunyi peranti)."
+    "notes": "Pendaftaran dan pertukaran kata laluan kini disahkan melalui kod SMS OTP. Sila kemas kini untuk log masuk dan mendaftar."
   },
-  "updatedAt": "2026-09-21"
+  "updatedAt": "2026-10-01"
 }
