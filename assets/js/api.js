@@ -58,6 +58,8 @@
       login: (b) => call('auth', 'login', { method: 'POST', body: b }),
       verifyPhone: (b) => call('auth', 'verify_phone', { method: 'POST', body: b }),
       resendOtp: (b) => call('auth', 'resend_otp', { method: 'POST', body: b }),
+      requestRegisterOtp: (b) => call('auth', 'request_register_otp', { method: 'POST', body: b }),
+      verifyRegisterOtp: (b) => call('auth', 'verify_register_otp', { method: 'POST', body: b }),
       forgotPassword: (b) => call('auth', 'forgot_password', { method: 'POST', body: b }),
       resetPassword: (b) => call('auth', 'reset_password', { method: 'POST', body: b }),
       me: () => call('auth', 'me'),

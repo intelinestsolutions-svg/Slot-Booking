@@ -38,9 +38,9 @@ function otp_configured(): bool
     }
     $gateway = defined('WHATSAPP_GATEWAY') ? (string)WHATSAPP_GATEWAY : '';
     if ($gateway === 'sms') {
-        $url = defined('WHATSAPP_SMS_URL') ? (string)WHATSAPP_SMS_URL : '';
-        $key = defined('WHATSAPP_SMS_KEY') ? (string)WHATSAPP_SMS_KEY : '';
-        return $url !== '' && $key !== '';
+        $user = defined('WHATSAPP_SMS_USER') ? (string)WHATSAPP_SMS_USER : '';
+        $pass = defined('WHATSAPP_SMS_PASS') ? (string)WHATSAPP_SMS_PASS : '';
+        return $user !== '' && $pass !== '';
     }
     $token = defined('WHATSAPP_TOKEN') ? (string)WHATSAPP_TOKEN : '';
     $instance = defined('WHATSAPP_INSTANCE_ID') ? (string)WHATSAPP_INSTANCE_ID : '';

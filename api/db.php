@@ -70,7 +70,7 @@ function schema(PDO $pdo): void
     if (!in_array('premiumExpiresAt', $cols, true)) {
         $pdo->exec("ALTER TABLE users ADD COLUMN premiumExpiresAt TEXT");
     }
-    // Pengesahan WhatsApp (OTP). Akaun sedia ada dikecualikan automatik
+    // Pengesahan SMS (OTP). Akaun sedia ada dikecualikan automatik
     // supaya tidak dikunci keluar; pendaftaran baharu bermula 0.
     $needGrandfather = !in_array('phoneVerified', $cols, true);
     foreach ([
@@ -91,6 +91,19 @@ function schema(PDO $pdo): void
     if ($needGrandfather) {
         $pdo->exec("UPDATE users SET phoneVerified = 1 WHERE phoneVerified = 0");
     }
+    // Bukti pengesahan telefon pra-pendaftaran: OTP disahkan DAHULU,
+    // akaun busker hanya dicipta selepas nombor terbukti milik pemohon.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS busker_proofs (
+        email TEXT PRIMARY KEY,
+        phone TEXT NOT NULL,
+        otpHash TEXT,
+        otpExpires TEXT,
+        otpAttempts INTEGER NOT NULL DEFAULT 0,
+        otpSentAt TEXT,
+        proofHash TEXT,
+        proofExpires TEXT,
+        createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+    )");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -9,6 +9,94 @@ $action = $_GET['action'] ?? '';
 $pdo = db();
 
 switch ($action) {
+    case 'request_register_otp':
+        // LANGKAH 1 Permohonan Busker Baru: hantar OTP ke nombor yang diberi.
+        // Tiada akaun dicipta di sini — akaun hanya wujud selepas OTP disahkan.
+        $d = body();
+        $email = strtolower(trim((string)($d['email'] ?? '')));
+        $phone = trim((string)($d['phone'] ?? ''));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            fail('Email tidak sah.');
+        }
+        $waPhone = normalize_whatsapp($phone);
+        if ($waPhone === null) {
+            fail('Nombor telefon tidak sah. Gunakan nombor Malaysia, cth: 012-3456789.');
+        }
+        $check = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+        $check->execute([$email]);
+        if ($check->fetch()) {
+            fail('Email ini sudah didaftarkan. Sila log masuk.', 409);
+        }
+        $dupPhone = $pdo->prepare("SELECT id FROM users WHERE phone = ?");
+        $dupPhone->execute([$waPhone]);
+        if ($dupPhone->fetch()) {
+            fail('Nombor telefon ini sudah digunakan pada akaun lain.', 409);
+        }
+        if (!otp_configured()) {
+            fail('Perkhidmatan SMS belum disediakan. Sila hubungi admin.', 502);
+        }
+        $pdo->exec("DELETE FROM busker_proofs WHERE (proofExpires IS NOT NULL AND proofExpires < '" . time() . "')");
+        $stmt = $pdo->prepare("SELECT * FROM busker_proofs WHERE email = ?");
+        $stmt->execute([$email]);
+        $pend = $stmt->fetch();
+        if (($wait = otp_cooldown_wait($pend['otpSentAt'] ?? null)) > 0 && $pend) {
+            json_out(['success' => false, 'error' => "Sila tunggu $wait saat sebelum meminta kod baharu.", 'retryAfter' => $wait], 429);
+        }
+        $otp = (string)random_int(100000, 999999);
+        $expires = time() + (defined('OTP_TTL') ? OTP_TTL : 600);
+        $pdo->prepare("INSERT INTO busker_proofs (email, phone, otpHash, otpExpires, otpAttempts, otpSentAt, proofHash, proofExpires)
+            VALUES (?,?,?,?,?, ?,NULL,NULL)
+            ON CONFLICT(email) DO UPDATE SET phone=excluded.phone, otpHash=excluded.otpHash,
+            otpExpires=excluded.otpExpires, otpAttempts=0, otpSentAt=excluded.otpSentAt,
+            proofHash=NULL, proofExpires=NULL")
+            ->execute([$email, $waPhone, password_hash($otp, PASSWORD_DEFAULT), (string)$expires, 0, (string)time()]);
+        $mins = (int)((defined('OTP_TTL') ? OTP_TTL : 600) / 60);
+        $msg = "🔐 Kod pengesahan SBC: $otp\nKod ini luput dalam $mins minit. Jangan kongsi dengan sesiapa.";
+        if (!send_whatsapp($waPhone, $msg)) {
+            fail('Gagal menghantar kod SMS. Sila cuba hantar semula.', 502);
+        }
+        ok([
+            'email' => $email,
+            'phoneMasked' => otp_mask($waPhone),
+            'message' => 'Kod pengesahan 6-digit telah dihantar melalui SMS. Sahkan kod dahulu, kemudian lengkapkan permohonan.',
+        ]);
+        break;
+
+    case 'verify_register_otp':
+        // LANGKAH 2: sahkan OTP, terima token bukti untuk langkah 3 (hantar permohonan).
+        $d = body();
+        $email = strtolower(trim((string)($d['email'] ?? '')));
+        $code = (string)($d['otp'] ?? ($d['code'] ?? ''));
+        if ($email === '' || $code === '') {
+            fail('Sila isi email dan kod pengesahan 6-digit.');
+        }
+        $stmt = $pdo->prepare("SELECT * FROM busker_proofs WHERE email = ?");
+        $stmt->execute([$email]);
+        $pend = $stmt->fetch();
+        if (!$pend || empty($pend['otpHash']) || empty($pend['otpExpires'])) {
+            fail('Tiada kod aktif. Sila tekan "Hantar Kod" dahulu.', 410);
+        }
+        $tmpUser = ['id' => 0, 'phoneOtpHash' => $pend['otpHash'], 'phoneOtpExpires' => $pend['otpExpires'], 'phoneOtpAttempts' => $pend['otpAttempts']];
+        $chk = otp_check($pdo, $tmpUser, $code);
+        if (!$chk['success']) {
+            if (($chk['code'] ?? 400) === 401) {
+                $pdo->prepare("UPDATE busker_proofs SET otpAttempts = otpAttempts + 1 WHERE email = ?")->execute([$email]);
+            }
+            fail($chk['error'], $chk['code'] ?? 400);
+        }
+        $proof = bin2hex(random_bytes(32));
+        $proofTtl = defined('PROOF_TTL') ? PROOF_TTL : 1800;
+        $pdo->prepare("UPDATE busker_proofs SET proofHash = ?, proofExpires = ?,
+            otpHash = NULL, otpExpires = NULL, otpAttempts = 0 WHERE email = ?")
+            ->execute([hash('sha256', $proof), (string)(time() + $proofTtl), $email]);
+        ok([
+            'email' => $email,
+            'phoneMasked' => otp_mask((string)$pend['phone']),
+            'proof' => $proof,
+            'message' => 'Nombor disahkan. Lengkapkan permohonan anda.',
+        ]);
+        break;
+
     case 'register':
         $d = body();
         $required = ['fullName', 'icNumber', 'phone', 'email', 'state', 'city', 'address', 'stageName', 'genre', 'password'];
@@ -52,6 +140,22 @@ switch ($action) {
             fail('Nombor telefon ini sudah digunakan pada akaun lain.', 409);
         }
 
+        // WAJIB: bukti OTP yang sah untuk pasangan email+nombor ini.
+        // Permohonan hanya boleh dihantar SELEPAS kod disahkan.
+        $proof = (string)($d['proof'] ?? '');
+        if ($proof === '') {
+            fail('Sila sahkan nombor telefon anda dengan kod SMS dahulu (Langkah 1-2).', 403);
+        }
+        $proofRow = $pdo->prepare("SELECT * FROM busker_proofs WHERE email = ?");
+        $proofRow->execute([$email]);
+        $pend = $proofRow->fetch();
+        if (!$pend || empty($pend['proofHash']) || empty($pend['proofExpires'])
+            || !hash_equals((string)$pend['proofHash'], hash('sha256', $proof))
+            || otp_ts($pend['proofExpires']) < time()
+            || (string)$pend['phone'] !== $waPhone) {
+            fail('Bukti pengesahan tidak sah atau telah luput. Sila minta kod baharu dan sahkan semula.', 403);
+        }
+
         $appId = 'APP-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
 
         $pdo->beginTransaction();
@@ -59,8 +163,9 @@ switch ($action) {
             $stmt = $pdo->prepare("INSERT INTO users
                 (email, password, role, fullName, icNumber, phone, state, city, address, postcode,
                  stageName, genre, description, instagram, tiktok, verificationStatus, isActive, token, whatsappNumber, phoneVerified)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0)");
-            // Sesi log masuk HANYA dikeluarkan selepas OTP disahkan — tiada token lagi.
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)");
+            // Nombor telah disahkan melalui OTP — sesi dikeluarkan serta-merta.
+            $token = bin2hex(random_bytes(24));
             $stmt->execute([
                 $email,
                 password_hash($d['password'], PASSWORD_DEFAULT),
@@ -103,16 +208,16 @@ switch ($action) {
             fail($e->getMessage(), 500);
         }
 
-        $sent = otp_issue($pdo, (int)$userId, $waPhone);
+        // Nombor sudah disahkan (proof) — tiada OTP kedua. Sesi dikeluarkan
+        // serta-merta; akaun menunggu kelulusan admin seperti biasa.
+        $pdo->prepare("DELETE FROM busker_proofs WHERE email = ?")->execute([$email]);
+        $token = bin2hex(random_bytes(24));
+        issue_session($pdo, (int)$userId, $token);
         ok([
             'appId' => $appId,
-            'needPhoneVerify' => true,
-            'email' => $email,
-            'phoneMasked' => otp_mask($waPhone),
-            'message' => $sent['success']
-                ? 'Kod pengesahan 6-digit telah dihantar melalui SMS.'
-                : 'Akaun dicipta tetapi kod gagal dihantar — tekan Hantar Semula Kod.',
-            'otpSent' => $sent['success'],
+            'token' => $token,
+            'user' => public_user($pdo, (int)$userId),
+            'message' => 'Nombor disahkan. Permohonan diterima — akaun aktif selepas kelulusan admin.',
         ]);
         break;
 

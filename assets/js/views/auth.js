@@ -127,8 +127,14 @@
               <div class="field">
                 <label for="phone">Telefon <em>*</em></label>
                 <input class="input" id="phone" name="phone" maxlength="15" placeholder="01X-XXXXXXX" autocomplete="tel" required>
-                <span class="hint">Nombor telefon Malaysia — kod pengesahan 6-digit dihantar melalui SMS ke nombor ini.</span>
-                <span class="error">Sila masukkan nombor telefon yang sah.</span>
+                <button type="button" class="btn btn-ghost btn-sm" id="regOtpSend" style="margin-top:8px;">Hantar Kod Pengesahan</button>
+                <div id="regOtpRow" style="display:none;margin-top:8px;gap:8px;flex-wrap:wrap;">
+                  <input class="input" id="regOtp" maxlength="6" inputmode="numeric" placeholder="Kod 6-digit" style="letter-spacing:3px;text-align:center;max-width:150px;">
+                  <button type="button" class="btn btn-primary btn-sm" id="regOtpVerify" style="white-space:nowrap;">Sahkan Kod</button>
+                  <span id="regOtpState" style="align-self:center;font-size:13px;"></span>
+                </div>
+                <span class="hint">Nombor telefon Malaysia — tekan "Hantar Kod", isi kod SMS yang diterima, tekan "Sahkan". Isi email dahulu (di bawah) sebelum meminta kod.</span>
+                <span class="error">Sila masukkan nombor telefon yang sah dan sahkan kod dahulu.</span>
               </div>
               <div class="field span-2">
                 <label for="email">Alamat Email <em>*</em></label>
@@ -252,24 +258,6 @@
           </div>
         </section>
 
-        <section class="wiz-panel" data-panel="verify">
-          <div class="wiz-card">
-            <h2>Sahkan Nombor Telefon</h2>
-            <p class="sub">Kod pengesahan 6-digit telah dihantar melalui SMS ke <b id="otpMask">anda</b>. Kod luput dalam 10 minit.</p>
-            <div id="otpNotice"></div>
-            <div class="form-grid">
-              <div class="field span-2">
-                <label for="otpCode">Kod Pengesahan (6-digit)</label>
-                <input class="input" id="otpCode" maxlength="6" inputmode="numeric" placeholder="123456" style="letter-spacing:4px;text-align:center;font-size:20px;">
-              </div>
-            </div>
-            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;">
-              <button type="button" class="btn btn-primary" id="otpVerifyBtn">Sahkan Nombor</button>
-              <button type="button" class="btn btn-ghost" id="otpResendBtn">Hantar Semula Kod</button>
-            </div>
-          </div>
-        </section>
-
         <section class="wiz-panel" data-panel="success">
           <div class="wiz-card">
             <div class="success-wrap">
@@ -341,6 +329,62 @@
       });
     });
 
+    // OTP pra-pendaftaran di bawah ruangan telefon: Hantar Kod -> isi kod ->
+    // Sahkan. Bukti disimpan dalam ingatan dan dihantar bersama permohonan
+    // (backend mencipta akaun HANYA dengan bukti sah). Menukar email/nombor
+    // membatalkan bukti.
+    window.__regProof = null;
+    const otpInput = document.getElementById('regOtp');
+    const otpSend = document.getElementById('regOtpSend');
+    const otpVerify = document.getElementById('regOtpVerify');
+    const otpRow = document.getElementById('regOtpRow');
+    const otpState = document.getElementById('regOtpState');
+    const resetProof = (msg) => {
+      window.__regProof = null;
+      if (msg !== undefined) otpState.textContent = msg;
+    };
+    ['email', 'phone'].forEach((id) => {
+      document.getElementById(id).addEventListener('input', () => resetProof(''));
+    });
+    otpSend.addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      if (!email || !/^\S+@\S+\.\S+$/.test(email)) { UI.toast('Isi email yang sah dahulu.', 'warn'); return; }
+      if (!phone) { UI.toast('Isi nombor telefon dahulu.', 'warn'); return; }
+      otpSend.disabled = true;
+      try {
+        await API.auth.requestRegisterOtp({ email, phone });
+        otpRow.style.display = 'flex';
+        otpState.textContent = 'Kod dihantar melalui SMS. Semak telefon anda.';
+        UI.toast('Kod pengesahan dihantar.', 'ok');
+        let wait = 60;
+        otpSend.textContent = 'Tunggu ' + wait + 's...';
+        const t = setInterval(() => {
+          wait -= 1;
+          if (wait <= 0) { clearInterval(t); otpSend.disabled = false; otpSend.textContent = 'Hantar Kod'; }
+          else otpSend.textContent = 'Tunggu ' + wait + 's...';
+        }, 1000);
+      } catch (err) {
+        UI.toast(err.message, 'err');
+        otpSend.disabled = false;
+      }
+    });
+    otpVerify.addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      const code = otpInput.value.replace(/\D/g, '');
+      if (code.length !== 6) { UI.toast('Isi kod 6-digit.', 'warn'); return; }
+      otpVerify.disabled = true;
+      try {
+        const r = await API.auth.verifyRegisterOtp({ email, otp: code });
+        window.__regProof = { email, phone: document.getElementById('phone').value.trim(), proof: r.proof };
+        otpState.textContent = '✅ Nombor disahkan. Anda boleh teruskan.';
+        UI.toast('Nombor disahkan!', 'ok');
+      } catch (err) {
+        UI.toast(err.message, 'err');
+        otpVerify.disabled = false;
+      }
+    });
+
     function fillSummary() {
       const g = (id) => document.getElementById(id).value.trim();
       document.getElementById('rvName').textContent = g('fullName');
@@ -380,6 +424,15 @@
       btn.querySelector('.btn-label').textContent = 'Menghantar...';
 
       try {
+        // Bukti OTP pra-pendaftaran (Langkah 1-2) — wajib.
+        const pr = window.__regProof;
+        const curEmail = document.getElementById('email').value.trim();
+        const curPhone = document.getElementById('phone').value.trim();
+        if (!pr || pr.email !== curEmail || pr.phone !== curPhone || !pr.proof) {
+          UI.toast('Sahkan nombor telefon anda dahulu (Langkah 1 di bahagian Butiran Peribadi).', 'warn');
+          show(0);
+          return;
+        }
         const data = await API.auth.register({
           fullName: document.getElementById('fullName').value.trim(),
           icNumber: document.getElementById('icNumber').value.trim(),
@@ -395,23 +448,15 @@
           instagram: document.getElementById('instagram').value.trim(),
           tiktok: document.getElementById('tiktok').value.trim(),
           password: pass1,
+          proof: pr.proof,
         });
-        if (data && data.needPhoneVerify) {
-          window.__pendingOtp = { email: data.email, masked: data.phoneMasked, appId: data.appId };
-          const m = document.getElementById('otpMask');
-          if (m && data.phoneMasked) m.textContent = data.phoneMasked;
-          if (data.message) document.getElementById('otpNotice').innerHTML = UI.notice(data.message, 'info');
-          show('verify');
-          Nav.update();
-          UI.toast('Sahkan nombor telefon anda untuk melengkapkan pendaftaran.', 'ok');
-          return;
-        }
+        window.__regProof = null;
         Session.setToken(data.token);
         Session.setUser(data.user);
         document.getElementById('appId').textContent = data.appId;
         show('success');
         Nav.update();
-        UI.toast('Permohonan berjaya dihantar!', 'ok');
+        UI.toast('Nombor disahkan. Permohonan berjaya dihantar!', 'ok');
       } catch (err) {
         document.getElementById('notices').innerHTML = UI.notice(err.message, 'error');
         UI.toast(err.message, 'err');
@@ -421,55 +466,6 @@
       }
     });
 
-    async function doWizardVerify() {
-      const code = document.getElementById('otpCode').value.replace(/\D/g, '');
-      const notice = document.getElementById('otpNotice');
-      const p = window.__pendingOtp || {};
-      if (code.length !== 6) {
-        notice.innerHTML = UI.notice('Isi kod 6-digit.', 'error');
-        return;
-      }
-      const btn = document.getElementById('otpVerifyBtn');
-      btn.disabled = true;
-      try {
-        const data = await API.auth.verifyPhone({ email: p.email, otp: code });
-        Session.setToken(data.token);
-        Session.setUser(data.user);
-        document.getElementById('appId').textContent = data.appId || p.appId || '';
-        window.__pendingOtp = null;
-        show('success');
-        Nav.update();
-        UI.toast('Nombor disahkan! Permohonan berjaya dihantar.', 'ok');
-      } catch (err) {
-        notice.innerHTML = UI.notice(err.message, 'error');
-      } finally {
-        btn.disabled = false;
-      }
-    }
-
-    async function doWizardResend(e) {
-      const btn = e.currentTarget;
-      const notice = document.getElementById('otpNotice');
-      const p = window.__pendingOtp || {};
-      btn.disabled = true;
-      try {
-        const r = await API.auth.resendOtp({ email: p.email });
-        notice.innerHTML = UI.notice(r.message || 'Kod baharu dihantar.', 'ok');
-        let wait = 60;
-        btn.textContent = 'Tunggu ' + wait + 's...';
-        const t = setInterval(() => {
-          wait -= 1;
-          if (wait <= 0) { clearInterval(t); btn.disabled = false; btn.textContent = 'Hantar Semula Kod'; }
-          else btn.textContent = 'Tunggu ' + wait + 's...';
-        }, 1000);
-      } catch (err) {
-        notice.innerHTML = UI.notice(err.message, 'error');
-        btn.disabled = false;
-      }
-    }
-
-    document.getElementById('otpVerifyBtn').addEventListener('click', doWizardVerify);
-    document.getElementById('otpResendBtn').addEventListener('click', doWizardResend);
   };
   window.viewVerifyPhone = function (q) {
     const mode = q.mode === 'forgot' ? 'forgot' : 'verify';

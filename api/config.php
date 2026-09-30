@@ -59,14 +59,22 @@ if (!defined('OTP_MAX_ATTEMPTS')) {
 if (!defined('OTP_RESEND_COOLDOWN')) {
     define('OTP_RESEND_COOLDOWN', 60);
 }
-
-// Telefon prepaid sendiri (aplikasi SMS gateway di telefon lama).
-// Digunakan apabila WHATSAPP_GATEWAY = 'sms'.
-if (!defined('WHATSAPP_SMS_URL')) {
-    define('WHATSAPP_SMS_URL', '');
+// Jangka hayat bukti pengesahan pra-pendaftaran (saat).
+if (!defined('PROOF_TTL')) {
+    define('PROOF_TTL', 1800);
 }
-if (!defined('WHATSAPP_SMS_KEY')) {
-    define('WHATSAPP_SMS_KEY', '');
+
+// Telefon prepaid sendiri — SMS Gateway for Android (sms-gate.app), mod Cloud.
+// Digunakan apabila WHATSAPP_GATEWAY = 'sms'. Username + password dari
+// skrin Home aplikasi (Basic auth).
+if (!defined('WHATSAPP_SMS_URL')) {
+    define('WHATSAPP_SMS_URL', 'https://api.sms-gate.app/3rdparty/v1/messages');
+}
+if (!defined('WHATSAPP_SMS_USER')) {
+    define('WHATSAPP_SMS_USER', '');
+}
+if (!defined('WHATSAPP_SMS_PASS')) {
+    define('WHATSAPP_SMS_PASS', '');
 }
 
 ini_set('display_errors', '0');
