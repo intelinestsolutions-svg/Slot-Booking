@@ -25,7 +25,8 @@ jobs:
           WA_INSTANCE: ${{ secrets.WHATSAPP_INSTANCE_ID }}
           WA_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
           WA_SMS_URL: ${{ secrets.WHATSAPP_SMS_URL }}
-          WA_SMS_KEY: ${{ secrets.WHATSAPP_SMS_KEY }}
+          WA_SMS_USER: ${{ secrets.WHATSAPP_SMS_USER }}
+          WA_SMS_PASS: ${{ secrets.WHATSAPP_SMS_PASS }}
           WA_TO: ${{ secrets.WHATSAPP_TO }}
         run: |
           cat > api/config.local.php <<EOF
@@ -43,7 +44,8 @@ jobs:
           define('WHATSAPP_INSTANCE_ID', '${WA_INSTANCE}');
           define('WHATSAPP_TOKEN', '${WA_TOKEN}');
           define('WHATSAPP_SMS_URL', '${WA_SMS_URL}');
-          define('WHATSAPP_SMS_KEY', '${WA_SMS_KEY}');
+          define('WHATSAPP_SMS_USER', '${WA_SMS_USER}');
+          define('WHATSAPP_SMS_PASS', '${WA_SMS_PASS}');
           define('WHATSAPP_TO', '${WA_TO}');
           EOF
           test -s api/config.local.php || { echo "config.local.php not written"; exit 1; }
@@ -76,7 +78,7 @@ jobs:
           exclude: |
             **/.maintenance
 
-      - name: Purge stale api/partner.php copies from server
+      - name: Purge stale files from server (partner.php, premium removals)
         env:
           HOST: ${{ secrets.HOSTINGER_HOST }}
           PORT: ${{ secrets.HOSTINGER_PORT }}
@@ -92,17 +94,24 @@ jobs:
           ftp = ftplib.FTP_TLS()
           ftp.connect(host, port, timeout=60)
           ftp.login(user, pwd)
-          for root in ["/api", "/public_html/api"]:
-              try:
-                  ftp.cwd(root)
-                  names = ftp.nlst()
-                  if "partner.php" in names:
-                      ftp.delete("partner.php")
-                      print("deleted partner.php at", root)
-                  else:
-                      print("no partner.php at", root)
-              except Exception as e:
-                  print("skipped", root, "->", e)
+          # (directories, files) — premium feature removed; partner.php legacy.
+          targets = [
+              (["/api", "/public_html/api"], ["partner.php", "premium.php"]),
+              (["/assets/js/views", "/public_html/assets/js/views"], ["premium.js"]),
+          ]
+          for roots, files in targets:
+              for root in roots:
+                  try:
+                      ftp.cwd(root)
+                      names = ftp.nlst()
+                      for f in files:
+                          if f in names:
+                              ftp.delete(f)
+                              print("deleted", f, "at", root)
+                          else:
+                              print("no", f, "at", root)
+                  except Exception as e:
+                      print("skipped", root, "->", e)
           try:
               ftp.quit()
           except Exception:

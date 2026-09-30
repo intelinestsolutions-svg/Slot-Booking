@@ -30,38 +30,32 @@ function send_whatsapp(string $to, string $message): bool
     $token   = defined('WHATSAPP_TOKEN') ? WHATSAPP_TOKEN : '';
     $instance = defined('WHATSAPP_INSTANCE_ID') ? WHATSAPP_INSTANCE_ID : '';
 
-    // Telefon prepaid sendiri (aplikasi SMS gateway di telefon lama).
-    // WHATSAPP_TOKEN di sini ialah kunci API aplikasi gateway tersebut.
+    // Telefon prepaid sendiri — SMS Gateway for Android (sms-gate.app),
+    // mod Cloud. Auth: Basic (username + password dari skrin Home aplikasi).
     if ($gateway === 'sms') {
-        $url = defined('WHATSAPP_SMS_URL') ? rtrim((string)WHATSAPP_SMS_URL, '/') : '';
-        $key = defined('WHATSAPP_SMS_KEY') ? (string)WHATSAPP_SMS_KEY : '';
-        if ($url === '' || $key === '') {
+        $url = defined('WHATSAPP_SMS_URL') ? rtrim((string)WHATSAPP_SMS_URL, '/') : 'https://api.sms-gate.app/3rdparty/v1/messages';
+        $user = defined('WHATSAPP_SMS_USER') ? (string)WHATSAPP_SMS_USER : '';
+        $pass = defined('WHATSAPP_SMS_PASS') ? (string)WHATSAPP_SMS_PASS : '';
+        if ($user === '' || $pass === '') {
             return false;
         }
+        $msisdn = '+' . ltrim($to, '+');
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => json_encode(['to' => $to, 'message' => $message]),
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Authorization: Bearer ' . $key],
+            CURLOPT_POSTFIELDS => json_encode(['phoneNumbers' => [$msisdn], 'textMessage' => ['text' => $message]]),
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+            CURLOPT_USERPWD => $user . ':' . $pass,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_TIMEOUT => 20,
         ]);
         $resp = curl_exec($ch);
         $err = curl_error($ch);
+        $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        if ($err || $resp === false) {
-            return false;
-        }
-        $j = json_decode((string)$resp, true);
-        if (!is_array($j)) {
-            return false;
-        }
-        if (!empty($j['success'])) {
-            return true;
-        }
-        $st = strtolower((string)($j['status'] ?? ''));
-        return in_array($st, ['sent', 'queued', 'success', 'ok'], true);
+        // 202 = diterima untuk penghantaran (rujuk docs sms-gate.app).
+        return !$err && $resp !== false && in_array($code, [200, 201, 202], true);
     }
 
     if ($gateway === '' || $token === '' || $instance === '' || trim($to) === '') {
