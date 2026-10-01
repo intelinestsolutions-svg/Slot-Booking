@@ -3,7 +3,7 @@
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/whatsapp.php';
 require_once __DIR__ . '/otp.php';
-require_once __DIR__ . '/otp.php';
+require_once __DIR__ . '/email_otp.php';
 
 $action = $_GET['action'] ?? '';
 $pdo = db();
@@ -32,7 +32,7 @@ switch ($action) {
         if ($dupPhone->fetch()) {
             fail('Nombor telefon ini sudah digunakan pada akaun lain.', 409);
         }
-        if (!otp_configured()) {
+        if (otp_channel() === 'sms' && !otp_configured()) {
             fail('Perkhidmatan SMS belum disediakan. Sila hubungi admin.', 502);
         }
         $pdo->exec("DELETE FROM busker_proofs WHERE (proofExpires IS NOT NULL AND proofExpires < '" . time() . "')");
@@ -51,14 +51,18 @@ switch ($action) {
             proofHash=NULL, proofExpires=NULL")
             ->execute([$email, $waPhone, password_hash($otp, PASSWORD_DEFAULT), (string)$expires, 0, (string)time()]);
         $mins = (int)((defined('OTP_TTL') ? OTP_TTL : 600) / 60);
-        $msg = "🔐 Kod pengesahan SBC: $otp\nKod ini luput dalam $mins minit. Jangan kongsi dengan sesiapa.";
-        if (!send_whatsapp($waPhone, $msg)) {
-            fail('Gagal menghantar kod SMS. Sila cuba hantar semula.', 502);
+        require_once __DIR__ . '/email_otp.php';
+        $sent = otp_deliver($email, $waPhone, $otp);
+        if (empty($sent['success'])) {
+            fail($sent['error'] ?? 'Gagal menghantar kod pengesahan.', 502);
         }
         ok([
             'email' => $email,
+            'channel' => $sent['channel'],
+            'sentTo' => $sent['sentTo'],
             'phoneMasked' => otp_mask($waPhone),
-            'message' => 'Kod pengesahan 6-digit telah dihantar melalui SMS. Sahkan kod dahulu, kemudian lengkapkan permohonan.',
+            'emailMasked' => otp_mask_email($email),
+            'message' => 'Kod pengesahan 6-digit telah dihantar ke ' . $sent['sentTo'] . '. Sahkan kod dahulu, kemudian lengkapkan permohonan.',
         ]);
         break;
 
@@ -275,11 +279,11 @@ switch ($action) {
         if (($wait = otp_cooldown_wait($user['phoneOtpSentAt'] ?? null)) > 0) {
             json_out(['success' => false, 'error' => "Sila tunggu $wait saat sebelum meminta kod baharu.", 'retryAfter' => $wait], 429);
         }
-        $sent = otp_issue($pdo, (int)$user['id'], (string)$user['phone']);
+        $sent = otp_issue($pdo, (int)$user['id'], (string)$user['email'], (string)($user['phone'] ?? ''));
         if (!$sent['success']) {
             fail($sent['error'], 502);
         }
-        ok(['email' => $email, 'phoneMasked' => otp_mask((string)$user['phone']), 'message' => 'Kod pengesahan baharu telah dihantar melalui SMS.']);
+        ok(['email' => $email, 'channel' => $sent['channel'], 'sentTo' => $sent['sentTo'], 'phoneMasked' => otp_mask((string)($user['phone'] ?? '')), 'emailMasked' => otp_mask_email((string)$user['email']), 'message' => 'Kod pengesahan baharu telah dihantar ke ' . $sent['sentTo'] . '.']);
         break;
 
     case 'forgot_password':
@@ -291,18 +295,27 @@ switch ($action) {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
-        if ($user && !empty($user['phone'])) {
+        if ($user) {
+            $sentTo = '';
+            $channel = otp_channel();
             if (otp_cooldown_wait($user['phoneOtpSentAt'] ?? null) <= 0) {
-                otp_issue($pdo, (int)$user['id'], (string)$user['phone']);
+                $sent = otp_issue($pdo, (int)$user['id'], (string)$user['email'], (string)($user['phone'] ?? ''));
+                if (!empty($sent['success'])) {
+                    $sentTo = $sent['sentTo'];
+                    $channel = $sent['channel'];
+                }
             }
             ok([
                 'email' => $email,
-                'phoneMasked' => otp_mask((string)$user['phone']),
-                'message' => 'Jika email ini berdaftar, kod tetapan semula telah dihantar melalui SMS.',
+                'channel' => $channel,
+                'sentTo' => $sentTo,
+                'emailMasked' => otp_mask_email($email),
+                'phoneMasked' => otp_mask((string)($user['phone'] ?? '')),
+                'message' => 'Jika email ini berdaftar, kod tetapan semula telah dihantar.',
             ]);
             break;
         }
-        ok(['message' => 'Jika email ini berdaftar, kod tetapan semula telah dihantar melalui SMS.']);
+        ok(['message' => 'Jika email ini berdaftar, kod tetapan semula telah dihantar.']);
         break;
 
     case 'reset_password':
@@ -351,7 +364,7 @@ switch ($action) {
                 fail('Email atau kata laluan salah.', 401);
             }
             if ((int)($user['phoneVerified'] ?? 0) !== 1) {
-                json_out(['success' => false, 'error' => 'Sila sahkan nombor telefon anda dahulu.', 'needPhoneVerify' => true, 'email' => $user['email'], 'phoneMasked' => otp_mask((string)$user['phone'])], 403);
+                json_out(['success' => false, 'error' => 'Sila sahkan akaun anda dahulu (kod pengesahan).', 'needPhoneVerify' => true, 'email' => $user['email'], 'channel' => otp_channel(), 'phoneMasked' => otp_mask((string)($user['phone'] ?? '')), 'emailMasked' => otp_mask_email((string)$user['email'])], 403);
             }
         }
 
@@ -445,19 +458,16 @@ switch ($action) {
         break;
 
     case 'request_password_otp':
-        // Hantar OTP segar ke nombor telefon yang telah disahkan (untuk pertukaran kata laluan).
+        // Hantar OTP segar (untuk pertukaran kata laluan) mengikut saluran aktif.
         $user = require_user($pdo);
-        if (empty($user['phone'])) {
-            fail('Tiada nombor telefon pada akaun anda.', 403);
-        }
         if (($wait = otp_cooldown_wait($user['phoneOtpSentAt'] ?? null)) > 0) {
             json_out(['success' => false, 'error' => "Sila tunggu $wait saat sebelum meminta kod baharu.", 'retryAfter' => $wait], 429);
         }
-        $sent = otp_issue($pdo, (int)$user['id'], (string)$user['phone']);
+        $sent = otp_issue($pdo, (int)$user['id'], (string)$user['email'], (string)($user['phone'] ?? ''));
         if (!$sent['success']) {
             fail($sent['error'], 502);
         }
-        ok(['phoneMasked' => otp_mask((string)$user['phone']), 'message' => 'Kod pengesahan telah dihantar melalui SMS.']);
+        ok(['channel' => $sent['channel'], 'sentTo' => $sent['sentTo'], 'emailMasked' => otp_mask_email((string)$user['email']), 'phoneMasked' => otp_mask((string)($user['phone'] ?? '')), 'message' => 'Kod pengesahan telah dihantar ke ' . $sent['sentTo'] . '.']);
         break;
 
     case 'upload_avatar':

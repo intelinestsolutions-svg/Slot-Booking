@@ -28,6 +28,7 @@ jobs:
           SMS_USER: ${{ secrets.SMS_USER }}
           SMS_PASS: ${{ secrets.SMS_PASS }}
           SMS_TO: ${{ secrets.SMS_TO }}
+          OTP_CHANNEL: ${{ secrets.OTP_CHANNEL }}
         run: |
           cat > api/config.local.php <<EOF
           <?php
@@ -47,6 +48,7 @@ jobs:
           define('SMS_USER', '${SMS_USER}');
           define('SMS_PASS', '${SMS_PASS}');
           define('SMS_TO', '${SMS_TO}');
+          define('OTP_CHANNEL', '${OTP_CHANNEL}');
           EOF
           test -s api/config.local.php || { echo "config.local.php not written"; exit 1; }
 

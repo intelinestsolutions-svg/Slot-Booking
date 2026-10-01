@@ -50,8 +50,9 @@ Old Android APKs (older `versionCode`) will prompt "Versi Baharu Tersedia" with 
   - `VERIFY_TOKEN` = app verify token (must match `VERIFY_TOKEN` in local config)
   - `DEFAULT_ADMIN_EMAIL` / `DEFAULT_ADMIN_PASSWORD` = default admin login
   - `SMS_GATEWAY` = `chatapi` | `evolution` | `sms` | empty to disable
-  - `SMS_INSTANCE_ID`, `SMS_TOKEN`, `SMS_TO` = WhatsApp alert config
-  - `SMS_URL`, `SMS_SMS_KEY` = prepaid-phone SMS gateway (when `SMS_GATEWAY` = `sms`)
+  - `SMS_INSTANCE_ID`, `SMS_TOKEN`, `SMS_TO` = legacy gateway alert config
+  - `SMS_URL`, `SMS_USER`, `SMS_PASS` = prepaid-phone SMS gateway (when `SMS_GATEWAY` = `sms`)
+  - `OTP_CHANNEL` = `email` (default, free) | `sms` — no secret needed for email
   - The deploy workflow writes `api/config.local.php` from these secrets before
     uploading, so the live keys never need to live in git.
 - Workflow file: `.github/workflows/deploy.yml`

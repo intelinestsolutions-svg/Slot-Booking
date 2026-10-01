@@ -55,22 +55,18 @@ function otp_message(string $otp): string
 }
 
 /**
- * Jana OTP 6-digit, simpan hash + luput, hantar melalui SMS.
- * @return array{success:bool,error?:string}
+ * Jana OTP 6-digit, simpan hash + luput, hantar mengikut saluran aktif
+ * (email atau SMS). Pulangan membawa 'channel' + 'sentTo' untuk UI.
+ * @return array{success:bool,error?:string,channel?:string,sentTo?:string}
  */
-function otp_issue(PDO $pdo, int $userId, string $phone): array
+function otp_issue(PDO $pdo, int $userId, string $email, string $phone): array
 {
-    if (!otp_configured()) {
-        return ['success' => false, 'error' => 'Perkhidmatan SMS belum disediakan. Sila hubungi admin.'];
-    }
     $otp = (string)random_int(100000, 999999);
     $expires = time() + (defined('OTP_TTL') ? OTP_TTL : 600);
     $pdo->prepare("UPDATE users SET phoneOtpHash = ?, phoneOtpExpires = ?, phoneOtpAttempts = 0, phoneOtpSentAt = ? WHERE id = ?")
         ->execute([password_hash($otp, PASSWORD_DEFAULT), (string)$expires, (string)time(), $userId]);
-    if (!send_whatsapp($phone, otp_message($otp))) {
-        return ['success' => false, 'error' => 'Gagal menghantar kod SMS. Sila cuba hantar semula.'];
-    }
-    return ['success' => true];
+    require_once __DIR__ . '/email_otp.php';
+    return otp_deliver($email, $phone, $otp);
 }
 
 /**

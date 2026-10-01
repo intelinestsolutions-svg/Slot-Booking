@@ -148,13 +148,13 @@
 
       <div class="panel">
         <h3>Tukar Kata Laluan</h3>
-        <p class="sub" style="font-size:13px;color:var(--muted);">Demi keselamatan, kod pengesahan dihantar melalui SMS dan diperlukan bersama kata laluan semasa.</p>
+        <p class="sub" style="font-size:13px;color:var(--muted);">Demi keselamatan, kod pengesahan dihantar ke email anda dan diperlukan bersama kata laluan semasa.</p>
         <form id="passForm" style="margin-top:16px;max-width:460px;">
           <div id="pwNotice"></div>
           <div class="field"><label for="pwCurrent">Kata Laluan Semasa</label><input class="input" type="password" id="pwCurrent" autocomplete="current-password"></div>
           <div class="field" style="margin-top:14px;"><label for="pwNew">Kata Laluan Baru</label><input class="input" type="password" id="pwNew" autocomplete="new-password"></div>
           <div class="field" style="margin-top:14px;"><label for="pwNew2">Sahkan Kata Laluan Baru</label><input class="input" type="password" id="pwNew2" autocomplete="new-password"></div>
-          <div class="field" style="margin-top:14px;"><label for="pwOtp">Kod SMS (6-digit) — Langkah 1: tekan "Hantar Kod", Langkah 2: isi kod di sini</label>
+          <div class="field" style="margin-top:14px;"><label for="pwOtp">Kod Pengesahan (6-digit) — Langkah 1: tekan "Hantar Kod", Langkah 2: isi kod di sini</label>
             <div style="display:flex;gap:8px;">
               <input class="input" type="text" id="pwOtp" maxlength="6" inputmode="numeric" placeholder="123456" style="letter-spacing:3px;text-align:center;">
               <button class="btn btn-ghost" type="button" id="pwOtpBtn" style="white-space:nowrap;">Hantar Kod</button>
@@ -281,7 +281,7 @@
         return;
       }
       if (otp.length !== 6) {
-        document.getElementById('pwNotice').innerHTML = UI.notice('Isi kod SMS 6-digit. Tekan "Hantar Kod" dahulu.', 'error');
+        document.getElementById('pwNotice').innerHTML = UI.notice('Isi kod 6-digit dari email anda. Tekan "Hantar Kod" dahulu.', 'error');
         return;
       }
       const btn = document.getElementById('pwSave');
@@ -307,7 +307,7 @@
       btn.disabled = true;
       try {
         const r = await API.auth.requestPasswordOtp();
-        document.getElementById('pwNotice').innerHTML = UI.notice(r.message || 'Kod dihantar melalui SMS.', 'ok');
+        document.getElementById('pwNotice').innerHTML = UI.notice(r.message || ('Kod dihantar ke ' + (r.sentTo || 'email anda') + '.'), 'ok');
         document.getElementById('pwSave').disabled = false;
         let wait = 60;
         btn.textContent = 'Tunggu ' + wait + 's...';

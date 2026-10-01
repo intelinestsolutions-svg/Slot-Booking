@@ -133,7 +133,7 @@
                   <button type="button" class="btn btn-primary btn-sm" id="regOtpVerify" style="white-space:nowrap;">Sahkan Kod</button>
                   <span id="regOtpState" style="align-self:center;font-size:13px;"></span>
                 </div>
-                <span class="hint">Nombor telefon Malaysia — tekan "Hantar Kod", isi kod SMS yang diterima, tekan "Sahkan". Isi email dahulu (di bawah) sebelum meminta kod.</span>
+                <span class="hint">Isi email dahulu (di bawah), tekan "Hantar Kod", isi kod 6-digit yang diterima, tekan "Sahkan".</span>
                 <span class="error">Sila masukkan nombor telefon yang sah dan sahkan kod dahulu.</span>
               </div>
               <div class="field span-2">
@@ -326,7 +326,7 @@
           const curPhone = document.getElementById('phone').value.trim();
           if (!pr || pr.email !== curEmail || pr.phone !== curPhone || !pr.proof) {
             document.getElementById('phone').closest('.field').classList.add('invalid');
-            UI.toast('Sahkan nombor telefon anda dahulu: tekan "Hantar Kod", isi kod SMS, tekan "Sahkan Kod".', 'warn');
+            UI.toast('Sahkan akaun anda dahulu: tekan "Hantar Kod", isi kod 6-digit, tekan "Sahkan Kod".', 'warn');
             document.getElementById('regOtpSend').focus();
             return;
           }
@@ -368,7 +368,7 @@
       try {
         await API.auth.requestRegisterOtp({ email, phone });
         otpRow.style.display = 'flex';
-        otpState.textContent = 'Kod dihantar melalui SMS. Semak telefon anda.';
+        otpState.textContent = 'Kod dihantar. Semak email atau telefon anda.';
         UI.toast('Kod pengesahan dihantar.', 'ok');
         let wait = 60;
         otpSend.textContent = 'Tunggu ' + wait + 's...';
@@ -485,13 +485,13 @@
     const isForgot = mode === 'forgot';
     const title = isForgot ? 'Lupa Kata Laluan' : 'Sahkan Nombor Telefon';
     const subtitle = isForgot
-      ? 'Kod tetapan semula dihantar melalui SMS ke nombor berdaftar anda.'
+      ? 'Kod tetapan semula dihantar ke email/nombor berdaftar anda.'
       : 'Lengkapkan pengesahan untuk mengaktifkan akaun anda.';
 
     return UI.page(title, subtitle,
       `<div class="auth-wrap">
         <div class="auth-card">
-          <div id="vpNotice">${q.email && !isForgot ? UI.notice('Kod 6-digit dihantar melalui SMS. Kod luput dalam 10 minit.', 'info') : ''}</div>
+          <div id="vpNotice">${q.email && !isForgot ? UI.notice('Kod 6-digit dihantar. Semak email atau telefon anda. Kod luput dalam 10 minit.', 'info') : ''}</div>
           <form id="vpForm">
             <div class="field">
               <label for="vpEmail">Email ${isForgot ? '<em>*</em>' : ''}</label>
@@ -543,7 +543,7 @@
           document.getElementById('vpNewWrap').style.display = '';
           document.getElementById('vpNew2Wrap').style.display = '';
           btn.textContent = 'Tukar Kata Laluan';
-          noticeBox.innerHTML = UI.notice(r.message || 'Kod dihantar melalui SMS.', 'ok');
+          noticeBox.innerHTML = UI.notice(r.message || ('Kod dihantar ke ' + (r.sentTo || 'anda') + '.'), 'ok');
         } else if (isForgot) {
           const code = document.getElementById('vpOtp').value.replace(/\D/g, '');
           const nw = document.getElementById('vpNew').value;

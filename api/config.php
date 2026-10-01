@@ -59,6 +59,15 @@ if (!defined('OTP_MAX_ATTEMPTS')) {
 if (!defined('OTP_RESEND_COOLDOWN')) {
     define('OTP_RESEND_COOLDOWN', 60);
 }
+// Saluran OTP: 'email' (utama — PERCUMA melalui mail() hosting) atau 'sms'
+// (telefon prepaid sendiri). Tukar satu baris untuk beralih saluran.
+if (!defined('OTP_CHANNEL')) {
+    define('OTP_CHANNEL', 'email');
+}
+// Fail log ujian email (ujian/pembangunan sahaja — kosongkan di produksi).
+if (!defined('EMAIL_TEST_LOG')) {
+    define('EMAIL_TEST_LOG', '');
+}
 // Jangka hayat bukti pengesahan pra-pendaftaran (saat).
 if (!defined('PROOF_TTL')) {
     define('PROOF_TTL', 1800);
@@ -75,6 +84,11 @@ if (!defined('SMS_USER')) {
 }
 if (!defined('SMS_PASS')) {
     define('SMS_PASS', '');
+}
+// Pilihan: nombor slot SIM penghantar (1 atau 2 pada telefon dwi-SIM).
+// Kosongkan untuk slot lalai aplikasi.
+if (!defined('SMS_SIM')) {
+    define('SMS_SIM', '');
 }
 
 ini_set('display_errors', '0');
