@@ -73,6 +73,7 @@ jobs:
 
           MAINT_RULE = (
               "\n# ---- MAINTENANCE MODE ----\n"
+              "RewriteEngine On\n"
               "RewriteCond %{REQUEST_URI} !^/maintenance\\.html$\n"
               "RewriteCond %{REQUEST_URI} !^/assets/\n"
               "RewriteCond %{DOCUMENT_ROOT}/.maintenance -f\n"
@@ -95,6 +96,9 @@ jobs:
                   else:
                       print("WARN: maintenance.html missing locally and on server")
               # Self-heal: ensure .htaccess contains the maintenance rule.
+              # APPEND only — never replace the server file wholesale. Hostinger injects
+              # its own rules (SSL/redirect, MIME, PHP handlers) that are not in the repo,
+              # and a wholesale overwrite silently destroys them.
               ftp.sendcmd("TYPE A")
               lines = []
               try:
@@ -103,18 +107,26 @@ jobs:
                   lines = []
               ht = "\n".join(l.rstrip() for l in lines)
               if ".maintenance" not in ht:
-                  if os.path.isfile(".htaccess"):
-                      with open(".htaccess", "r") as f:
-                          ht = f.read().rstrip() + "\n"
-                      print("using .htaccess from repo (already has maintenance rule)")
+                  if "MAINTENANCE MODE" in ht:
+                      # Rule present but marker text missing (hand-edited) — leave it be.
+                      print("server .htaccess has a maintenance block; not touching it")
                   else:
-                      ht = ht.rstrip() + MAINT_RULE
+                      ht = ht.rstrip() + "\n" + MAINT_RULE
+                      ftp.sendcmd("TYPE I")
+                      ftp.storbinary("STOR .htaccess", io.BytesIO(ht.encode()))
                       print("appended maintenance rule to server .htaccess")
-                  ftp.sendcmd("TYPE I")
-                  ftp.storbinary("STOR .htaccess", io.BytesIO(ht.encode()))
+              else:
+                  print("server .htaccess already has the maintenance rule")
               ftp.sendcmd("TYPE I")
               ftp.storbinary("STOR .maintenance", io.BytesIO(b"maintenance"))
               print("PAUSED: .maintenance created at", docroot)
+              # Confirm the marker actually landed before reporting success — otherwise a
+              # silently-failed upload leaves the site live while the run says "PAUSED".
+              present = ".maintenance" in ftp.nlst()
+              print("marker present after STOR:", present)
+              if not present:
+                  print("ERROR: pause did not take effect (no .maintenance marker)")
+                  ftp.quit(); sys.exit(1)
           elif mode == "resume":
               removed = False
               for d in [docroot, "/"]:
@@ -127,6 +139,22 @@ jobs:
                       print("skip", d, "->", e)
                   except Exception as e:
                       print("skip", d, "->", e)
+              # A silent resume failure is the worst outcome here: the run reports
+              # success while the site stays parked on the maintenance page. Verify by
+              # re-listing (dotfiles are hidden from plain NLST, so probe explicitly)
+              # and fail loudly if the marker is somehow still there.
+              still = []
+              for d in [docroot, "/"]:
+                  try:
+                      go_root(); ftp.cwd(d)
+                      if ".maintenance" in ftp.nlst():
+                          still.append(d)
+                  except Exception:
+                      pass
+              if still:
+                  print("ERROR: .maintenance still present at", still,
+                        "- site is STILL in maintenance mode")
+                  ftp.quit(); sys.exit(1)
               if not removed:
                   print("NOTE: no .maintenance marker found (already live?)")
           else:
