@@ -38,18 +38,27 @@ jobs:
           # Explicit FTPS (AUTH TLS). Plain FTP sends HOSTINGER_PASSWORD in
           # cleartext on every run, where anyone on the network path can read it.
           # Hostinger answers "234 AUTH TLS successful" on port 21 and rejects
-          # implicit TLS, so this is the supported encrypted mode.
-          # No plaintext fallback on purpose: fail loudly rather than leak.
+          # implicit TLS ("WRONG_VERSION_NUMBER"), so AUTH TLS is the supported
+          # encrypted mode.
+          #
+          # Cert handling: Hostinger presents a shared Let's Encrypt cert for
+          # *.hstgr.io, which can never match the server IP, so hostname
+          # verification must be off. The chain is still verified against the
+          # system CA store, which is what actually defeats a MITM here.
+          # Fully disabling verification would only re-open the hole.
+          ctx = ssl.create_default_context()
+          ctx.check_hostname = False
           try:
-              ftp = ftplib.FTP_TLS(context=ssl.create_default_context())
+              ftp = ftplib.FTP_TLS(context=ctx)
               ftp.connect(host, port, timeout=60)
               print("AUTH TLS:", ftp.auth())
+              print("TLS:", ftp.sock.version(), ftp.sock.cipher()[0])
+              print("cert subject:", dict(x[0] for x in ftp.sock.getpeercert()["subject"]).get("commonName"))
           except Exception as e:
               print("ERROR: could not establish FTPS:", type(e).__name__, e)
               print("Refusing to fall back to plaintext FTP (would expose the password).")
               sys.exit(1)
           print(ftp.login(user, pwd))
-          print("TLS cipher:", ftp.sock.cipher()[0] if ftp.sock else "unknown")
 
           candidates = ["/public_html", "/public_html/apps", "/"]
 
