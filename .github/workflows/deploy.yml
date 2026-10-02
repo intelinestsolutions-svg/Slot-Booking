@@ -73,7 +73,13 @@ jobs:
           port: ${{ secrets.HOSTINGER_PORT }}
           username: ${{ secrets.HOSTINGER_USERNAME }}
           password: ${{ secrets.HOSTINGER_PASSWORD }}
-          protocol: ftp
+          # ftps = explicit TLS (AUTH TLS). Plain "ftp" sent HOSTINGER_PASSWORD
+          # in cleartext on every push. Hostinger does not offer implicit TLS
+          # on port 21, so "ftps-legacy" would fail here.
+          protocol: ftps
+          # loose = do not require the cert hostname to match; we connect by IP
+          # address, which strict verification would reject.
+          security: loose
           timeout: 120000
           server-dir: /public_html/
           local-dir: deploy-package/

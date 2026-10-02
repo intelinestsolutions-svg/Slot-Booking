@@ -30,13 +30,26 @@ jobs:
           MODE: ${{ github.event.inputs.mode }}
         run: |
           python3 - <<'EOF'
-          import ftplib, io, os, sys
+          import ftplib, io, os, sys, ssl
 
           host = os.environ["HOST"]; port = int(os.environ["PORT"])
           user = os.environ["USER"]; pwd = os.environ["PASS"]; mode = os.environ["MODE"]
-          ftp = ftplib.FTP()
-          ftp.connect(host, port, timeout=60)
+
+          # Explicit FTPS (AUTH TLS). Plain FTP sends HOSTINGER_PASSWORD in
+          # cleartext on every run, where anyone on the network path can read it.
+          # Hostinger answers "234 AUTH TLS successful" on port 21 and rejects
+          # implicit TLS, so this is the supported encrypted mode.
+          # No plaintext fallback on purpose: fail loudly rather than leak.
+          try:
+              ftp = ftplib.FTP_TLS(context=ssl.create_default_context())
+              ftp.connect(host, port, timeout=60)
+              print("AUTH TLS:", ftp.auth())
+          except Exception as e:
+              print("ERROR: could not establish FTPS:", type(e).__name__, e)
+              print("Refusing to fall back to plaintext FTP (would expose the password).")
+              sys.exit(1)
           print(ftp.login(user, pwd))
+          print("TLS cipher:", ftp.sock.cipher()[0] if ftp.sock else "unknown")
 
           candidates = ["/public_html", "/public_html/apps", "/"]
 
