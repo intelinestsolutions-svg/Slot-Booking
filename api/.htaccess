@@ -1,0 +1,18 @@
+# Block direct web access to sensitive API internals.
+# Tanpa ini, config.local.php boleh LADANG terus melalui HTTP —
+# ia hanya selamat kerana PHP tidak mengeluarkan apa-apa,
+# bukan kerana web tidak boleh mencapainya.
+<IfModule mod_authz_core.c>
+  <Files "config.local.php">
+    Require all denied
+  </Files>
+  <Files ".sbc-api">
+    Require all denied
+  </Files>
+</IfModule>
+<IfModule !mod_authz_core.c>
+  <Files "config.local.php">
+    Order deny,allow
+    Deny from all
+  </Files>
+</IfModule>
