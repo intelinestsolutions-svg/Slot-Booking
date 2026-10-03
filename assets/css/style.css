@@ -721,6 +721,23 @@ table.data tr:hover td { background: rgba(255, 176, 58, 0.04); }
 .btn-dim { filter: grayscale(0.5); }
 .tos-sec h4::before { content: "§ "; color: var(--amber); }
 
+/* ---------- Privacy consent banner (web, PDPA) ---------- */
+#sbcConsent {
+  position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 860;
+  transform: translateX(-50%) translateY(20px); opacity: 0; pointer-events: none;
+  width: min(680px, calc(100% - 24px));
+  display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  background: rgba(21, 28, 64, 0.92); border: 1px solid var(--line-2); border-radius: 16px;
+  box-shadow: var(--shadow); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  padding: 14px 16px; transition: opacity 0.3s ease, transform 0.3s ease;
+}
+#sbcConsent.on { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+#sbcConsent.gone { opacity: 0; transform: translateX(-50%) translateY(12px); }
+.sbc-consent-text { font-size: 12.5px; color: var(--text); line-height: 1.6; flex: 1 1 340px; }
+.sbc-consent-text b { color: var(--gold); }
+.sbc-consent-text a { color: var(--gold); text-decoration: underline; }
+.sbc-consent-btns { display: flex; gap: 8px; flex: none; }
+
 /* ==================================================================
    MOBILE APP SHELL — bottom tab bar, compact top bar, app-style UI
    ================================================================== */

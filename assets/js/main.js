@@ -17,7 +17,7 @@
         </div>
         <div class="modal-body tos-body">${window.TermsHTML ? TermsHTML(true) : ''}</div>
         <div class="tos-foot">
-          <label class="consent-row tos-agree"><input type="checkbox" id="tosAgree"> <span>Saya telah membaca dan <b>bersetuju</b> dengan Terma &amp; Syarat serta dasar privasi aplikasi.</span></label>
+          <label class="consent-row tos-agree"><input type="checkbox" id="tosAgree"> <span>Saya telah membaca dan <b>bersetuju</b> dengan <a href="?page=terms">Terma &amp; Syarat</a> serta <a href="?page=privacy">dasar privasi</a> aplikasi.</span></label>
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
             <button class="btn btn-primary tos-accept" type="button" disabled>Teruskan ke Aplikasi</button>
             <a class="btn btn-ghost" style="text-decoration:none;" href="?page=terms">Lihat Terma Penuh</a>
@@ -59,7 +59,7 @@
   }
 
   function ensureTos() {
-    if (!window.APP.isNative) return;
+    if (!window.APP.isNative) return true;
     if (window.TermsHTML) {
       let accepted = false;
       try { accepted = localStorage.getItem(APP.tosKey) === '1'; } catch (e) {}
@@ -68,6 +68,41 @@
     }
     return true;
   }
+
+  /* Web privacy-consent banner (PDPA): non-native browsers only.
+     Native gate above already handles in-app consent. */
+  function ensureWebConsent() {
+    if (window.APP.isNative) return;
+    let choice = null;
+    try { choice = localStorage.getItem('sbc-consent'); } catch (e) {}
+    if (choice) return;
+    const bar = document.createElement('div');
+    bar.id = 'sbcConsent';
+    bar.setAttribute('role', 'dialog');
+    bar.setAttribute('aria-label', 'Persetujuan privasi');
+    bar.innerHTML = `
+      <div class="sbc-consent-text"><b>Privasi anda penting.</b>
+      <span>Kami tidak menggunakan kuki pengiklanan/penjejakan — hanya storan tempatan yang diperlukan (sesi, bahasa, pilihan anda). Dengan meneruskan, anda bersetuju dengan <a href="?page=terms">Terma</a> &amp; <a href="?page=privacy">Dasar Privasi (PDPA)</a>.</span></div>
+      <div class="sbc-consent-btns">
+        <button type="button" class="btn btn-primary btn-sm" data-choice="accept">Terima</button>
+        <button type="button" class="btn btn-ghost btn-sm" data-choice="decline">Tolak</button>
+      </div>`;
+    bar.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-choice]');
+      if (!b) return;
+      try { localStorage.setItem('sbc-consent', b.dataset.choice); } catch (err) {}
+      bar.classList.add('gone');
+      setTimeout(() => bar.remove(), 400);
+    });
+    document.body.appendChild(bar);
+    requestAnimationFrame(() => bar.classList.add('on'));
+  }
+  window.sbcConsentManage = function () {
+    try { localStorage.removeItem('sbc-consent'); } catch (e) {}
+    const old = document.getElementById('sbcConsent');
+    if (old) old.remove();
+    ensureWebConsent();
+  };
 
   document.addEventListener('DOMContentLoaded', function () {
     const yearEl = document.getElementById('year');
@@ -98,6 +133,7 @@
     const tosAccepted = ensureTos();
     if (tosAccepted) setTimeout(requestMicPermission, 1400);
     setTimeout(requestNotifPermission, 2600);
+    setTimeout(ensureWebConsent, 1200);
 
     const reveal = new IntersectionObserver((entries) => {
       entries.forEach((e) => {

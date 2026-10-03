@@ -52,6 +52,7 @@ function schema(PDO $pdo): void
         language TEXT NOT NULL DEFAULT 'ms',
         avatar TEXT,
         token TEXT,
+        pdpaConsentAt TEXT,
         phoneVerified INTEGER NOT NULL DEFAULT 0,
         phoneOtpHash TEXT,
         phoneOtpExpires TEXT,
@@ -69,6 +70,9 @@ function schema(PDO $pdo): void
     }
     if (!in_array('premiumExpiresAt', $cols, true)) {
         $pdo->exec("ALTER TABLE users ADD COLUMN premiumExpiresAt TEXT");
+    }
+    if (!in_array('pdpaConsentAt', $cols, true)) {
+        $pdo->exec("ALTER TABLE users ADD COLUMN pdpaConsentAt TEXT");
     }
     // Pengesahan SMS (OTP). Akaun sedia ada dikecualikan automatik
     // supaya tidak dikunci keluar; pendaftaran baharu bermula 0.

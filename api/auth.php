@@ -118,6 +118,10 @@ switch ($action) {
         if (strlen($d['password']) < 6) {
             fail('Kata laluan sekurang-kurangnya 6 aksara.');
         }
+        // Persetujuan PDPA eksplisit — wajib, direkod dengan cap masa.
+        if (empty($d['consent'])) {
+            fail('Sila tandakan persetujuan PDPA anda untuk mendaftar.');
+        }
 
         $email = strtolower(trim($d['email']));
         $check = $pdo->prepare("SELECT id FROM users WHERE email = ?");
@@ -166,8 +170,8 @@ switch ($action) {
         try {
             $stmt = $pdo->prepare("INSERT INTO users
                 (email, password, role, fullName, icNumber, phone, state, city, address, postcode,
-                 stageName, genre, description, instagram, tiktok, verificationStatus, isActive, token, whatsappNumber, phoneVerified)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)");
+                 stageName, genre, description, instagram, tiktok, verificationStatus, isActive, token, whatsappNumber, phoneVerified, pdpaConsentAt)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1,datetime('now'))");
             // Nombor telah disahkan melalui OTP — sesi dikeluarkan serta-merta.
             $token = bin2hex(random_bytes(24));
             $stmt->execute([
