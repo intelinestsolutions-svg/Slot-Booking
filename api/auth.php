@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/whatsapp.php';
+require_once __DIR__ . '/phone.php';
 require_once __DIR__ . '/otp.php';
 require_once __DIR__ . '/email_otp.php';
 
@@ -18,7 +18,7 @@ switch ($action) {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             fail('Email tidak sah.');
         }
-        $waPhone = normalize_whatsapp($phone);
+        $waPhone = normalize_phone($phone);
         if ($waPhone === null) {
             fail('Nombor telefon tidak sah. Gunakan nombor Malaysia, cth: 012-3456789.');
         }
@@ -31,9 +31,6 @@ switch ($action) {
         $dupPhone->execute([$waPhone]);
         if ($dupPhone->fetch()) {
             fail('Nombor telefon ini sudah digunakan pada akaun lain.', 409);
-        }
-        if (otp_channel() === 'sms' && !otp_configured()) {
-            fail('Perkhidmatan SMS belum disediakan. Sila hubungi admin.', 502);
         }
         $pdo->exec("DELETE FROM busker_proofs WHERE (proofExpires IS NOT NULL AND proofExpires < '" . time() . "')");
         $stmt = $pdo->prepare("SELECT * FROM busker_proofs WHERE email = ?");
@@ -97,7 +94,7 @@ switch ($action) {
             'email' => $email,
             'phoneMasked' => otp_mask((string)$pend['phone']),
             'proof' => $proof,
-            'message' => 'Nombor disahkan. Lengkapkan permohonan anda.',
+            'message' => 'Email telah disahkan. Lengkapkan permohonan anda.',
         ]);
         break;
 
@@ -130,14 +127,14 @@ switch ($action) {
             fail('Email ini sudah didaftarkan.');
         }
 
-        $whatsapp = normalize_whatsapp((string)($d['whatsappNumber'] ?? ''));
+        $whatsapp = normalize_phone((string)($d['whatsappNumber'] ?? ''));
         if (($d['whatsappNumber'] ?? '') !== '' && $whatsapp === null) {
-            fail('Nombor WhatsApp tidak sah.');
+            fail('Nombor telefon tidak sah.');
         }
 
         // Nombor telefon pendaftaran MESTI nombor mudah alih Malaysia yang sah
         // kerana kod pengesahan OTP dihantar ke nombor ini.
-        $waPhone = normalize_whatsapp((string)$d['phone']);
+        $waPhone = normalize_phone((string)$d['phone']);
         if ($waPhone === null) {
             fail('Nombor telefon tidak sah. Gunakan nombor telefon Malaysia, cth: 012-3456789.');
         }
@@ -225,7 +222,7 @@ switch ($action) {
             'appId' => $appId,
             'token' => $token,
             'user' => public_user($pdo, (int)$userId),
-            'message' => 'Nombor disahkan. Permohonan diterima — akaun aktif selepas kelulusan admin.',
+            'message' => 'Email telah disahkan. Permohonan diterima — akaun aktif selepas kelulusan admin.',
         ]);
         break;
 
@@ -278,7 +275,7 @@ switch ($action) {
             fail('Akaun tidak dijumpai.', 404);
         }
         if ((int)($user['phoneVerified'] ?? 0) === 1) {
-            fail('Nombor anda telah disahkan. Sila log masuk.', 409);
+            fail('Email anda telah disahkan. Sila log masuk.', 409);
         }
         if (($wait = otp_cooldown_wait($user['phoneOtpSentAt'] ?? null)) > 0) {
             json_out(['success' => false, 'error' => "Sila tunggu $wait saat sebelum meminta kod baharu.", 'retryAfter' => $wait], 429);
@@ -412,9 +409,9 @@ switch ($action) {
             if ($raw === '') {
                 $d['whatsappNumber'] = '';
             } else {
-                $wx = normalize_whatsapp($raw);
+                $wx = normalize_phone($raw);
                 if ($wx === null) {
-                    fail('Nombor WhatsApp tidak sah.');
+                    fail('Nombor telefon tidak sah.');
                 }
                 $d['whatsappNumber'] = $wx;
             }
@@ -436,7 +433,7 @@ switch ($action) {
         break;
 
     case 'change_password':
-        // Keselamatan: mesti lulus KEDUA-DUA — kata laluan semasa + OTP SMS segar.
+        // Keselamatan: mesti lulus KEDUA-DUA — kata laluan semasa + OTP emel segar.
         $user = require_user($pdo);
         $d = body();
         $chk = otp_check($pdo, $user, (string)($d['otp'] ?? ''));

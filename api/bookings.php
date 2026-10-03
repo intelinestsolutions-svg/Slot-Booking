@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/whatsapp.php';
+require_once __DIR__ . '/alert_email.php';
 require_once __DIR__ . '/toyyibpay.php';
 
 $action = $_GET['action'] ?? '';
@@ -222,7 +222,13 @@ switch ($action) {
             $pdo->prepare("INSERT INTO notifications (userId,title,body) VALUES (?, 'Pembayaran Berjaya', 'Slot anda telah disahkan! Sila hadir pada waktu yang ditetapkan.')")
                 ->execute([$b['userId']]);
             record_transaction($pdo, $b);
-            try { alert_paid_booking_ctx($pdo, $b); } catch (Throwable $e) {}
+            // Email alert kepada admin. Kegagalan TIDAK boleh senyap —
+            // inilah punca makluman pembayaran hilang selama ini.
+            try {
+                alert_paid_booking_ctx($pdo, $b);
+            } catch (Throwable $e) {
+                alert_log('ERROR', 'alert_paid_booking gagal: ' . $e->getMessage());
+            }
         }
 
         ok(['status' => 'confirmed', 'message' => 'Pembayaran berjaya! Slot telah disahkan.']);
@@ -299,7 +305,11 @@ switch ($action) {
             $pdo->prepare("INSERT INTO notifications (userId,title,body) VALUES (?, 'Pembayaran Berjaya', 'Slot anda telah disahkan! Sila hadir pada waktu yang ditetapkan.')")
                 ->execute([$booking['userId']]);
             record_transaction($pdo, $booking);
-            try { alert_paid_booking_ctx($pdo, $booking); } catch (Throwable $e) {}
+            try {
+                alert_paid_booking_ctx($pdo, $booking);
+            } catch (Throwable $e) {
+                alert_log('ERROR', 'alert_paid_booking gagal: ' . $e->getMessage());
+            }
         }
         ok(['status' => 'confirmed']);
         break;
@@ -310,21 +320,30 @@ switch ($action) {
 
 function alert_paid_booking_ctx(PDO $pdo, array $booking): bool
 {
-    include_once __DIR__ . '/whatsapp.php';
     $stmt = $pdo->prepare("SELECT s.date, s.startTime, s.endTime, l.name AS locationName
         FROM slots s JOIN locations l ON l.id = s.locationId WHERE s.id=?");
     $stmt->execute([$booking['slotId']]);
     $info = $stmt->fetch();
     if (!$info) {
+        alert_log('ERROR', 'alert_paid_booking: slot ' . $booking['slotId'] . ' tidak ditemui');
         return false;
     }
-    $slot = ['date' => $info['date'], 'startTime' => $info['startTime'], 'endTime' => $info['endTime']];
-    $user = [
-        'stageName' => $booking['buskerStageName'] ?? null,
-        'fullName'  => $booking['buskerStageName'] ?? null,
-        'phone'     => $booking['buskerPhone'] ?? null,
-    ];
-    return alert_paid_booking($slot, $user, $info['locationName'] ?? '', $booking);
+
+    $body = "PEMBAYARAN BERJAYA - SLOT SAH (SBC)\n\n"
+        . 'Busker   : ' . ($booking['buskerStageName'] ?? '-') . "\n"
+        . 'Telefon  : ' . ($booking['buskerPhone'] ?? '-') . "\n"
+        . 'Lokasi   : ' . ($info['locationName'] ?? '') . "\n"
+        . 'Tarikh   : ' . $info['date'] . "\n"
+        . 'Masa     : ' . $info['startTime'] . '-' . $info['endTime'] . "\n"
+        . 'Bayaran  : RM' . number_format((float)$booking['amount'], 2) . " (LUNAS)\n"
+        . 'Bil      : ' . ($booking['billCode'] ?? '-') . "\n\n"
+        . 'Tempahan sah. Sila semak di Panel Admin.';
+
+    $subject = 'Bayaran berjaya RM' . number_format((float)$booking['amount'], 2)
+        . ' - ' . ($booking['buskerStageName'] ?? '-')
+        . ' - ' . $info['date'];
+
+    return send_admin_alert($subject, $body);
 }
 
 function record_transaction(PDO $pdo, array $booking): void

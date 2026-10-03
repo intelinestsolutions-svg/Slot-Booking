@@ -74,8 +74,9 @@ function schema(PDO $pdo): void
     if (!in_array('pdpaConsentAt', $cols, true)) {
         $pdo->exec("ALTER TABLE users ADD COLUMN pdpaConsentAt TEXT");
     }
-    // Pengesahan SMS (OTP). Akaun sedia ada dikecualikan automatik
-    // supaya tidak dikunci keluar; pendaftaran baharu bermula 0.
+    // Pengesahan nombor telefon (OTP dihantar ke EMEL). Akaun sedia ada
+    // dikecualikan automatik supaya tidak dikunci keluar; pendaftaran baharu
+    // bermula 0 dan mesti sahkan sebelum boleh log masuk.
     $needGrandfather = !in_array('phoneVerified', $cols, true);
     foreach ([
         'phoneVerified' => "ALTER TABLE users ADD COLUMN phoneVerified INTEGER NOT NULL DEFAULT 0",
@@ -475,7 +476,7 @@ function require_user(PDO $pdo): array
         fail('Sila log masuk dahulu.', 401);
     }
     if ($user['role'] === 'busker' && (int)($user['phoneVerified'] ?? 0) !== 1) {
-        json_out(['success' => false, 'error' => 'Sila sahkan nombor WhatsApp anda dahulu.', 'needPhoneVerify' => true, 'email' => $user['email']], 403);
+        json_out(['success' => false, 'error' => 'Sila sahkan nombor telefon anda dahulu.', 'needPhoneVerify' => true, 'email' => $user['email']], 403);
     }
     return $user;
 }

@@ -1,10 +1,10 @@
 <?php
-// ====== OTP SMS — pengesahan nombor & tetapan semula kata laluan ======
+// ====== OTP — pengesahan nombor & tetapan semula kata laluan ======
 // Digunakan oleh api/auth.php (pendaftaran, pengesahan, lupa kata laluan).
-// Penghantaran melalui send_whatsapp() (chatapi | evolution).
+// Penghantaran adalah melalui EMAIL sahaja (lihat email_otp.php).
+// Tiada lagi gateway WhatsApp/SMS dalam sistem ini.
 
 require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/whatsapp.php';
 
 function otp_mask(string $phone): string
 {
@@ -29,22 +29,6 @@ function otp_ts($v): int
     }
     $t = strtotime((string)$v);
     return $t === false ? 0 : $t;
-}
-
-function otp_configured(): bool
-{
-    if (defined('SMS_TEST_MODE') && SMS_TEST_MODE) {
-        return true;
-    }
-    $gateway = defined('SMS_GATEWAY') ? (string)SMS_GATEWAY : '';
-    if ($gateway === 'sms') {
-        $user = defined('SMS_USER') ? (string)SMS_USER : '';
-        $pass = defined('SMS_PASS') ? (string)SMS_PASS : '';
-        return $user !== '' && $pass !== '';
-    }
-    $token = defined('SMS_TOKEN') ? (string)SMS_TOKEN : '';
-    $instance = defined('SMS_INSTANCE_ID') ? (string)SMS_INSTANCE_ID : '';
-    return $gateway !== '' && $token !== '' && $instance !== '';
 }
 
 function otp_message(string $otp): string

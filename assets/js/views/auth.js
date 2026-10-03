@@ -127,19 +127,20 @@
               <div class="field">
                 <label for="phone">Telefon <em>*</em></label>
                 <input class="input" id="phone" name="phone" maxlength="15" placeholder="01X-XXXXXXX" autocomplete="tel" required>
-                <button type="button" class="btn btn-ghost btn-sm" id="regOtpSend" style="margin-top:8px;">Hantar Kod Pengesahan</button>
-                <div id="regOtpRow" style="display:none;margin-top:8px;gap:8px;flex-wrap:wrap;">
-                  <input class="input" id="regOtp" maxlength="6" inputmode="numeric" placeholder="Kod 6-digit" style="letter-spacing:3px;text-align:center;max-width:150px;">
-                  <button type="button" class="btn btn-primary btn-sm" id="regOtpVerify" style="white-space:nowrap;">Sahkan Kod</button>
-                  <span id="regOtpState" style="align-self:center;font-size:13px;"></span>
-                </div>
-                <span class="hint">Isi email dahulu (di bawah), tekan "Hantar Kod", isi kod 6-digit yang diterima, tekan "Sahkan".</span>
-                <span class="error">Sila masukkan nombor telefon yang sah dan sahkan kod dahulu.</span>
+                <span class="hint">Nombor telefon Malaysia.</span>
+                <span class="error">Sila masukkan nombor telefon yang sah.</span>
               </div>
               <div class="field span-2">
                 <label for="email">Alamat Email <em>*</em></label>
                 <input class="input" id="email" name="email" type="email" maxlength="120" placeholder="nama@contoh.com" autocomplete="email" required>
                 <span class="error">Sila masukkan email yang sah.</span>
+                <button type="button" class="btn btn-ghost btn-sm" id="regOtpSend" style="margin-top:8px;">Hantar Kod Pengesahan</button>
+                <div id="regOtpRow" style="display:none;margin-top:8px;gap:8px;flex-wrap:wrap;">
+                  <input class="input" id="regOtp" maxlength="6" inputmode="numeric" placeholder="Kod 6-digit dari email" style="letter-spacing:3px;text-align:center;max-width:170px;">
+                  <button type="button" class="btn btn-primary btn-sm" id="regOtpVerify" style="white-space:nowrap;">Sahkan Kod</button>
+                  <span id="regOtpState" style="align-self:center;font-size:13px;"></span>
+                </div>
+                <span class="hint">Kod pengesahan dihantar ke email ini — tekan "Hantar Kod", isi kod, tekan "Sahkan".</span>
               </div>
             </div>
           </div>
@@ -390,8 +391,8 @@
       try {
         const r = await API.auth.verifyRegisterOtp({ email, otp: code });
         window.__regProof = { email, phone: document.getElementById('phone').value.trim(), proof: r.proof };
-        otpState.textContent = '✅ Nombor disahkan. Anda boleh teruskan.';
-        UI.toast('Nombor disahkan!', 'ok');
+        otpState.textContent = '✅ Email telah disahkan. Anda boleh teruskan.';
+        UI.toast('Email telah disahkan!', 'ok');
       } catch (err) {
         UI.toast(err.message, 'err');
         otpVerify.disabled = false;
@@ -442,7 +443,7 @@
         const curEmail = document.getElementById('email').value.trim();
         const curPhone = document.getElementById('phone').value.trim();
         if (!pr || pr.email !== curEmail || pr.phone !== curPhone || !pr.proof) {
-          UI.toast('Sahkan nombor telefon anda dahulu (Langkah 1 di bahagian Butiran Peribadi).', 'warn');
+          UI.toast('Sahkan email anda dahulu (Langkah 1 di bahagian Butiran Peribadi).', 'warn');
           show(0);
           return;
         }
@@ -469,7 +470,7 @@
         document.getElementById('appId').textContent = data.appId;
         show('success');
         Nav.update();
-        UI.toast('Nombor disahkan. Permohonan berjaya dihantar!', 'ok');
+        UI.toast('Email telah disahkan. Permohonan berjaya dihantar!', 'ok');
       } catch (err) {
         document.getElementById('notices').innerHTML = UI.notice(err.message, 'error');
         UI.toast(err.message, 'err');
@@ -483,7 +484,7 @@
   window.viewVerifyPhone = function (q) {
     const mode = q.mode === 'forgot' ? 'forgot' : 'verify';
     const isForgot = mode === 'forgot';
-    const title = isForgot ? 'Lupa Kata Laluan' : 'Sahkan Nombor Telefon';
+    const title = isForgot ? 'Lupa Kata Laluan' : 'Sahkan Email';
     const subtitle = isForgot
       ? 'Kod tetapan semula dihantar ke email/nombor berdaftar anda.'
       : 'Lengkapkan pengesahan untuk mengaktifkan akaun anda.';
@@ -512,7 +513,7 @@
               <label for="vpOtp">Kod Pengesahan (6-digit) <em>*</em></label>
               <input class="input" id="vpOtp" maxlength="6" inputmode="numeric" placeholder="123456" style="letter-spacing:4px;text-align:center;font-size:20px;" required>
             </div>`}
-            <button class="btn btn-primary btn-block" style="margin-top:20px;" id="vpBtn">${isForgot ? 'Hantar Kod Tetapan Semula' : 'Sahkan Nombor'}</button>
+            <button class="btn btn-primary btn-block" style="margin-top:20px;" id="vpBtn">${isForgot ? 'Hantar Kod Tetapan Semula' : 'Sahkan Email'}</button>
             <button class="btn btn-ghost btn-block" style="margin-top:10px;" id="vpResend" type="button">Hantar Semula Kod</button>
           </form>
           <p style="text-align:center;margin-top:18px;font-size:13px;color:var(--muted)">
@@ -561,7 +562,7 @@
           const data = await API.auth.verifyPhone({ email, otp: code });
           Session.setToken(data.token);
           Session.setUser(data.user);
-          noticeBox.innerHTML = UI.notice('Nombor disahkan! Anda boleh meneruskan.', 'ok');
+          noticeBox.innerHTML = UI.notice('Email telah disahkan! Anda boleh meneruskan.', 'ok');
           UI.toast('Nombor telefon disahkan.', 'ok');
           setTimeout(() => Router.go('cari-slot'), 1200);
         }

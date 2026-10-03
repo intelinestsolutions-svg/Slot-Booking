@@ -40,16 +40,12 @@ if (!defined('MPK_VERIFY_KEY')) {
     define('MPK_VERIFY_KEY', '');
 }
 
-// ====== Pengesahan WhatsApp (OTP 6-digit semasa pendaftaran busker) ======
-// Pendaftaran baharu wajib mengesahkan nombor WhatsApp Malaysia melalui OTP
-// sebelum sesi log masuk dikeluarkan. Akaun sedia ada dikecualikan automatik.
-if (!defined('SMS_TEST_MODE')) {
-    define('SMS_TEST_MODE', false);  // true = log OTP ke fail, jangan hantar
-}
-if (!defined('SMS_TEST_LOG')) {
-    define('SMS_TEST_LOG', DB_DIR . '/sms-test.log');
-}
-// Polisi OTP: sah 10 minit, maks 5 cubaan, hantar semula selepas 60 saat.
+// ====== Pengesahan OTP semasa pendaftaran busker ======
+// Pendaftaran baharu wajib mengesahkan nombor telefon Malaysia melalui OTP
+// yang dihantar ke EMEL. Tiada SMS atau WhatsApp dihantar oleh sistem ini.
+// Akaun sedia ada dikecualikan automatik.
+//
+// Politik OTP: sah 10 minit, maks 5 cubaan, hantar semula selepas 60 saat.
 if (!defined('OTP_TTL')) {
     define('OTP_TTL', 600);
 }
@@ -59,11 +55,6 @@ if (!defined('OTP_MAX_ATTEMPTS')) {
 if (!defined('OTP_RESEND_COOLDOWN')) {
     define('OTP_RESEND_COOLDOWN', 60);
 }
-// Saluran OTP: 'email' (utama — PERCUMA melalui mail() hosting) atau 'sms'
-// (telefon prepaid sendiri). Tukar satu baris untuk beralih saluran.
-if (!defined('OTP_CHANNEL')) {
-    define('OTP_CHANNEL', 'email');
-}
 // Fail log ujian email (ujian/pembangunan sahaja — kosongkan di produksi).
 if (!defined('EMAIL_TEST_LOG')) {
     define('EMAIL_TEST_LOG', '');
@@ -72,23 +63,9 @@ if (!defined('EMAIL_TEST_LOG')) {
 if (!defined('PROOF_TTL')) {
     define('PROOF_TTL', 1800);
 }
-
-// Telefon prepaid sendiri — SMS Gateway for Android (sms-gate.app), mod Cloud.
-// Digunakan apabila SMS_GATEWAY = 'sms'. Username + password dari
-// skrin Home aplikasi (Basic auth).
-if (!defined('SMS_URL')) {
-    define('SMS_URL', 'https://api.sms-gate.app/3rdparty/v1/messages');
-}
-if (!defined('SMS_USER')) {
-    define('SMS_USER', '');
-}
-if (!defined('SMS_PASS')) {
-    define('SMS_PASS', '');
-}
-// Pilihan: nombor slot SIM penghantar (1 atau 2 pada telefon dwi-SIM).
-// Kosongkan untuk slot lalai aplikasi.
-if (!defined('SMS_SIM')) {
-    define('SMS_SIM', '');
+// Lokasi log alert admin (apabila email gagal dihantar).
+if (!defined('DATA_DIR')) {
+    define('DATA_DIR', DB_DIR . '/logs');
 }
 
 ini_set('display_errors', '0');

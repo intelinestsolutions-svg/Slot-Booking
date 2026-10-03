@@ -57,7 +57,7 @@
       ['Email', u.email],
       ['Nombor IC', u.icNumber],
       ['Telefon', u.phone],
-      [u.whatsappNumber ? 'Nombor WhatsApp (peringatan)' : null, u.whatsappNumber],
+      [u.whatsappNumber ? 'Nombor WhatsApp (hubungi)' : null, u.whatsappNumber],
       ['Alamat', [u.address, `${u.city}, ${u.state} ${u.postcode || ''}`].filter(Boolean).join(', ')],
       ['Genre', u.genre],
       ['Deskripsi', u.description],
@@ -134,7 +134,7 @@
             <div class="field"><label for="pfGenre">Genre</label><select class="select" id="pfGenre" name="genre"></select></div>
             <div class="field"><label for="pfFullName">Nama Penuh</label><input class="input" id="pfFullName" name="fullName"></div>
             <div class="field"><label for="pfPhone">Telefon</label><input class="input" id="pfPhone" name="phone"></div>
-            <div class="field span-2"><label for="pfWhatsapp">Nombor WhatsApp (untuk peringatan tempahan)</label><input class="input" id="pfWhatsapp" name="whatsappNumber" type="tel" placeholder="01X-XXXXXXX"></div>
+            <div class="field span-2"><label for="pfWhatsapp">Nombor WhatsApp (untuk dihubungi admin)</label><input class="input" id="pfWhatsapp" name="whatsappNumber" type="tel" placeholder="01X-XXXXXXX"></div>
             <div class="field"><label for="pfCity">Bandar</label><input class="input" id="pfCity" name="city"></div>
             <div class="field"><label for="pfPostcode">Poskod</label><input class="input" id="pfPostcode" name="postcode"></div>
             <div class="field span-2"><label for="pfAddress">Alamat</label><textarea class="textarea" id="pfAddress" name="address"></textarea></div>

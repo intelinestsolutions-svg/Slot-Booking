@@ -1,7 +1,7 @@
 <?php
-// ====== Penghantaran OTP melalui EMAIL (saluran selain SMS) ======
+// ====== Penghantaran OTP melalui EMAIL (SALURAN SATU-SATUNYA) ======
 // PERCUMA: menggunakan mail() pelayan hosting sendiri. Tiada gateway,
-// tiada SIM, tiada kos se mesej. Aktifkan dengan OTP_CHANNEL=email.
+// tiada SIM, tiada kos se mesej. Ini adalah SATU-SATUNYA saluran OTP.
 
 require_once __DIR__ . '/db.php';
 
@@ -68,37 +68,22 @@ function send_email_otp(string $email, string $otp): array
 
 function otp_channel(): string
 {
-    $c = strtolower((string)(defined('OTP_CHANNEL') ? OTP_CHANNEL : 'sms'));
-    return $c === 'email' ? 'email' : 'sms';
+    return 'email';
 }
 
 /**
- * Hantar OTP mengikut saluran aktif. Pulangan sentiasa membawa
- * 'channel' + 'sentTo' untuk paparan UI yang tepat.
+ * Hantar OTP ke alamat email pengguna. Email ialah SATU-SATUNYA saluran —
+ * tiada lagi gateway SMS/WhatsApp dalam sistem ini, jadi tiada cabang
+ * lain untuk dipilih dan tiada risiko kod hilang dalam diam.
  */
 function otp_deliver(string $email, string $phone, string $otp): array
 {
-    if (otp_channel() === 'email') {
-        $r = send_email_otp($email, $otp);
-        return [
-            'success' => !empty($r['success']),
-            'error' => $r['error'] ?? '',
-            'channel' => 'email',
-            'sentTo' => 'email anda (' . otp_mask_email($email) . ')',
-            'emailMasked' => otp_mask_email($email),
-        ];
-    }
-    if (!otp_configured()) {
-        return ['success' => false, 'error' => 'Perkhidmatan SMS belum disediakan. Sila hubungi admin.'];
-    }
-    $ttlMin = (int)((defined('OTP_TTL') ? OTP_TTL : 600) / 60);
-    $msg = "🔐 Kod pengesahan SBC: $otp\nKod ini luput dalam $ttlMin minit. Jangan kongsi dengan sesiapa.";
-    $ok = send_whatsapp($phone, $msg);
+    $r = send_email_otp($email, $otp);
     return [
-        'success' => (bool)$ok,
-        'error' => $ok ? '' : 'Gagal menghantar kod SMS. Sila cuba hantar semula.',
-        'channel' => 'sms',
-        'sentTo' => 'SMS ke ' . otp_mask($phone),
-        'phoneMasked' => otp_mask($phone),
+        'success' => !empty($r['success']),
+        'error' => $r['error'] ?? '',
+        'channel' => 'email',
+        'sentTo' => 'email anda (' . otp_mask_email($email) . ')',
+        'emailMasked' => otp_mask_email($email),
     ];
 }
