@@ -34,6 +34,10 @@
           <p style="text-align:center;margin-top:10px;font-size:13px;color:var(--muted)">
             Belum ada akaun? <a href="?page=register" style="color:var(--gold);font-weight:700;">Daftar sebagai busker</a>
           </p>
+          <div style="text-align:center;margin-top:14px;">
+            <button class="btn btn-ghost btn-block" style="margin-bottom:6px;" id="googleLogin">Log Masuk dengan Google</button>
+            <button class="btn btn-ghost btn-block" style="margin-bottom:6px;" id="facebookLogin">Log Masuk dengan Facebook</button>
+          </div>
         </div>
       </div>`,
       { eyebrow: 'Selamat kembali' });
@@ -81,6 +85,47 @@
       } finally {
         btn.disabled = false;
         btn.textContent = 'Log Masuk';
+      }
+    });
+
+    // Handle social login buttons
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[id^="googleLogin"], button[id^="facebookLogin"]');
+      if (!btn) return;
+
+      const provider = btn.id.replace('Login', '').toLowerCase(); // 'google' or 'facebook'
+      const email = document.getElementById('email').value.trim();
+
+      if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+        UI.toast('Isi email yang sah dahulu.', 'warn');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Memproses...';
+      try {
+        const data = await API.auth.socialLogin(provider, email);
+        if (data.success === false) {
+          UI.toast(data.error || 'Gagal log masuk sosial.', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Log Masuk dengan ' + provider;
+          return;
+        }
+        // Jika pengguna terdaftar, terima token dan arahkan
+        Session.setToken(data.token);
+        Session.setUser(data.user);
+        if (data.pending) {
+          UI.toast('Akaun anda masih menunggu kelulusan admin.', 'info');
+          Router.go('landing');
+        } else {
+          const roleHome = data.user.role === 'admin' ? 'admin-dashboard' : 'cari-slot';
+          Router.go(roleHome);
+        }
+      } catch (err) {
+        UI.toast(err.message || 'Gagal log masuk sosial.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Log Masuk dengan ' + provider;
       }
     });
   });

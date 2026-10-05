@@ -84,6 +84,8 @@
             return data;
           });
       },
+      socialLogin: (provider, email) => call('auth', 'social_login', { method: 'POST', body: { provider, email } }),
+    },
     },
     locations: {
       list: (params) => call('slots', 'list', { params }),
