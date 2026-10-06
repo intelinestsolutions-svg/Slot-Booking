@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261046",
+  "webVersion": "20261047",
   "android": {
-    "version": "2.0.8-beta",
-    "versionCode": 21,
+    "version": "2.0.9-beta",
+    "versionCode": 22,
     "url": "https://apps.sabahbuskers.my/sbc-mobile.apk",
     "notes": "Pengesahan kod melalui email — percuma, tanpa had. Daftar, tetapan semula dan pertukaran kata laluan disahkan melalui email."
   },
-  "updatedAt": "2026-10-01"
+  "updatedAt": "2026-10-06"
 }
