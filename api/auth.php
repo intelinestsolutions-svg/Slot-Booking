@@ -458,35 +458,6 @@ switch ($action) {
         ok(['token' => $token, 'user' => public_user($pdo, (int)$user['id'])]);
         break;
 
-    case 'social_login':
-        // SOSIAL LOGIN: hanya pengguna yang sudah terdaftar boleh log masuk langsung.
-        // Email akan dicek di dalam DB — jika wujud, token dikeluarkan.
-        // Jika tidak wujud, hantar ke halaman pendaftaran.
-        $d = body();
-        $provider = (string)($d['provider'] ?? '');
-        $email = strtolower(trim((string)($d['email'] ?? '')));
-        if ($provider === '' || $email === '') {
-            fail('Provider dan email wajib diisi.', 400);
-        }
-        // Cek pengguna wujud di DB berdasarkan email
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
-        if ($user) {
-            // pengguna terdaftar — boleh log masuk langsung dengan social
-            $token = bin2hex(random_bytes(24));
-            issue_session($pdo, (int)$user['id'], $token);
-            if ($user['role'] === 'busker' && $user['verificationStatus'] !== 'approved') {
-                ok(['token' => $token, 'user' => public_user($pdo, $user['id']), 'pending' => true]);
-                break;
-            }
-            ok(['token' => $token, 'user' => public_user($pdo, $user['id'])]);
-        } else {
-            // pengguna tidak terdaftar — tidak boleh langsung log masuk sosial
-            fail('Akaun tidak dijumpai. Sila daftar terlebih dahulu menggunakan email anda.', 403);
-        }
-        break;
-
     case 'request_password_otp':
         // Hantar OTP segar (untuk pertukaran kata laluan) mengikut saluran aktif.
         $user = require_user($pdo);
