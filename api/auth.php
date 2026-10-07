@@ -20,7 +20,7 @@ switch ($action) {
         }
         $waPhone = normalize_phone($phone);
         if ($waPhone === null) {
-            fail('Nombor telefon tidak sah. Gunakan nombor Malaysia, cth: 012-3456789.');
+            fail('Nombor telefon tidak sah. Gunakan nombor Malaysia, cth: 012-3456789 atau 011-12345678.');
         }
         $check = $pdo->prepare("SELECT id FROM users WHERE email = ?");
         $check->execute([$email]);

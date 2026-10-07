@@ -2,6 +2,15 @@
   const MY_STATES = ['Johor', 'Kedah', 'Kelantan', 'W.P. Kuala Lumpur', 'Labuan', 'Melaka', 'Negeri Sembilan', 'Pahang', 'Perak', 'Perlis', 'Pulau Pinang', 'Putrajaya', 'Sabah', 'Sarawak', 'Selangor', 'Terengganu'];
   const GENRES = ['Akustik / Folk', 'Balada / Pop', 'Jazz / Soul', 'Rock', 'Klasik / Instrumental', 'Nasyid', 'Etnik Tradisional / Kadazandusun', 'Original / Experimental'];
 
+  // Nombor mudah alih Malaysia: 01X-XXXXXXX (10 digit) ATAU 011-XXXX XXXX (11 digit).
+  // Logik ini diselaraskan dengan normalize_phone() dalam api/phone.php supaya
+  // pengesahan di hadapan tidak menolak nombor yang diterima pelayan.
+  function isMalaysianMobile(v) {
+    let d = String(v).replace(/\D/g, '');
+    if (d.startsWith('0')) d = '60' + d.slice(1);
+    return /^601\d{8,9}$/.test(d);
+  }
+
   window.viewLogin = function (q) {
     const role = q.page === 'admin_login' ? 'admin' : 'busker';
     const tabNames = { busker: 'Busker', admin: 'Admin' };
@@ -126,8 +135,8 @@
               </div>
               <div class="field">
                 <label for="phone">Telefon <em>*</em></label>
-                <input class="input" id="phone" name="phone" maxlength="15" placeholder="01X-XXXXXXX" autocomplete="tel" required>
-                <span class="hint">Nombor telefon Malaysia.</span>
+                <input class="input" id="phone" name="phone" maxlength="15" placeholder="012-3456789 / 011-1234 5678" autocomplete="tel" required>
+                <span class="hint">Nombor telefon Malaysia (10 atau 11 digit).</span>
                 <span class="error">Sila masukkan nombor telefon yang sah.</span>
               </div>
               <div class="field span-2">
@@ -305,7 +314,7 @@
         if (required && !value) bad = true;
         else if (input && input.type === 'email' && value && !/^\S+@\S+\.\S+$/.test(value)) bad = true;
         else if (input && input.id === 'icNumber' && value && !/^\d{6}-?\d{2}-?\d{4}$/.test(value)) bad = true;
-        else if (input && input.id === 'phone' && value && !/^(\+?6?01)[0-9]{7,8}$/.test(value.replace(/[- ]/g, ''))) bad = true;
+        else if (input && input.id === 'phone' && value && !isMalaysianMobile(value)) bad = true;
         field.classList.toggle('invalid', bad);
         if (bad) ok = false;
       });
