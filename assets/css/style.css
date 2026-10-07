@@ -944,3 +944,10 @@ table.data tr:hover td { background: rgba(255, 176, 58, 0.04); }
 .rv-item { padding-bottom: 12px; border-bottom: 1px dashed var(--line); }
 .rv-item:last-child { border-bottom: 0; padding-bottom: 0; }
 .st-select { background: var(--bg-1) !important; color: #fff !important; border-color: var(--line) !important; border-radius: 10px; }
+
+/* Banner pengumuman global */
+.sbc-anno{position:relative;display:flex;flex-direction:column;gap:2px;margin:0 auto 18px;padding:12px 38px 12px 14px;max-width:960px;border:1px solid rgba(61,220,151,.35);background:linear-gradient(135deg,rgba(61,220,151,.12),rgba(61,220,151,.04));border-radius:12px;color:var(--text);}
+.sbc-anno-title{font-weight:700;font-size:14.5px;}
+.sbc-anno-body{font-size:13px;color:var(--muted);line-height:1.5;}
+.sbc-anno-x{position:absolute;top:8px;right:8px;background:none;border:0;color:var(--muted-2);font-size:16px;cursor:pointer;padding:4px;}
+.sbc-anno-x:hover{color:var(--text);}

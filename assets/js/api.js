@@ -5,7 +5,7 @@
     const map = {
       auth: 'auth.php', slots: 'slots.php', bookings: 'bookings.php',
       community: 'community.php', admin: 'admin.php',
-      prayer: 'prayer.php',
+      prayer: 'prayer.php', announcements: 'announcements.php',
     };
     return map[kind] || kind;
   }
@@ -139,6 +139,12 @@
       locationRemove: (b) => call('admin', 'location_remove', { method: 'POST', body: b }),
       locationUpdateTime: (b) => call('admin', 'location_update_time', { method: 'POST', body: b }),
       applyStandardTime: () => call('admin', 'location_apply_standard', { method: 'POST' }),
+    },
+    announcements: {
+      list: () => call('announcements', 'list'),
+      listAll: () => call('announcements', 'list_all'),
+      create: (b) => call('announcements', 'create', { method: 'POST', body: b }),
+      deactivate: (b) => call('announcements', 'deactivate', { method: 'POST', body: b }),
     },
   };
 

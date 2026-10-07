@@ -306,6 +306,15 @@ function schema(PDO $pdo): void
     )");
     $pdo->exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_location_user ON reviews (locationId, userId)");
 
+    $pdo->exec("CREATE TABLE IF NOT EXISTS announcements (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        body TEXT NOT NULL,
+        isActive INTEGER NOT NULL DEFAULT 1,
+        createdBy INTEGER,
+        createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+    )");
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS premiumPurchases (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         userId INTEGER,

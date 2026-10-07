@@ -673,4 +673,85 @@
       }
     });
   };
+window.viewAdminAnnouncements = function () {
+    if (!guard()) return '';
+    return UI.page('Pengumuman', 'Terbitkan pengumuman — banner akan dipaparkan kepada SEMUA pengguna bila mereka buka aplikasi/web.',
+      `
+      <div class="panel" style="margin-bottom:18px;">
+        <h3 style="font-size:17px;">📢 Pengumuman Baharu</h3>
+        <form id="annoForm" style="margin-top:12px;display:grid;gap:12px;">
+          <div class="field">
+            <label for="annoTitle">Tajuk <em>*</em></label>
+            <input class="input" id="annoTitle" required maxlength="80" placeholder="cth: Waktu Slot Segama Dikemas Kini">
+          </div>
+          <div class="field">
+            <label for="annoBody">Mesej <em>*</em></label>
+            <textarea class="input" id="annoBody" rows="3" required maxlength="800" placeholder="Butiran pengumuman... Maks 800 huruf."></textarea>
+          </div>
+          <div style="align-self:end;">
+            <button class="btn btn-primary" id="annoSubmit">Terbitkan</button>
+          </div>
+        </form>
+      </div>
+      <div id="annoList"><div class="empty">Memuatkan pengumuman...</div></div>`,
+      { eyebrow: 'Panel Admin' });
+  };
+
+  window.ViewHooks.viewAdminAnnouncements = async function () {
+    if (!guard()) return;
+    const box = document.getElementById('annoList');
+    let list = [];
+    try {
+      const r = await API.announcements.listAll();
+      list = (r && r.announcements) || [];
+    } catch (e) {
+      box.innerHTML = UI.notice(e.message, 'error');
+      return;
+    }
+    box.innerHTML = `<div class="table-wrap"><table class="data">
+      <thead><tr><th>Status</th><th>Tajuk</th><th>Mesej</th><th>Diterbit</th><th>Tindakan</th></tr></thead>
+      <tbody>
+        ${list.map(a => `
+          <tr>
+            <td><span class="st st-${a.isActive ? 'ok' : 'err'}">${a.isActive ? 'Aktif' : 'Dibuang'}</span></td>
+            <td><b>${UI.esc(a.title)}</b></td>
+            <td style="max-width:340px;">${UI.esc(a.body)}</td>
+            <td><small style="color:var(--muted)">${UI.esc(a.createdAt || '')}</small></td>
+            <td>${a.isActive ? `<button class="btn btn-sm" data-anno-buang="${a.id}" data-anno-title="${UI.esc(a.title)}">🗑 Buang</button>` : '<small style="color:var(--muted-2)">—</small>'}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+
+    box.querySelectorAll('[data-anno-buang]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!window.confirm(`Buang pengumuman "${btn.getAttribute('data-anno-title')}"?\n\nPengumuman akan disembunyikan dari semua aplikasi serta-merta.`)) return;
+        btn.disabled = true;
+        try {
+          await API.announcements.deactivate({ id: Number(btn.getAttribute('data-anno-buang')) });
+          UI.toast('Pengumuman dibuang.', 'ok');
+          Router.replace('admin-announcements');
+        } catch (err) {
+          UI.toast(err.message, 'err');
+          btn.disabled = false;
+        }
+      });
+    });
+
+    document.getElementById('annoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('annoSubmit');
+      btn.disabled = true;
+      try {
+        const r = await API.announcements.create({
+          title: document.getElementById('annoTitle').value.trim(),
+          body: document.getElementById('annoBody').value.trim(),
+        });
+        UI.toast('Pengumuman diterbitkan: "' + r.announcement.title + '".', 'ok');
+        Router.replace('admin-announcements');
+      } catch (err) {
+        UI.toast(err.message, 'err');
+        btn.disabled = false;
+      }
+    });
+  };
 })();

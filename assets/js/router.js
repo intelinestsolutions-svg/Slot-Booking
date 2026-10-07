@@ -36,6 +36,7 @@
     'pengurusan-slot': 'viewAdminSlots',
     'admin-bookings': 'viewAdminBookings',
     'admin-venues': 'viewAdminVenues',
+    'admin-announcements': 'viewAdminAnnouncements',
     mocks: 'viewTools',
   };
 
@@ -102,7 +103,7 @@
       if (page === 'admin-dashboard' && user && !isSuper(user)) {
         return this.go('admin_login');
       }
-      if (['admin-finance', 'pengurusan-slot', 'admin-venues', 'admin-locations'].includes(page) && user && !isSuper(user)) {
+      if (['admin-finance', 'pengurusan-slot', 'admin-venues', 'admin-locations', 'admin-announcements'].includes(page) && user && !isSuper(user)) {
         return this.go('admin_login');
       }
       if (page === 'admin-bookings' && user && !isSuper(user) && user.role !== 'venue') {
@@ -161,6 +162,7 @@
           ['?page=admin-finance', 'Kewangan'],
           ['?page=pengurusan-slot', 'Slot'],
           ['?page=admin-locations', 'Lokasi Spot'],
+          ['?page=admin-announcements', 'Pengumuman'],
           ['?page=admin-venues', 'Spot Admin'],
           ['?page=kemaskini-profil', 'Profil'],
         ];

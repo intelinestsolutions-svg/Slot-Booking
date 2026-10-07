@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261057",
+  "webVersion": "20261058",
   "android": {
-    "version": "2.1.9-beta",
-    "versionCode": 32,
-    "url": "https://apps.sabahbuskers.my/sbc-mobile.apk?v=20261057",
-    "notes": "Waktu standard: semua spot 18:30-22:30 (Segama 18:30-23:30); Tg Aru, KKIA & Ahad pagi dikecualikan."
+    "version": "2.1.10-beta",
+    "versionCode": 33,
+    "url": "https://apps.sabahbuskers.my/sbc-mobile.apk?v=20261058",
+    "notes": "Pengumuman: banner global untuk semua pengguna + panel Pengumuman (super admin)."
   },
   "updatedAt": "2026-10-07"
 }
