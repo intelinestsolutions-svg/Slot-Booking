@@ -22,7 +22,7 @@ switch ($action) {
         if ($waPhone === null) {
             fail('Nombor telefon tidak sah. Gunakan nombor Malaysia, cth: 012-3456789 atau 011-12345678.');
         }
-        $check = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+        $check = $pdo->prepare("SELECT id FROM users WHERE email = ? AND role='busker'");
         $check->execute([$email]);
         if ($check->fetch()) {
             fail('Email ini sudah didaftarkan. Sila log masuk.', 409);
@@ -121,7 +121,7 @@ switch ($action) {
         }
 
         $email = strtolower(trim($d['email']));
-        $check = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+        $check = $pdo->prepare("SELECT id FROM users WHERE email = ? AND role='busker'");
         $check->execute([$email]);
         if ($check->fetch()) {
             fail('Email ini sudah didaftarkan.');
@@ -233,7 +233,7 @@ switch ($action) {
         if ($email === '' || $code === '') {
             fail('Sila isi email dan kod pengesahan 6-digit.');
         }
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND role='busker'");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         if (!$user) {
@@ -268,7 +268,7 @@ switch ($action) {
         if ($email === '') {
             fail('Sila isi email.');
         }
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND role='busker'");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         if (!$user) {
@@ -293,7 +293,7 @@ switch ($action) {
         if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             fail('Sila isi email yang sah.');
         }
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND role='busker'");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         if ($user) {
@@ -330,7 +330,7 @@ switch ($action) {
         if (strlen($new) < 6) {
             fail('Kata laluan baharu sekurang-kurangnya 6 aksara.');
         }
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND role='busker'");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         if (!$user) {
@@ -358,7 +358,7 @@ switch ($action) {
         if ($role !== 'busker') {
             $user = login_admin($pdo, $email, $password, $role);
         } else {
-            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND role='busker'");
             $stmt->execute([$email]);
             $user = $stmt->fetch();
             if (!$user || !$user['password'] || !password_verify($password, $user['password'])) {

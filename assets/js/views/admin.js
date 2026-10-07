@@ -1,8 +1,26 @@
 (function () {
+  // HANYA admin@sabahbuskers.my layak ke panel global (role 'admin' sahaja
+  // belum cukup — akaun admin lain tiada hak memantau semua lokasi).
+  function isSup(u) {
+    return !!(u && u.role === 'admin' &&
+      String(u.email || '').toLowerCase() === String(APP.superAdminEmail || 'admin@sabahbuskers.my').toLowerCase());
+  }
+
   function guard() {
     const u = Session.user;
-    if (!u || u.role !== 'admin') {
+    if (!isSup(u)) {
       Router.go('admin_login', { next: 'admin-dashboard' });
+      return null;
+    }
+    return u;
+  }
+
+  // Pentadbir spot (role 'venue') juga layak ke panel pengesahan tempahan —
+  // pelayan memfilter lokasi mengikut tugasan adminUserId.
+  function staffGuard() {
+    const u = Session.user;
+    if (!u || (!isSup(u) && u.role !== 'venue')) {
+      Router.go('admin_login', { next: 'admin-bookings' });
       return null;
     }
     return u;
@@ -213,5 +231,367 @@
         UI.toast(e.message, 'err');
       }
     }));
+  };
+
+  /* ============ Pengesahan Tempahan (admin penuh & pentadbir spot) ============ */
+  window.viewAdminBookings = function () {
+    if (!staffGuard()) return '';
+    return UI.page('Pengesahan Tempahan', 'Lulus atau tolak permohonan slot. Satu kelulusan menolak pemohon lain bagi slot yang sama.',
+      `<div id="pendingBookings"><div class="empty">Memuatkan tempahan...</div></div>`,
+      { eyebrow: 'Kelulusan Slot' });
+  };
+
+  window.ViewHooks.viewAdminBookings = async function () {
+    const me = staffGuard();
+    if (!me) return;
+    let rows = [];
+    try {
+      const r = await API.admin.pendingBookings();
+      rows = r.bookings || [];
+    } catch (e) {
+      document.getElementById('pendingBookings').innerHTML = UI.notice(e.message, 'error');
+      return;
+    }
+
+    const box = document.getElementById('pendingBookings');
+    if (!rows.length) {
+      box.innerHTML = '<div class="empty"><div class="e-ico">✅</div><p>Tiada tempahan menunggu kelulusan buat masa ini.</p></div>';
+      return;
+    }
+
+    const stCls = b => b.status === 'pending' ? 'pending' : 'ok';
+    const stLbl = b => b.status === 'pending' ? 'Menunggu Kelulusan' : 'Menunggu Bayaran';
+
+    box.innerHTML = `<div class="table-wrap"><table class="data">
+      <thead><tr><th>Tarikh / Masa</th><th>Busker</th><th>Hubungan</th><th>Lokasi</th><th>Status</th><th>Tindakan</th></tr></thead>
+      <tbody>
+        ${rows.map(b => `
+          <tr>
+            <td><b>${UI.esc(b.slotDate)}</b><br><small style="color:var(--muted)">${UI.esc(b.startTime)} – ${UI.esc(b.endTime)}</small></td>
+            <td>🎤 ${UI.esc(b.stageName || b.fullName)}<br><small style="color:var(--muted-2)">${UI.esc(b.fullName || '')}</small></td>
+            <td>${UI.esc(b.buskerEmail)}<br><small style="color:var(--muted)">${UI.esc(b.buskerPhone || '—')}</small></td>
+            <td>${UI.esc(b.locationName)} · <small style="color:var(--muted)">${UI.esc(b.area || '')}</small></td>
+            <td><span class="st st-${stCls(b)}">${stLbl(b)}</span></td>
+            <td>
+              ${b.status === 'pending'
+                ? `<button class="btn btn-primary btn-sm" data-approve="${b.id}">Lulus</button>
+                   <button class="btn btn-danger btn-sm" data-reject="${b.id}">Tolak</button>`
+                : `<small style="color:var(--muted-2)">Bil: ${UI.esc(b.billCode || '—')}</small>`}
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+
+    box.querySelectorAll('[data-approve]').forEach(btn => btn.addEventListener('click', async () => {
+      if (!confirm('Luluskan tempahan ini? Pemohon lain bagi slot yang sama akan ditolak secara automatik.')) return;
+      btn.disabled = true;
+      try {
+        const r = await API.admin.approveBooking({ bookingId: Number(btn.dataset.approve) });
+        const extra = r.autoRejected ? ` ${r.autoRejected} permohonan lain ditolak otomatik.` : '';
+        UI.toast(
+          r.emailSent
+            ? ('Tempahan diluluskan. Pautan bayaran diemelkan kepada busker.' + extra)
+            : ('Tempahan diluluskan, tetapi penghantaran emel gagal: ' + (r.emailError || '') + extra),
+          r.emailSent ? 'ok' : 'warn'
+        );
+        Router.replace('admin-bookings');
+      } catch (e) {
+        UI.toast(e.message, 'err');
+        btn.disabled = false;
+      }
+    }));
+
+    box.querySelectorAll('[data-reject]').forEach(btn => btn.addEventListener('click', async () => {
+      if (!confirm('Tolak permohonan tempahan ini?')) return;
+      btn.disabled = true;
+      try {
+        const r = await API.admin.rejectBooking({ bookingId: Number(btn.dataset.reject) });
+        UI.toast(
+          r.emailSent ? 'Tempahan ditolak. Busker dimaklumkan melalui emel.' : ('Tempahan ditolak (emel gagal: ' + (r.emailError || '') + ').'),
+          r.emailSent ? 'ok' : 'warn'
+        );
+        Router.replace('admin-bookings');
+      } catch (e) {
+        UI.toast(e.message, 'err');
+        btn.disabled = false;
+      }
+    }));
+  };
+
+  /* ============ Spot Admin: pentadbir per-lokasi (super admin sahaja) ============ */
+  window.viewAdminVenues = function () {
+    if (!guard()) return '';
+    return UI.page('Spot Admin', 'Tugaskan pentadbir bagi setiap lokasi ("spot"). Pentadbir spot hanya boleh meluluskan tempahan lokasinya.',
+      `
+      <div class="panel" style="margin-bottom:18px;">
+        <h3 style="font-size:17px;">Tugaskan Pentadbir Spot</h3>
+        <form id="venueForm" class="form-grid" style="margin-top:14px;">
+          <div class="field span-2">
+            <label for="vEmail">Email <em>*</em></label>
+            <input class="input" id="vEmail" type="email" required placeholder="admin.lokasi@contoh.com">
+          </div>
+          <div class="field span-2">
+            <label for="vName">Nama Penuh <em>*</em></label>
+            <input class="input" id="vName" required placeholder="Nama pentadbir spot">
+          </div>
+          <div class="field span-2">
+            <label for="vPass">Kata Laluan Awal <em>*</em></label>
+            <input class="input" id="vPass" type="text" required minlength="6" placeholder="Minimum 6 aksara">
+          </div>
+          <div class="field span-2">
+            <label for="vLoc">Lokasi <em>*</em></label>
+            <select class="select" id="vLoc" required><option value="">-- Pilih Lokasi --</option></select>
+          </div>
+          <div class="field span-2" style="align-self:end;">
+            <button class="btn btn-primary" id="vSubmit">Cipta Pentadbir Spot</button>
+          </div>
+        </form>
+      </div>
+      <div id="venueEditPanel" class="panel" style="margin-bottom:18px;display:none;">
+        <h3 style="font-size:17px;">Ubah Pentadbir Spot</h3>
+        <form id="venueEditForm" class="form-grid" style="margin-top:14px;">
+          <input type="hidden" id="eVenueId">
+          <div class="field span-2">
+            <label for="eEmail">Email</label>
+            <input class="input" id="eEmail" type="email" disabled>
+          </div>
+          <div class="field span-2">
+            <label for="eName">Nama Penuh</label>
+            <input class="input" id="eName" placeholder="Nama baharu (biar kosong jika kekal)">
+          </div>
+          <div class="field span-2">
+            <label for="ePass">Kata Laluan Baharu</label>
+            <input class="input" id="ePass" type="text" minlength="6" placeholder="Minimum 6 aksara (biar kosong jika kekal)">
+          </div>
+          <div class="field span-2">
+            <label for="eLoc">Pindah ke Lokasi</label>
+            <select class="select" id="eLoc"><option value="">-- Kekal Lokasi Semasa --</option></select>
+          </div>
+          <div class="field span-2" style="align-self:end;">
+            <button class="btn btn-primary" id="eSubmit">Simpan Perubahan</button>
+            <button type="button" class="btn" id="eCancel" style="margin-left:8px;">Batal</button>
+          </div>
+        </form>
+      </div>
+      <div id="venueList"><div class="empty">Memuatkan lokasi...</div></div>`,
+      { eyebrow: 'Pentadbiran Spot' });
+  };
+
+  window.ViewHooks.viewAdminVenues = async function () {
+    if (!guard()) return;
+    let locations = [];
+    try {
+      const r = await API.admin.venueLocations();
+      locations = r.locations || [];
+    } catch (e) {
+      document.getElementById('venueList').innerHTML = UI.notice(e.message, 'error');
+      return;
+    }
+
+    const locSel = document.getElementById('vLoc');
+    locSel.innerHTML = '<option value="">-- Pilih Lokasi --</option>' + locations
+      .map(l => `<option value="${l.id}">${UI.esc(l.name)}${l.area ? ' (' + UI.esc(l.area) + ')' : ''}</option>`).join('');
+
+    const box = document.getElementById('venueList');
+    box.innerHTML = `<div class="table-wrap"><table class="data">
+      <thead><tr><th>Lokasi</th><th>Kawasan</th><th>Pentadbir Spot</th><th>Status</th><th>Tindakan</th></tr></thead>
+      <tbody>
+        ${locations.map(l => `
+          <tr>
+            <td><b>${UI.esc(l.name)}</b></td>
+            <td>${UI.esc(l.area || '—')}</td>
+            <td>${l.adminEmail
+              ? '👤 ' + UI.esc(l.adminName || l.adminEmail) + '<br><small style="color:var(--muted)">' + UI.esc(l.adminEmail) + '</small>'
+              : '<small style="color:var(--muted-2)">Tiada pentadbir</small>'}</td>
+            <td><span class="st st-${l.adminUserId ? 'ok' : 'pending'}">${l.adminUserId ? 'Ditugaskan' : 'Belum Ditugaskan'}</span></td>
+            <td>${l.adminUserId
+              ? `<button class="btn btn-sm" data-edit="${l.id}">✏️ Ubah</button>`
+              : '<small style="color:var(--muted-2)">—</small>'}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+    box.querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => openVenueEdit(Number(btn.getAttribute('data-edit')), locations));
+    });
+
+    // ---------- Panel "Ubah Pentadbir Spot" ----------
+    const editPanel = document.getElementById('venueEditPanel');
+    const locSelE = document.getElementById('eLoc');
+    locSelE.innerHTML = '<option value="">-- Kekal Lokasi Semasa --</option>' + locations
+      .map(l => `<option value="${l.id}">${UI.esc(l.name)}${l.area ? ' (' + UI.esc(l.area) + ')' : ''}</option>`).join('');
+
+    window.openVenueEdit = function (locId, locs) {
+      const l = locs.find(x => x.id === locId);
+      if (!l) return;
+      document.getElementById('eVenueId').value = l.adminUserId;
+      document.getElementById('eEmail').value = l.adminEmail || '';
+      document.getElementById('eName').value = '';
+      document.getElementById('ePass').value = '';
+      document.getElementById('eLoc').value = '';
+      editPanel.style.display = 'block';
+      editPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    document.getElementById('eCancel').addEventListener('click', () => { editPanel.style.display = 'none'; });
+
+    document.getElementById('venueEditForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('eSubmit');
+      btn.disabled = true;
+      try {
+        await API.admin.updateVenue({
+          venueId: Number(document.getElementById('eVenueId').value),
+          fullName: document.getElementById('eName').value.trim(),
+          password: document.getElementById('ePass').value,
+          locationId: Number(document.getElementById('eLoc').value || 0) || undefined,
+        });
+        UI.toast('Pentadbir spot dikemas kini.', 'ok');
+        editPanel.style.display = 'none';
+        Router.replace('admin-venues');
+      } catch (err) {
+        UI.toast(err.message, 'err');
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById('venueForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('vSubmit');
+      btn.disabled = true;
+      try {
+        const r = await API.admin.createVenue({
+          email: document.getElementById('vEmail').value.trim(),
+          fullName: document.getElementById('vName').value.trim(),
+          password: document.getElementById('vPass').value,
+          locationId: Number(document.getElementById('vLoc').value),
+        });
+        UI.toast('Pentadbir spot dicipta & ditugaskan ke ' + (r.location && r.location.name ? r.location.name : 'lokasi terpilih') + '.', 'ok');
+        Router.replace('admin-venues');
+      } catch (err) {
+        UI.toast(err.message, 'err');
+        btn.disabled = false;
+      }
+    });
+  };
+
+  /* ============ Lokasi Spot: tambah/buang spot (super admin sahaja) ============ */
+  window.viewAdminLocations = function () {
+    if (!guard()) return '';
+    return UI.page('Lokasi Spot', 'Super admin menambah atau membuang tempat persembahan. Harga & masa slot ditentukan oleh super admin.',
+      `
+      <div class="panel" style="margin-bottom:18px;">
+        <h3 style="font-size:17px;">Tambah Lokasi Spot</h3>
+        <form id="locForm" class="form-grid" style="margin-top:14px;">
+          <div class="field span-2">
+            <label for="locName">Nama Spot <em>*</em></label>
+            <input class="input" id="locName" required placeholder="cth: Padang Merdeka">
+          </div>
+          <div class="field span-2">
+            <label for="locArea">Kawasan/Area <em>*</em></label>
+            <input class="input" id="locArea" required placeholder="cth: Pusat Bandar">
+          </div>
+          <div class="field">
+            <label for="locTier">Tier</label>
+            <select class="select" id="locTier">
+              <option value="Hotspot">Hotspot</option>
+              <option value="Coldspot">Coldspot</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="locPrice">2. Yuran Slot (RM) <em>*</em></label>
+            <input class="input" id="locPrice" type="number" min="1" step="0.5" required placeholder="cth: 50">
+          </div>
+          <div class="field">
+            <label for="locStart">3a. Masa Mula <em>*</em></label>
+            <input class="input" id="locStart" type="time" value="20:00" required>
+          </div>
+          <div class="field">
+            <label for="locEnd">3b. Masa Tamat <em>*</em></label>
+            <input class="input" id="locEnd" type="time" value="22:00" required>
+          </div>
+          <div class="field span-2">
+            <label for="locDays">Hari Aktif</label>
+            <input class="input" id="locDays" value="Fri,Sat,Sun" placeholder="cth: Mon,Tue,Wed,Thu,Fri,Sat,Sun">
+            <small style="color:var(--muted)">Singkatan Inggeris dipisahkan koma: Fri,Sat,Sun</small>
+          </div>
+          <div class="field span-2">
+            <label for="locDesc">Penerangan</label>
+            <textarea class="input" id="locDesc" rows="2" placeholder="Penerangan ringkas spot..."></textarea>
+          </div>
+          <div class="field span-2" style="align-self:end;">
+            <button class="btn btn-primary" id="locSubmit">Tambah Spot</button>
+          </div>
+        </form>
+      </div>
+      <div id="locList"><div class="empty">Memuatkan senarai lokasi...</div></div>`,
+      { eyebrow: 'Lokasi Busking' });
+  };
+
+  window.ViewHooks.viewAdminLocations = async function () {
+    if (!guard()) return;
+    let locations = [];
+    try {
+      const r = await API.admin.venueLocations();
+      locations = r.locations || [];
+    } catch (e) {
+      document.getElementById('locList').innerHTML = UI.notice(e.message, 'error');
+      return;
+    }
+    const box = document.getElementById('locList');
+    box.innerHTML = `<div class="table-wrap"><table class="data">
+      <thead><tr><th>Spot</th><th>Kawasan</th><th>Tier</th><th>Status</th><th>Pentadbir</th><th>Tindakan</th></tr></thead>
+      <tbody>
+        ${locations.map(l => `
+          <tr>
+            <td><b>${UI.esc(l.name)}</b></td>
+            <td>${UI.esc(l.area || '—')}</td>
+            <td>${UI.esc(l.tier || '—')}</td>
+            <td><span class="st st-${l.isActive ? 'ok' : 'err'}">${l.isActive ? 'Aktif' : 'Dibuang'}</span></td>
+            <td>${l.adminEmail ? '👤 ' + UI.esc(l.adminName || l.adminEmail) : '<small style="color:var(--muted-2)">Tiada</small>'}</td>
+            <td>${l.isActive
+              ? `<button class="btn btn-sm" data-remove="${l.id}" data-name="${UI.esc(l.name)}">🗑 Buang</button>`
+              : '<small style="color:var(--muted-2)">—</small>'}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+
+    box.querySelectorAll('[data-remove]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const name = btn.getAttribute('data-name');
+        if (!window.confirm(`Buang spot "${name}"?\n\nSpot akan dinyahaktifkan; tempahan aktif akan disekat. Sejarah kekal untuk audit.`)) return;
+        btn.disabled = true;
+        try {
+          await API.admin.locationRemove({ locationId: Number(btn.getAttribute('data-remove')) });
+          UI.toast('Spot dibuang: ' + name, 'ok');
+          Router.replace('admin-locations');
+        } catch (err) {
+          UI.toast(err.message, 'err');
+          btn.disabled = false;
+        }
+      });
+    });
+
+    document.getElementById('locForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('locSubmit');
+      btn.disabled = true;
+      try {
+        const r = await API.admin.locationCreate({
+          name: document.getElementById('locName').value.trim(),
+          area: document.getElementById('locArea').value.trim(),
+          tier: document.getElementById('locTier').value,
+          price: Number(document.getElementById('locPrice').value),
+          days: document.getElementById('locDays').value.trim(),
+          startTime: document.getElementById('locStart').value,
+          endTime: document.getElementById('locEnd').value,
+          description: document.getElementById('locDesc').value.trim(),
+        });
+        UI.toast('Spot "' + r.location.name + '" ditambah — yuran RM' + r.template.price + ' (' + r.template.startTime + '-' + r.template.endTime + ').', 'ok');
+        Router.replace('admin-locations');
+      } catch (err) {
+        UI.toast(err.message, 'err');
+        btn.disabled = false;
+      }
+    });
   };
 })();

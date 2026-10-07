@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261051",
+  "webVersion": "20261052",
   "android": {
-    "version": "2.1.3-beta",
-    "versionCode": 26,
-    "url": "https://apps.sabahbuskers.my/sbc-mobile.apk?v=20261051",
-    "notes": "Admin Kewangan: teks kosong ditukar kepada 'Belum ada transaksi.'"
+    "version": "2.1.4-beta",
+    "versionCode": 27,
+    "url": "https://apps.sabahbuskers.my/sbc-mobile.apk?v=20261052",
+    "notes": "Kelulusan tempahan oleh pentadbir spot + pembayaran selepas lulus + siaran emel."
   },
   "updatedAt": "2026-10-07"
 }

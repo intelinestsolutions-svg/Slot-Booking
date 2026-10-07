@@ -1,11 +1,18 @@
 (function () {
   const root = document.getElementById('root');
 
+  // HANYA admin@sabahbuskers.my boleh memantau semua lokasi/panel global.
+  function isSuper(u) {
+    return !!(u && u.role === 'admin' &&
+      String(u.email || '').toLowerCase() === String(APP.superAdminEmail || 'admin@sabahbuskers.my').toLowerCase());
+  }
+
   const VIEWS = {
     landing: 'viewLanding',
     login: 'viewLogin',
     'busker_login': 'viewLogin',
     'admin_login': 'viewLogin',
+    'venue_login': 'viewLogin',
     register: 'viewRegister',
     'verify-phone': 'viewVerifyPhone',
     'busker-landing': 'viewLanding',
@@ -25,7 +32,10 @@
     privacy: 'viewPrivacy',
     'admin-dashboard': 'viewAdmin',
     'admin-finance': 'viewAdminFinance',
+    'admin-locations': 'viewAdminLocations',
     'pengurusan-slot': 'viewAdminSlots',
+    'admin-bookings': 'viewAdminBookings',
+    'admin-venues': 'viewAdminVenues',
     mocks: 'viewTools',
   };
 
@@ -89,7 +99,13 @@
       if (['slot-booking', 'tempahan-saya', 'profil', 'performance-dashboard', 'inbox', 'tools', 'bersedia'].includes(page) && user && user.role && user.role !== 'busker') {
         return this.go('landing');
       }
-      if (page === 'admin-dashboard' && user && user.role !== 'admin') {
+      if (page === 'admin-dashboard' && user && !isSuper(user)) {
+        return this.go('admin_login');
+      }
+      if (['admin-finance', 'pengurusan-slot', 'admin-venues', 'admin-locations'].includes(page) && user && !isSuper(user)) {
+        return this.go('admin_login');
+      }
+      if (page === 'admin-bookings' && user && !isSuper(user) && user.role !== 'venue') {
         return this.go('admin_login');
       }
 
@@ -138,11 +154,20 @@
           ['?page=about-buzzking', 'Tentang'],
         ];
       }
-      if (role === 'admin') {
+      if (isSuper(u)) {
         return [
           ['?page=admin-dashboard', 'Panel Admin'],
+          ['?page=admin-bookings', 'Pengesahan'],
           ['?page=admin-finance', 'Kewangan'],
           ['?page=pengurusan-slot', 'Slot'],
+          ['?page=admin-locations', 'Lokasi Spot'],
+          ['?page=admin-venues', 'Spot Admin'],
+          ['?page=kemaskini-profil', 'Profil'],
+        ];
+      }
+      if (role === 'venue') {
+        return [
+          ['?page=admin-bookings', 'Pengesahan'],
           ['?page=kemaskini-profil', 'Profil'],
         ];
       }
@@ -166,13 +191,18 @@
 
       const u = Session.user;
       if (u) {
-        const roleBadge = u.role === 'busker' ? (u.stageName || u.fullName || u.email) : u.role;
+        const sup = isSuper(u);
+        const roleBadge = u.role === 'busker' ? (u.stageName || u.fullName || u.email)
+          : u.role === 'venue' ? 'Pentadbir Spot'
+          : sup ? 'admin' : (u.stageName || u.fullName || u.email);
+        const profilePage = sup ? '?page=admin-dashboard'
+          : u.role === 'venue' ? '?page=admin-bookings' : '?page=profil';
         userBox.innerHTML = `
           <div class="nav-user">
             <a href="?page=kemaskini-profil" class="nav-avatar" title="Profil saya">${u.avatar
               ? `<img src="${UI.esc(APP.abs(u.avatar))}" alt="Gambar profil" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
               : UI.esc(('' + (u.stageName || u.fullName || u.email || 'U')).slice(0, 1).toUpperCase())}</a>
-            <div class="who"><a href="${u.role === 'busker' ? '?page=profil' : '?page=admin-dashboard'}" style="color:var(--cream)">${UI.esc(roleBadge)}</a><small>${u.role}</small></div>
+            <div class="who"><a href="${profilePage}" style="color:var(--cream)">${UI.esc(roleBadge)}</a><small>${u.role}</small></div>
             <a class="btn btn-ghost btn-sm" href="#" data-logout>Log Keluar</a>
           </div>`;
         userBox.querySelector('[data-logout]').addEventListener('click', async (e) => {
@@ -219,12 +249,20 @@
           'admin-dashboard': 'profil',
           'admin-finance': 'profil',
           'pengurusan-slot': 'profil',
+          'admin-locations': 'profil',
+          'admin-bookings': 'profil',
+          'admin-venues': 'profil',
+          'venue_login': 'profil',
         };
         const active = TAB_MAP[page] || 'landing';
         tab.querySelectorAll('a').forEach(a => a.classList.toggle('is-active', a.dataset.tab === active));
-        if (u && u.role === 'admin') {
+        if (u && isSuper(u)) {
           const me = tab.querySelector('a[data-tab="profil"]');
           if (me) me.setAttribute('href', '?page=admin-dashboard');
+        }
+        if (u && u.role === 'venue') {
+          const me = tab.querySelector('a[data-tab="profil"]');
+          if (me) me.setAttribute('href', '?page=admin-bookings');
         }
       }
     },

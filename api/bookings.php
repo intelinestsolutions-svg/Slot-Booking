@@ -30,54 +30,31 @@ switch ($action) {
         if (!$slot) {
             fail('Slot tidak dijumpai.');
         }
-        if ($slot['status'] !== 'Tersedia') {
+        // Ramai pemohon boleh memohon slot yang SAMA serentak — slot tidak
+        // dikunci di sini. Hanya disekat jika slot sudah diluluskan/dibayar/
+        // selesai (ada pemohon yang menang).
+        $taken = $pdo->prepare("SELECT b.id FROM bookings b WHERE b.slotId = ? AND b.status IN ('approved','confirmed','completed') LIMIT 1");
+        $taken->execute([$slotId]);
+        if ($taken->fetch()) {
             fail('Slot ini sudah ditempah.');
         }
 
-        $lockTs = time();
-        $lockExpiry = $lockTs + 600;
-
-        $pdo->beginTransaction();
-        try {
-            $row = $pdo->prepare("SELECT status FROM slots WHERE id = ? AND status = 'Tersedia'");
-            $row->execute([$slotId]);
-            if (!$row->fetch()) {
-                $pdo->rollBack();
-                fail('Slot ini baru sahaja ditempah orang lain.');
-            }
-
-            $pdo->prepare("UPDATE slots SET status = 'Pra-tempah', bookedBy = ?, lockedAt = ? WHERE id = ?")
-                ->execute([$user['id'], date('Y-m-d H:i:s', $lockTs), $slotId]);
-
-            $pdo->commit();
-        } catch (Throwable $e) {
-            $pdo->rollBack();
-            fail($e->getMessage(), 500);
-        }
-
-        try {
-            $bill = create_toyyibpay_bill($slot, $user, $slotId);
-        } catch (Throwable $e) {
-            $bill = ['success' => false, 'error' => 'Tidak dapat berhubung dengan ToyyibPay: ' . $e->getMessage()];
-        }
-        if (!$bill['success']) {
-            $pdo->prepare("UPDATE slots SET status='Tersedia', bookedBy=NULL, lockedAt=NULL WHERE id=?")->execute([$slotId]);
-            fail('Gagal mencipta bil ToyyibPay: ' . ($bill['error'] ?? 'Unknown'), 502);
-        }
-
-        $pdo->prepare("UPDATE slots SET billCode = ? WHERE id = ?")->execute([$bill['billCode'], $slotId]);
-
-        $pdo->prepare("INSERT INTO bookings (slotId,userId,locationId,status,billCode,amount,buskerStageName,buskerPhone)
-            VALUES (?,?,?,?,?,?,?,?)")->execute([
+        // Aliran kelulusan admin: TIADA bil ToyyibPay dibuat di sini.
+        // Tempahan kekal 'pending' sehingga admin lokasi lulus/tolak. Selepas
+        // diluluskan, admin.php ('approve_booking') mencipta bil, menetapkan
+        // slot 'Pra-tempah' untuk pemohon berkenaan, dan menolak permohonan
+        // lain bagi slot yang sama secara automatik.
+        $pdo->prepare("INSERT INTO bookings (slotId,userId,locationId,status,amount,buskerStageName,buskerPhone)
+            VALUES (?,?,?,?,?,?,?)")->execute([
             $slotId, $user['id'], $slot['locationId'], 'pending',
-            $bill['billCode'], $slot['price'], $user['stageName'], $user['phone'],
+            $slot['price'], $user['stageName'], $user['phone'],
         ]);
         $bookingId = $pdo->lastInsertId();
 
         ok([
             'bookingId' => $bookingId,
-            'paymentUrl' => $bill['paymentUrl'],
-            'billCode' => $bill['billCode'],
+            'status' => 'pending',
+            'message' => 'Tempahan dihantar untuk kelulusan admin. Anda akan menerima emel pautan pembayaran selepas diluluskan.',
         ]);
         break;
 
@@ -108,7 +85,7 @@ switch ($action) {
         if (!$booking) {
             fail('Tempahan tidak dijumpai.');
         }
-        if ($booking['status'] !== 'pending') {
+        if ($booking['status'] !== 'pending' && $booking['status'] !== 'approved') {
             fail('Hanya tempahan yang belum dibayar boleh dibatalkan.');
         }
 
@@ -176,7 +153,7 @@ switch ($action) {
 
         $stmt = $pdo->prepare("SELECT s.*, b.status AS bookingStatus, u.stageName
             FROM slots s
-            LEFT JOIN bookings b ON b.slotId = s.id AND b.status IN ('pending','confirmed','completed')
+            LEFT JOIN bookings b ON b.slotId = s.id AND b.status IN ('confirmed','completed')
             LEFT JOIN users u ON u.id = b.userId
             WHERE s.locationId = ? AND s.date BETWEEN ? AND ?
             ORDER BY s.date, s.startTime");
@@ -248,11 +225,21 @@ switch ($action) {
         if (!$booking) {
             fail('Tempahan tidak dijumpai.');
         }
-        if ($booking['status'] !== 'pending') {
+        if ($booking['status'] !== 'pending' && $booking['status'] !== 'approved') {
             fail('Tempahan ini sudah disahkan atau dibatalkan.');
         }
         if ($booking['slotStatus'] !== 'Pra-tempah') {
             fail('Slot tidak lagi dikunci untuk anda. Sila tempah semula.');
+        }
+        // Bil sedia ada (dicipta semasa kelulusan admin) — guna semula,
+        // jangan cipta bil baharu yang akan meninggalkan bil lama tergantung.
+        if (!empty($booking['billCode'])) {
+            ok([
+                'bookingId' => $bookingId,
+                'paymentUrl' => TOYYIBPAY_GATEWAY . $booking['billCode'],
+                'billCode' => $booking['billCode'],
+            ]);
+            break;
         }
         $slot = [
             'locationId' => $booking['locationId'],

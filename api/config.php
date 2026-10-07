@@ -40,6 +40,10 @@ if (!defined('MPK_VERIFY_KEY')) {
     define('MPK_VERIFY_KEY', '');
 }
 
+if (!defined('DEFAULT_ADMIN_EMAIL')) {
+    define('DEFAULT_ADMIN_EMAIL', 'admin@sabahbuskers.my');
+}
+
 // ====== Pengesahan OTP semasa pendaftaran busker ======
 // Pendaftaran baharu wajib mengesahkan nombor telefon Malaysia melalui OTP
 // yang dihantar ke EMEL. Tiada SMS atau WhatsApp dihantar oleh sistem ini.

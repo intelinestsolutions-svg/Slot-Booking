@@ -144,23 +144,17 @@
     renderDate(avail[0] ? avail[0].date : '');
 
     async function confirmBook(slot) {
-      if (!confirm(`Tempah slot\n${loc.name}\n${slot.startTime} – ${slot.endTime} · ${UI.dateLabel(slot.date)}\nYuran: RM ${slot.price}\n\nAnda akan diarahkan ke ToyyibPay untuk pembayaran.`)) return;
+      if (!confirm(`Tempah slot\n${loc.name}\n${slot.startTime} – ${slot.endTime} · ${UI.dateLabel(slot.date)}\nYuran: RM ${slot.price}\n\nTempahan akan disemak admin dahulu. Anda akan menerima emel dengan pautan pembayaran selepas diluluskan.`)) return;
 
       const btn = document.createElement('div');
-      btn.innerHTML = `<div class="notice notice-info"><span>Memproses bil pembayaran ToyyibPay...</span></div>`;
+      btn.innerHTML = `<div class="notice notice-info"><span>Menghantar tempahan untuk kelulusan admin...</span></div>`;
       list.insertAdjacentElement('beforebegin', btn.firstElementChild);
 
       try {
         const res = await API.bookings.create({ slotId: slot.id });
         btn.remove();
-        const paymentUrl = res.paymentUrl;
-        if (/^https?:\/\//.test(paymentUrl)) {
-          window.location.href = paymentUrl;
-        } else {
-          const d = await API.bookings.verifyReturn({ billCode: res.billCode, status_id: '1', slotId: slot.id });
-          UI.toast(d.message || 'Pembayaran berjaya!', 'ok');
-          Router.go('tempahan-saya');
-        }
+        UI.toast(res.message || 'Tempahan dihantar untuk kelulusan admin.', 'ok');
+        Router.go('tempahan-saya');
       } catch (e) {
         btn.remove();
         UI.toast(e.message, 'err');

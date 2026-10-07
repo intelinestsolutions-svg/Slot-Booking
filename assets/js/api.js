@@ -120,6 +120,14 @@
       assignBusker: (b) => call('admin', 'assign_busker', { method: 'POST', body: b }),
       slotSchedule: () => call('admin', 'slots_schedule'),
       setSlotStatus: (b) => call('admin', 'slot_status', { method: 'POST', body: b }),
+      pendingBookings: () => call('admin', 'bookings_pending'),
+      approveBooking: (b) => call('admin', 'approve_booking', { method: 'POST', body: b }),
+      rejectBooking: (b) => call('admin', 'reject_booking', { method: 'POST', body: b }),
+      venueLocations: () => call('admin', 'venue_locations'),
+      createVenue: (b) => call('admin', 'create_venue', { method: 'POST', body: b }),
+      updateVenue: (b) => call('admin', 'update_venue', { method: 'POST', body: b }),
+      locationCreate: (b) => call('admin', 'location_create', { method: 'POST', body: b }),
+      locationRemove: (b) => call('admin', 'location_remove', { method: 'POST', body: b }),
     },
   };
 

@@ -28,7 +28,7 @@ function schema(PDO $pdo): void
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE,
+        email TEXT,
         password TEXT,
         role TEXT NOT NULL DEFAULT 'busker',
         fullName TEXT,
@@ -58,7 +58,8 @@ function schema(PDO $pdo): void
         phoneOtpExpires TEXT,
         phoneOtpAttempts INTEGER NOT NULL DEFAULT 0,
         phoneOtpSentAt TEXT,
-        createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+        createdAt TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE(email, role)
     )");
 
     $cols = array_column($pdo->query("PRAGMA table_info(users)")->fetchAll(), 'name');
@@ -95,6 +96,44 @@ function schema(PDO $pdo): void
     }
     if ($needGrandfather) {
         $pdo->exec("UPDATE users SET phoneVerified = 1 WHERE phoneVerified = 0");
+    }
+    // Migrasi: e-mel yang SAMA boleh wujud sebagai 'busker' DAN 'venue'/'admin'
+    // (akses ditentukan oleh tab log masuk, bukan emel). Uniik tunggal email
+    // digantikan dengan UNIQUE(email, role) — bina semula jadual jika indeks
+    // uniik lama (email sahaja) masih wujud pada pangkalan data sedia ada.
+    $hasOldEmailUnique = false;
+    foreach ($pdo->query("PRAGMA index_list(users)")->fetchAll() as $ix) {
+        if (!empty($ix['unique']) && ($ix['origin'] ?? '') === 'u') {
+            $ixCols = array_column($pdo->query("PRAGMA index_info(" . $ix['name'] . ")")->fetchAll(), 'name');
+            if ($ixCols === ['email']) {
+                $hasOldEmailUnique = true;
+                break;
+            }
+        }
+    }
+    if ($hasOldEmailUnique) {
+        $cdefs = [];
+        $uCols = [];
+        foreach ($pdo->query("PRAGMA table_info(users)")->fetchAll() as $c) {
+            $uCols[] = '"' . $c['name'] . '"';
+            $ddl = '"' . $c['name'] . '" ' . $c['type'];
+            if (!empty($c['notnull'])) { $ddl .= ' NOT NULL'; }
+            if ($c['dflt_value'] !== null) { $ddl .= ' DEFAULT ' . $c['dflt_value']; }
+            if (!empty($c['pk'])) { $ddl .= ' PRIMARY KEY'; }
+            $cdefs[] = $ddl;
+        }
+        $cdefs[] = 'UNIQUE(email, role)';
+        $pdo->exec('BEGIN');
+        try {
+            $pdo->exec('CREATE TABLE users_v2 (' . implode(', ', $cdefs) . ')');
+            $pdo->exec('INSERT INTO users_v2 (' . implode(',', $uCols) . ') SELECT ' . implode(',', $uCols) . ' FROM users');
+            $pdo->exec('DROP TABLE users');
+            $pdo->exec('ALTER TABLE users_v2 RENAME TO users');
+            $pdo->exec('COMMIT');
+        } catch (Throwable $e) {
+            $pdo->exec('ROLLBACK');
+            throw $e;
+        }
     }
     // Bukti pengesahan telefon pra-pendaftaran: OTP disahkan DAHULU,
     // akaun busker hanya dicipta selepas nombor terbukti milik pemohon.
@@ -155,6 +194,11 @@ function schema(PDO $pdo): void
         isActive INTEGER NOT NULL DEFAULT 1,
         createdAt TEXT NOT NULL DEFAULT (datetime('now'))
     )");
+    // Setiap lokasi ("spot") ada pentadbir sendiri (role 'venue').
+    $lcols = array_column($pdo->query("PRAGMA table_info(locations)")->fetchAll(), 'name');
+    if (!in_array('adminUserId', $lcols, true)) {
+        $pdo->exec("ALTER TABLE locations ADD COLUMN adminUserId INTEGER");
+    }
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS slotTemplates (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -423,7 +467,17 @@ function current_user(PDO $pdo): ?array
 function cleanup_stale_locks(PDO $pdo): void
 {
     $cutoff = date('Y-m-d H:i:s', time() - 600);
-    $stmt = $pdo->prepare("SELECT id FROM slots WHERE status='Pra-tempah' AND lockedAt IS NOT NULL AND lockedAt < ?");
+    // Aliran kelulusan admin: slot 'Pra-tempah' yang ADA tempahan pending/
+    // approved kekal dikunci tanpa had masa (admin boleh ambil masa untuk
+    // semakan). Hanya buang kunci 'Pra-tempah' yang TIADA tempahan aktif
+    // (kunci yatim) supaya tidak tersekat selama-lamanya.
+    $stmt = $pdo->prepare(
+        "SELECT id FROM slots WHERE status='Pra-tempah' AND lockedAt IS NOT NULL AND lockedAt < ?
+         AND NOT EXISTS (
+             SELECT 1 FROM bookings b WHERE b.slotId = slots.id
+             AND b.status IN ('pending','approved')
+         )"
+    );
     $stmt->execute([$cutoff]);
     $ids = array_column($stmt->fetchAll(), 'id');
     if ($ids) {

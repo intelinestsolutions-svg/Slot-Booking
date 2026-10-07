@@ -1,9 +1,11 @@
 (function () {
   const BOOKING_META = {
-    pending:   { label: 'Menunggu Bayaran', cls: 'pending', icon: '⏳' },
-    confirmed: { label: 'Disahkan',         cls: 'confirmed', icon: '✅' },
-    completed: { label: 'Selesai',          cls: 'completed', icon: '🎸' },
-    cancelled: { label: 'Dibatalkan',       cls: 'cancelled', icon: '🚫' },
+    pending:   { label: 'Menunggu Kelulusan', cls: 'pending', icon: '⏳' },
+    approved:  { label: 'Menunggu Bayaran',   cls: 'ok', icon: '💳' },
+    confirmed: { label: 'Disahkan',           cls: 'confirmed', icon: '✅' },
+    completed: { label: 'Selesai',            cls: 'completed', icon: '🎸' },
+    cancelled: { label: 'Dibatalkan',         cls: 'cancelled', icon: '🚫' },
+    rejected:  { label: 'Ditolak',            cls: 'cancelled', icon: '🚫' },
   };
 
   window.viewTempahan = function () {
@@ -53,7 +55,7 @@
       .filter(b => b.slotDate >= today)
       .sort((a, b) => a.slotDate === b.slotDate ? a.startTime.localeCompare(b.startTime) : a.slotDate.localeCompare(b.slotDate));
     const past = list
-      .filter(b => b.slotDate < today || b.status === 'cancelled')
+      .filter(b => b.slotDate < today || b.status === 'cancelled' || b.status === 'rejected')
       .sort((a, b) => b.slotDate.localeCompare(a.slotDate));
 
     const box = document.getElementById('bookList');
@@ -63,6 +65,10 @@
       const actions = [];
 
       if (b.status === 'pending') {
+        // Menunggu kelulusan admin — belum ada bil; hanya boleh batal.
+        actions.push(`<button class="btn btn-danger btn-sm" data-cancel="${b.id}">Batal Permohonan</button>`);
+      } else if (b.status === 'approved') {
+        // Diluluskan admin — bil sudah wujud; busker bayar untuk sahkan.
         actions.push(`
           <button class="btn btn-primary btn-sm" data-pay="${b.id}">Bayar Sekarang · ${UI.money(b.amount)}</button>
           <button class="btn btn-danger btn-sm" data-cancel="${b.id}">Batal</button>`);
