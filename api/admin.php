@@ -449,7 +449,26 @@ switch ($action) {
             FROM locations l
             LEFT JOIN users u ON u.id = l.adminUserId
             ORDER BY l.tier, l.name COLLATE NOCASE");
-        ok(['locations' => $stmt->fetchAll()]);
+        $locations = $stmt->fetchAll();
+        // Sertakan templat slot bagi setiap spot (paparan waktu + "Ubah Waktu").
+        $tt = $pdo->query("SELECT id, locationId, days, startTime, endTime, price, sessionLabel
+            FROM slotTemplates WHERE isActive=1 ORDER BY startTime");
+        $byLoc = [];
+        foreach ($tt->fetchAll() as $t) {
+            $byLoc[$t['locationId']][] = [
+                'id' => (int)$t['id'],
+                'days' => $t['days'],
+                'startTime' => $t['startTime'],
+                'endTime' => $t['endTime'],
+                'price' => (float)$t['price'],
+                'sessionLabel' => $t['sessionLabel'],
+            ];
+        }
+        foreach ($locations as &$l) {
+            $l['templates'] = $byLoc[$l['id']] ?? [];
+        }
+        unset($l);
+        ok(['locations' => $locations]);
         break;
 
     case 'create_venue':
@@ -667,6 +686,73 @@ switch ($action) {
         $pdo->prepare("UPDATE slots SET status='Tersedia', bookedBy=NULL, lockedAt=NULL, billCode=NULL
             WHERE locationId=? AND date>=? AND status IN ('Tersedia','Pra-tempah')")->execute([$locId, date('Y-m-d')]);
         ok(['location' => ['id' => $locId, 'name' => $loc['name'], 'isActive' => 0]]);
+        break;
+
+    case 'location_update_time':
+        // Super admin menukar waktu slot (mula/tamat) bagi satu atau SEMUA templat spot.
+        // Slot akan datang diselaraskan; slot percuma ditakrifkan semula oleh ensure_slots.
+        admin_only($pdo);
+        $d = body();
+        $locId = (int)($d['locationId'] ?? 0);
+        $locStmt = $pdo->prepare("SELECT id, name FROM locations WHERE id=? AND isActive=1");
+        $locStmt->execute([$locId]);
+        $loc = $locStmt->fetch();
+        if (!$loc) {
+            fail('Lokasi tidak dijumpai.');
+        }
+        $startTime = (string)($d['startTime'] ?? '');
+        $endTime = (string)($d['endTime'] ?? '');
+        if (!preg_match('/^\d{2}:\d{2}$/', $startTime)) {
+            fail('Masa mula tidak sah (HH:MM).');
+        }
+        if (!preg_match('/^\d{2}:\d{2}$/', $endTime)) {
+            fail('Masa tamat tidak sah (HH:MM).');
+        }
+        // '00:00' dibenarkan sebagai penghujung merentasi tengah malam (cth 20:00–00:00).
+        if ($endTime !== '00:00' && $endTime <= $startTime) {
+            fail('Masa tamat mesti lewat daripada masa mula.');
+        }
+        // Templat sasaran: khusus (templateIds) atau SEMUA templat aktif spot.
+        $rawIds = $d['templateIds'] ?? '';
+        $q = "SELECT * FROM slotTemplates WHERE locationId=? AND isActive=1";
+        $args = [$locId];
+        if ($rawIds !== '' && $rawIds !== []) {
+            $ids = is_array($rawIds) ? $rawIds : explode(',', (string)$rawIds);
+            $ids = array_values(array_unique(array_map('intval', $ids)));
+            $q .= " AND id IN (" . implode(',', array_fill(0, count($ids), '?')) . ")";
+            $args = array_merge($args, $ids);
+        }
+        $stmt = $pdo->prepare($q);
+        $stmt->execute($args);
+        $templates = $stmt->fetchAll();
+        if (!$templates) {
+            fail('Tiada templat slot ditemui untuk spot ini.');
+        }
+        // Selaraskan templat + slot akan datang yang sepadan (kecuali slot 'Selesai').
+        $today = date('Y-m-d');
+        $up = $pdo->prepare("UPDATE slots SET startTime=?, endTime=?
+            WHERE locationId=? AND date>=? AND startTime=? AND endTime=? AND status<>'Selesai'");
+        $ut = $pdo->prepare("UPDATE slotTemplates SET startTime=?, endTime=? WHERE id=?");
+        foreach ($templates as $t) {
+            $up->execute([$startTime, $endTime, $locId, $today, $t['startTime'], $t['endTime']]);
+            $ut->execute([$startTime, $endTime, $t['id']]);
+        }
+        ensure_slots($pdo, $locId, 30);
+        $tmplOut = array_map(function ($t) use ($startTime, $endTime) {
+            return [
+                'id' => (int)$t['id'],
+                'days' => $t['days'],
+                'sessionLabel' => $t['sessionLabel'],
+                'startTime' => $startTime,
+                'endTime' => $endTime,
+                'price' => (float)$t['price'],
+            ];
+        }, $templates);
+        ok([
+            'location' => ['id' => $locId, 'name' => $loc['name']],
+            'updated' => count($templates),
+            'templates' => $tmplOut,
+        ]);
         break;
 
     default:

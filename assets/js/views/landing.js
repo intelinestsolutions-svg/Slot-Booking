@@ -301,7 +301,7 @@
             <tbody>
               <tr><td>Dataran Deasoka, BSN, Ex-Pizza, Horizon Water Fountain, Jalan Jati</td><td><span class="tag" style="background:rgba(255,176,58,.14);color:var(--gold);">Jumaat &amp; Sabtu</span></td><td>Malam (17:30–21:00)</td><td><b style="color:var(--gold)">RM 10</b></td></tr>
               <tr><td>Dataran Deasoka, BSN, Ex-Pizza, Horizon Water Fountain, Jalan Jati</td><td><span class="tag" style="background:rgba(255,176,58,.14);color:var(--gold);">Ahad</span></td><td>Pagi (06:30–12:00)</td><td><b style="color:var(--gold)">RM 10</b></td></tr>
-              <tr><td>Segama Waterfront (Dolphin)</td><td><span class="tag" style="background:rgba(61,220,151,.14);color:var(--ok);">Setiap hari</span></td><td>Petang (17:30–21:00)</td><td><b style="color:var(--gold)">RM 5</b></td></tr>
+              <tr><td>Segama Waterfront (Dolphin)</td><td><span class="tag" style="background:rgba(61,220,151,.14);color:var(--ok);">Setiap hari</span></td><td>Malam (17:30–23:30)</td><td><b style="color:var(--gold)">RM 5</b></td></tr>
               <tr><td>Tanjung Lipat, Likas</td><td><span class="tag" style="background:rgba(61,220,151,.14);color:var(--ok);">Setiap hari</span></td><td>Petang (14:00–17:30)</td><td><b style="color:var(--gold)">RM 5</b></td></tr>
               <tr><td>Tanjung Aru</td><td><span class="tag" style="background:rgba(61,220,151,.14);color:var(--ok);">Setiap hari</span></td><td>Petang–2000 (14:00–20:00)</td><td><b style="color:var(--gold)">RM 10</b></td></tr>
               <tr><td>KKIA Arrival</td><td><span class="tag" style="background:rgba(61,220,151,.14);color:var(--ok);">Setiap hari</span></td><td>0800–1200; 1200–1600; 1600–2000; 2000–0000</td><td><b style="color:var(--gold)">RM 5</b></td></tr>

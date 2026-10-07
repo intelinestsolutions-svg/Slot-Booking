@@ -372,7 +372,7 @@ function seed(PDO $pdo): void
             $templates[] = [$locIds[$slug], implode(',', $nights), '18:30', '22:30', 10.00, 'Malam'];
             $templates[] = [$locIds[$slug], implode(',', $sundays), '06:30', '12:00', 10.00, 'Pagi'];
         }
-        $templates[] = [$locIds['segama-waterfront-dolphin'], implode(',', $everyday), '17:30', '21:00', 5.00, 'Malam'];
+        $templates[] = [$locIds['segama-waterfront-dolphin'], implode(',', $everyday), '17:30', '23:30', 5.00, 'Malam'];
         $templates[] = [$locIds['tanjung-lipat-likas'], implode(',', $everyday), '14:00', '17:30', 5.00, 'Petang'];
         $templates[] = [$locIds['tanjung-aru'], implode(',', $everyday), '14:00', '20:00', 10.00, 'Petang'];
         $templates[] = [$locIds['kkia'], implode(',', $everyday), '08:00', '12:00', 5.00, 'Pagi'];

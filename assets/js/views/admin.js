@@ -551,22 +551,67 @@
       return;
     }
     const box = document.getElementById('locList');
+    const tm = (l) => (l.templates || []).filter(t => t.startTime).map(t => `${t.startTime}–${t.endTime}`).join(', ');
     box.innerHTML = `<div class="table-wrap"><table class="data">
       <thead><tr><th>Spot</th><th>Kawasan</th><th>Tier</th><th>Status</th><th>Pentadbir</th><th>Tindakan</th></tr></thead>
       <tbody>
         ${locations.map(l => `
           <tr>
-            <td><b>${UI.esc(l.name)}</b></td>
+            <td><b>${UI.esc(l.name)}</b>${l.templates && l.templates.length ? `<br><small style="color:var(--muted)">🕐 ${UI.esc(tm(l))}</small>` : ''}</td>
             <td>${UI.esc(l.area || '—')}</td>
             <td>${UI.esc(l.tier || '—')}</td>
             <td><span class="st st-${l.isActive ? 'ok' : 'err'}">${l.isActive ? 'Aktif' : 'Dibuang'}</span></td>
             <td>${l.adminEmail ? '👤 ' + UI.esc(l.adminName || l.adminEmail) : '<small style="color:var(--muted-2)">Tiada</small>'}</td>
             <td>${l.isActive
-              ? `<button class="btn btn-sm" data-remove="${l.id}" data-name="${UI.esc(l.name)}">🗑 Buang</button>`
+              ? `<button class="btn btn-sm" data-times="${l.id}">🕐 Ubah Waktu</button>
+                 <button class="btn btn-sm" data-remove="${l.id}" data-name="${UI.esc(l.name)}">🗑 Buang</button>`
               : '<small style="color:var(--muted-2)">—</small>'}</td>
-          </tr>`).join('')}
+          </tr>
+          ${l.isActive && l.templates && l.templates.length ? `<tr id="tmpl-${l.id}" style="display:none;">
+            <td colspan="6" style="background:rgba(255,255,255,.03);">
+              <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;">
+                ${l.templates.map(t => `
+                  <div data-timesave="${l.id}-${t.id}" style="border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px;flex:1 1 280px;min-width:260px;">
+                    <div style="margin-bottom:8px;"><b>${UI.esc(t.sessionLabel || 'Slot')}</b> · ${UI.esc(t.days)} · RM${t.price}</div>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                      <input class="input" type="time" style="width:110px;" value="${t.startTime}" aria-label="Masa mula">
+                      <span style="color:var(--muted)">—</span>
+                      <input class="input" type="time" style="width:110px;" value="${t.endTime}" aria-label="Masa tamat">
+                      <button class="btn btn-sm btn-primary" data-save-time="${l.id}" data-tid="${t.id}">Simpan</button>
+                    </div>
+                  </div>`).join('')}
+              </div>
+            </td>
+          </tr>` : ''}`).join('')}
       </tbody>
     </table></div>`;
+
+    box.querySelectorAll('[data-times]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const row = document.getElementById('tmpl-' + btn.getAttribute('data-times'));
+        if (row) row.style.display = row.style.display === 'none' ? '' : 'none';
+      });
+    });
+
+    box.querySelectorAll('[data-save-time]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const lid = Number(btn.getAttribute('data-save-time'));
+        const tid = Number(btn.getAttribute('data-tid'));
+        const wrap = btn.closest('[data-timesave]');
+        const ins = wrap.querySelectorAll('input[type=time]');
+        const startTime = ins[0].value, endTime = ins[1].value;
+        if (!startTime || !endTime) { UI.toast('Pilih masa mula dan tamat.', 'err'); return; }
+        btn.disabled = true;
+        try {
+          const r = await API.admin.locationUpdateTime({ locationId: lid, templateIds: String(tid), startTime, endTime });
+          UI.toast('Waktu "' + r.location.name + '" dikemas kini: ' + startTime + '–' + endTime + '.', 'ok');
+          Router.replace('admin-locations');
+        } catch (err) {
+          UI.toast(err.message, 'err');
+          btn.disabled = false;
+        }
+      });
+    });
 
     box.querySelectorAll('[data-remove]').forEach(btn => {
       btn.addEventListener('click', async () => {

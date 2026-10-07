@@ -137,6 +137,7 @@
       updateVenue: (b) => call('admin', 'update_venue', { method: 'POST', body: b }),
       locationCreate: (b) => call('admin', 'location_create', { method: 'POST', body: b }),
       locationRemove: (b) => call('admin', 'location_remove', { method: 'POST', body: b }),
+      locationUpdateTime: (b) => call('admin', 'location_update_time', { method: 'POST', body: b }),
     },
   };
 
