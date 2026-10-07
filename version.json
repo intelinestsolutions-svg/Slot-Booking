@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261049",
+  "webVersion": "20261050",
   "android": {
-    "version": "2.1.1-beta",
-    "versionCode": 24,
+    "version": "2.1.2-beta",
+    "versionCode": 25,
     "url": "https://apps.sabahbuskers.my/sbc-mobile.apk",
-    "notes": "Pembetulan kotak tanda persetujuan (PDPA) di pendaftaran: banner tetap tidak lagi menutup kotak tick & butang hantar."
+    "notes": "Pembetulan pendaftaran: persetujuan PDPA kini dihantar ke pelayan — pendaftaran boleh disiapkan selepas menandakan kotak."
   },
   "updatedAt": "2026-10-07"
 }

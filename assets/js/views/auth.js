@@ -474,6 +474,8 @@
           tiktok: document.getElementById('tiktok').value.trim(),
           password: pass1,
           proof: pr.proof,
+          // Persetujuan PDPA eksplisit — WAJIB oleh api/auth.php ('register').
+          consent: consent.checked ? 1 : 0,
         });
         window.__regProof = null;
         Session.setToken(data.token);
