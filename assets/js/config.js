@@ -13,12 +13,12 @@ window.APP = {
   tokenKey: 'sabahbuskers_token',
   userKey: 'sabahbuskers_user',
   langKey: 'sabahbuskers_lang',
-buildName: '2.1.8-beta',
-  buildCode: 31,
-  webBuild: '20261056',
+buildName: '2.1.9-beta',
+  buildCode: 32,
+  webBuild: '20261057',
   updateUrl: 'https://apps.sabahbuskers.my/version.json',
   downloadUrl: 'https://apps.sabahbuskers.my/sbc-mobile.apk',
-  sessions: { 'Slot 1': { label: 'Pagi', time: '06:30–12:00' }, 'Slot 2': { label: 'Petang', time: '14:00–17:30' }, 'Slot 3': { label: 'Malam', time: '17:30–21:00' } },
+  sessions: { 'Slot 1': { label: 'Ahad Pagi', time: '06:30–12:00' }, 'Slot 2': { label: 'Malam', time: '18:30–22:30' }, 'Slot 3': { label: 'Malam (Segama)', time: '18:30–23:30' } },
 };
 
 window.APP.isNative = typeof window.Capacitor !== 'undefined' && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();

@@ -536,6 +536,13 @@
           </div>
         </form>
       </div>
+      <div class="panel" style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div>
+          <b>⚡ Waktu Standard</b>
+          <div style="font-size:12.5px;color:var(--muted);margin-top:2px;">Semua spot 18:30–22:30 · Segama 18:30–23:30 · Tg Aru, KKIA &amp; sesi Ahad pagi dikecualikan</div>
+        </div>
+        <button class="btn btn-sm btn-primary" id="applyStd">Terapkan ke semua spot</button>
+      </div>
       <div id="locList"><div class="empty">Memuatkan senarai lokasi...</div></div>`,
       { eyebrow: 'Lokasi Busking' });
   };
@@ -627,6 +634,20 @@
           btn.disabled = false;
         }
       });
+    });
+
+    const stdBtn = document.getElementById('applyStd');
+    if (stdBtn) stdBtn.addEventListener('click', async () => {
+      if (!window.confirm('Terapkan Waktu Standard ke SEMUA spot?\n\n• Semua spot = 18:30–22:30 setiap hari\n• Segama Waterfront = 18:30–23:30\n• Tg Aru, KKIA & sesi Ahad pagi TIDAK diubah')) return;
+      stdBtn.disabled = true;
+      try {
+        const r = await API.admin.applyStandardTime();
+        UI.toast('Waktu standard diterapkan ke ' + r.updated + ' templat slot.', 'ok');
+        Router.replace('admin-locations');
+      } catch (err) {
+        UI.toast(err.message, 'err');
+        stdBtn.disabled = false;
+      }
     });
 
     document.getElementById('locForm').addEventListener('submit', async (e) => {

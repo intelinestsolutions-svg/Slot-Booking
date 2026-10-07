@@ -87,7 +87,7 @@
             <li>Dataran Deasoka — pentas utama DBKK</li>
             <li>BSN (Jalan Gaya), Ex-Pizza, Horizon, Jalan Jati</li>
             <li>Tanjung Aru — pelancong sehingga matahari terbenam</li>
-            <li>Jumaat &amp; Sabtu malam; Ahad pagi</li>
+            <li>Malam (18:30–22:30) setiap hari; Ahad pagi (06:30–12:00)</li>
           </ul>
         </div>
       </div>
@@ -98,10 +98,10 @@
           <table class="data">
             <thead><tr><th>Lokasi</th><th>Hari</th><th>Sesi / Masa</th><th>Yuran</th></tr></thead>
             <tbody>
-              <tr><td>Dataran Deasoka, BSN, Ex-Pizza, Horizon Water Fountain, Jalan Jati</td><td>Jumaat &amp; Sabtu</td><td>Malam (17:30–21:00)</td><td style="color:var(--gold);font-weight:700;">RM 10</td></tr>
+              <tr><td>Dataran Deasoka, BSN, Ex-Pizza, Horizon Water Fountain, Jalan Jati</td><td>Setiap hari</td><td>Malam (18:30–22:30)</td><td style="color:var(--gold);font-weight:700;">RM 10</td></tr>
               <tr><td>Dataran Deasoka, BSN, Ex-Pizza, Horizon Water Fountain, Jalan Jati</td><td>Ahad</td><td>Pagi (06:30–12:00)</td><td style="color:var(--gold);font-weight:700;">RM 10</td></tr>
-              <tr><td>Segama Waterfront (Dolphin)</td><td>Setiap hari</td><td>Malam (17:30–23:30)</td><td style="color:var(--gold);font-weight:700;">RM 5</td></tr>
-              <tr><td>Tanjung Lipat, Likas</td><td>Setiap hari</td><td>Petang (14:00–17:30)</td><td style="color:var(--gold);font-weight:700;">RM 5</td></tr>
+              <tr><td>Segama Waterfront (Dolphin)</td><td>Setiap hari</td><td>Malam (18:30–23:30)</td><td style="color:var(--gold);font-weight:700;">RM 5</td></tr>
+              <tr><td>Tanjung Lipat, Likas</td><td>Setiap hari</td><td>Malam (18:30–22:30)</td><td style="color:var(--gold);font-weight:700;">RM 5</td></tr>
               <tr><td>Tanjung Aru</td><td>Setiap hari</td><td>Petang (14:00–20:00)</td><td style="color:var(--gold);font-weight:700;">RM 10</td></tr>
               <tr><td>KKIA Arrival</td><td>Setiap hari</td><td>0800–1200, 1200–1600, 1600–2000, 2000–0000</td><td style="color:var(--gold);font-weight:700;">RM 5</td></tr>
               <tr><td>KKIA Departure</td><td>Setiap hari</td><td>0800–1200, 1200–1600, 1600–2000</td><td style="color:var(--gold);font-weight:700;">RM 5</td></tr>

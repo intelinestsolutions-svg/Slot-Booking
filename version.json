@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261056",
+  "webVersion": "20261057",
   "android": {
-    "version": "2.1.8-beta",
-    "versionCode": 31,
-    "url": "https://apps.sabahbuskers.my/sbc-mobile.apk?v=20261056",
-    "notes": "Ubah Waktu slot spot (super admin); Segama Waterfront tamat 23:30."
+    "version": "2.1.9-beta",
+    "versionCode": 32,
+    "url": "https://apps.sabahbuskers.my/sbc-mobile.apk?v=20261057",
+    "notes": "Waktu standard: semua spot 18:30-22:30 (Segama 18:30-23:30); Tg Aru, KKIA & Ahad pagi dikecualikan."
   },
   "updatedAt": "2026-10-07"
 }

@@ -138,6 +138,7 @@
       locationCreate: (b) => call('admin', 'location_create', { method: 'POST', body: b }),
       locationRemove: (b) => call('admin', 'location_remove', { method: 'POST', body: b }),
       locationUpdateTime: (b) => call('admin', 'location_update_time', { method: 'POST', body: b }),
+      applyStandardTime: () => call('admin', 'location_apply_standard', { method: 'POST' }),
     },
   };
 

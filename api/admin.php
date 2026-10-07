@@ -688,6 +688,49 @@ switch ($action) {
         ok(['location' => ['id' => $locId, 'name' => $loc['name'], 'isActive' => 0]]);
         break;
 
+    case 'location_apply_standard':
+        // Super admin: seragamkan waktu SEMUA spot kepada standard 18:30–22:30,
+        // kecuali: Tg Aru & KKIA kekal (masa sendiri), sesi pagi (cth Ahad pagi
+        // bandar) dikekalkan, dan Segama Waterfront berakhir 23:30 (18:30–23:30).
+        admin_only($pdo);
+        $stdStart = '18:30';
+        $stdEnd = '22:30';
+        $segama = 'segama-waterfront-dolphin';
+        $exceptSlugs = ['tanjung-aru', 'kkia', 'kkia-departure'];
+        $everydayStr = implode(',', ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
+        $today = date('Y-m-d');
+        $locStmt = $pdo->query("SELECT id, slug, name FROM locations WHERE isActive=1");
+        $locations = $locStmt->fetchAll();
+        $tmplStmt = $pdo->prepare("SELECT * FROM slotTemplates WHERE locationId=? AND isActive=1");
+        $upSlots = $pdo->prepare("UPDATE slots SET startTime=?, endTime=?
+            WHERE locationId=? AND date>=? AND startTime=? AND endTime=? AND status<>'Selesai'");
+        $upTmpl = $pdo->prepare("UPDATE slotTemplates SET days=?, startTime=?, endTime=? WHERE id=?");
+        $changed = [];
+        foreach ($locations as $loc) {
+            if (in_array($loc['slug'], $exceptSlugs, true)) {
+                continue;
+            }
+            $isSegama = ($loc['slug'] === $segama);
+            $targetEnd = $isSegama ? '23:30' : $stdEnd;
+            $tmplStmt->execute([$loc['id']]);
+            $touched = false;
+            foreach ($tmplStmt->fetchAll() as $t) {
+                // Sesi pagi (mulai sebelum 12:00) dikekalkan — cth sesi Ahad pagi di bandar.
+                if ($t['startTime'] < '12:00') {
+                    continue;
+                }
+                $upSlots->execute([$stdStart, $targetEnd, $loc['id'], $today, $t['startTime'], $t['endTime']]);
+                $upTmpl->execute([$everydayStr, $stdStart, $targetEnd, $t['id']]);
+                $changed[] = ['locationId' => (int)$loc['id'], 'name' => $loc['name'], 'templateId' => (int)$t['id'], 'startTime' => $stdStart, 'endTime' => $targetEnd];
+                $touched = true;
+            }
+            if ($touched) {
+                ensure_slots($pdo, $loc['id'], 30);
+            }
+        }
+        ok(['updated' => count($changed), 'templates' => $changed]);
+        break;
+
     case 'location_update_time':
         // Super admin menukar waktu slot (mula/tamat) bagi satu atau SEMUA templat spot.
         // Slot akan datang diselaraskan; slot percuma ditakrifkan semula oleh ensure_slots.
