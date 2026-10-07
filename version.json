@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261054",
+  "webVersion": "20261055",
   "android": {
-    "version": "2.1.6-beta",
-    "versionCode": 29,
-    "url": "https://apps.sabahbuskers.my/sbc-mobile.apk?v=20261054",
-    "notes": "Pentadbir spot sama boleh mentadbir banyak spot; tab log masuk Busker, Spot, Admin."
+    "version": "2.1.7-beta",
+    "versionCode": 30,
+    "url": "https://apps.sabahbuskers.my/sbc-mobile.apk?v=20261055",
+    "notes": "Log masuk 2 tab (Busker, Admin) — emel menentukan spot/super + pengesahan peranan."
   },
   "updatedAt": "2026-10-07"
 }

@@ -356,7 +356,7 @@ switch ($action) {
         $role = $d['role'] ?? 'busker';
 
         if ($role !== 'busker') {
-            $user = login_admin($pdo, $email, $password, $role);
+            $user = login_admin($pdo, $email, $password);
         } else {
             $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND role='busker'");
             $stmt->execute([$email]);
@@ -377,7 +377,17 @@ switch ($action) {
             break;
         }
 
-        ok(['token' => $token, 'user' => public_user($pdo, $user['id'])]);
+        // Makluman peranan yang dikesan (spot vs global) untuk paparan UI.
+        $staffExtra = [];
+        if ($user['role'] === 'venue') {
+            $cnt = $pdo->prepare("SELECT COUNT(*) FROM locations WHERE adminUserId=?");
+            $cnt->execute([(int)$user['id']]);
+            $staffExtra['managedLocations'] = (int)$cnt->fetchColumn();
+        } elseif ($user['role'] === 'admin') {
+            $staffExtra['isSuper'] = (strtolower((string)$user['email']) === strtolower((string)DEFAULT_ADMIN_EMAIL));
+        }
+
+        ok(array_merge(['token' => $token, 'user' => public_user($pdo, $user['id'])], $staffExtra));
         break;
 
     case 'logout':
@@ -524,10 +534,12 @@ function public_user_full(PDO $pdo, int $id): array
     return $stmt->fetch() ?: [];
 }
 
-function login_admin(PDO $pdo, string $email, string $password, string $role): array
+function login_admin(PDO $pdo, string $email, string $password): array
 {
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND role = ?");
-    $stmt->execute([$email, $role]);
+    // Emel menentukan peranan: lokasi dipadankan dengan akaun 'admin' ATAU
+    // 'venue' (spot). Pengguna hanya perlu satu tab "Admin" untuk log masuk.
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND role IN ('admin','venue')");
+    $stmt->execute([$email]);
     $user = $stmt->fetch();
     if (!$user || !$user['password'] || !password_verify($password, $user['password'])) {
         fail('Email atau kata laluan salah.', 401);

@@ -13,16 +13,14 @@
 
   window.viewLogin = function (q) {
     if (window.sbcConsentHide) window.sbcConsentHide();
-    const role = q.page === 'admin_login' ? 'admin' : q.page === 'venue_login' ? 'venue' : 'busker';
-    const tabNames = { busker: 'Busker', venue: 'Spot', admin: 'Admin' };
+    const role = q.page === 'busker_login' ? 'busker' : 'admin';
+    const tabNames = { busker: 'Busker', admin: 'Admin' };
     const tabs = Object.keys(tabNames).map(r =>
       `<button class="auth-tab ${r === role ? 'active' : ''}" data-role="${r}">${tabNames[r]}</button>`).join('');
 
     const subtitle = role === 'admin'
-      ? 'Log masuk pentadbiran platform.'
-      : role === 'venue'
-        ? 'Log masuk untuk mengurus tempahan slot di lokasi anda.'
-        : 'Log masuk untuk menempah slot busking anda.';
+      ? 'Log masuk pentadbiran — emel menentukan peranan (spot atau super admin).'
+      : 'Log masuk untuk menempah slot busking anda.';
 
     return UI.page('Log Masuk', subtitle,
       `<div class="auth-wrap">
@@ -57,7 +55,7 @@
       if (tab) {
         document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        const pageMap = { busker: 'busker_login', admin: 'admin_login', venue: 'venue_login' };
+        const pageMap = { busker: 'busker_login', admin: 'admin_login' };
         Router.replace(pageMap[tab.dataset.role] || 'busker_login');
       }
     });
@@ -65,8 +63,7 @@
     document.addEventListener('submit', async (e) => {
       if (e.target.id !== 'loginForm') return;
       e.preventDefault();
-      const role = new URLSearchParams(location.search).get('page') === 'admin_login' ? 'admin'
-        : new URLSearchParams(location.search).get('page') === 'venue_login' ? 'venue' : 'busker';
+      const role = new URLSearchParams(location.search).get('page') === 'busker_login' ? 'busker' : 'admin';
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const btn = document.getElementById('loginBtn');
@@ -88,6 +85,11 @@
           String(data.user.email || '').toLowerCase() === String(APP.superAdminEmail || 'admin@sabahbuskers.my').toLowerCase();
         const roleHome = isSup ? 'admin-dashboard'
           : data.user.role === 'venue' ? 'admin-bookings' : 'cari-slot';
+        if (data.user.role === 'venue') {
+          UI.toast('Log masuk sebagai Pentadbir Spot' + (data.managedLocations ? ' — ' + data.managedLocations + ' lokasi' : '') + '.', 'ok');
+        } else if (data.user.role === 'admin') {
+          UI.toast(isSup ? 'Log masuk sebagai Pentadbir Global.' : 'Log masuk sebagai Admin.', 'ok');
+        }
         Router.go(next || roleHome);
       } catch (err) {
         if (err && err.data && err.data.needPhoneVerify) {
