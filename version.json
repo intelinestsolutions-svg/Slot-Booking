@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261047",
+  "webVersion": "20261048",
   "android": {
-    "version": "2.0.9-beta",
-    "versionCode": 22,
+    "version": "2.1.0-beta",
+    "versionCode": 23,
     "url": "https://apps.sabahbuskers.my/sbc-mobile.apk",
-    "notes": "Pengesahan kod melalui email — percuma, tanpa had. Daftar, tetapan semula dan pertukaran kata laluan disahkan melalui email."
+    "notes": "Pembetulan pendaftaran: nombor telefon 011 (11 digit) kini diterima."
   },
-  "updatedAt": "2026-10-06"
+  "updatedAt": "2026-10-07"
 }
