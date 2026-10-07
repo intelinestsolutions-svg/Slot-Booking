@@ -110,7 +110,7 @@
     const box = document.getElementById('finTable');
     if (!rows.length) {
       box.innerHTML = UI.notice('Belum ada rekod transaksi. Transaksi ToyyibPay akan direkodkan selepas pembayaran disahkan.', 'info') +
-        '<div class="empty"><div class="e-ico">💰</div><p>Tiada transaksi belum.</p></div>';
+        '<div class="empty"><div class="e-ico">💰</div><p>Belum ada transaksi.</p></div>';
       return;
     }
 

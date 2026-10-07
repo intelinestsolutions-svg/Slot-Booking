@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261050",
+  "webVersion": "20261051",
   "android": {
-    "version": "2.1.2-beta",
-    "versionCode": 25,
-    "url": "https://apps.sabahbuskers.my/sbc-mobile.apk?v=20261050",
-    "notes": "Pembetulan pendaftaran: persetujuan PDPA kini dihantar ke pelayan — pendaftaran boleh disiapkan selepas menandakan kotak."
+    "version": "2.1.3-beta",
+    "versionCode": 26,
+    "url": "https://apps.sabahbuskers.my/sbc-mobile.apk?v=20261051",
+    "notes": "Admin Kewangan: teks kosong ditukar kepada 'Belum ada transaksi.'"
   },
   "updatedAt": "2026-10-07"
 }
