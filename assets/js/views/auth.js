@@ -14,7 +14,7 @@
   window.viewLogin = function (q) {
     if (window.sbcConsentHide) window.sbcConsentHide();
     const role = q.page === 'admin_login' ? 'admin' : q.page === 'venue_login' ? 'venue' : 'busker';
-    const tabNames = { busker: 'Busker', admin: 'Admin', venue: 'Spot' };
+    const tabNames = { busker: 'Busker', venue: 'Spot', admin: 'Admin' };
     const tabs = Object.keys(tabNames).map(r =>
       `<button class="auth-tab ${r === role ? 'active' : ''}" data-role="${r}">${tabNames[r]}</button>`).join('');
 

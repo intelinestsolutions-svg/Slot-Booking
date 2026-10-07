@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261053",
+  "webVersion": "20261054",
   "android": {
-    "version": "2.1.5-beta",
-    "versionCode": 28,
-    "url": "https://apps.sabahbuskers.my/sbc-mobile.apk?v=20261053",
-    "notes": "Pembaikan migrasi pangkalan data (UNIQUE email+role) + paparan mesra apabila pelayan sibuk."
+    "version": "2.1.6-beta",
+    "versionCode": 29,
+    "url": "https://apps.sabahbuskers.my/sbc-mobile.apk?v=20261054",
+    "notes": "Pentadbir spot sama boleh mentadbir banyak spot; tab log masuk Busker, Spot, Admin."
   },
   "updatedAt": "2026-10-07"
 }

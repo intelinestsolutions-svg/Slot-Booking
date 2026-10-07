@@ -455,17 +455,14 @@ switch ($action) {
     case 'create_venue':
         admin_only($pdo);
         $d = body();
-        foreach (['email', 'password', 'fullName', 'locationId'] as $f) {
+        foreach (['email', 'locationId'] as $f) {
             if (empty($d[$f])) {
-                fail('Email, kata laluan, nama dan lokasi diperlukan.');
+                fail('Email dan lokasi diperlukan.');
             }
         }
         $email = strtolower(trim($d['email']));
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             fail('Email tidak sah.');
-        }
-        if (strlen($d['password']) < 6) {
-            fail('Kata laluan sekurang-kurangnya 6 aksara.');
         }
         $locationId = (int)$d['locationId'];
         $locStmt = $pdo->prepare("SELECT id, name FROM locations WHERE id=? AND isActive=1");
@@ -474,19 +471,44 @@ switch ($action) {
         if (!$loc) {
             fail('Lokasi tidak dijumpai.');
         }
-        $dup = $pdo->prepare("SELECT id FROM users WHERE email=? AND role IN ('admin','venue')");
-        $dup->execute([$email]);
-        if ($dup->fetch()) {
-            fail('Email sudah wujud.');
+        // Elak tulis ganti senyap: lokasi yang sudah ada pentadbir LAIN.
+        $held = $pdo->prepare("SELECT u.email FROM locations l LEFT JOIN users u ON u.id=l.adminUserId WHERE l.id=? AND l.adminUserId IS NOT NULL");
+        $held->execute([$locationId]);
+        $heldBy = $held->fetchColumn();
+        if ($heldBy) {
+            fail('Lokasi "' . $loc['name'] . '" sudah ditugaskan kepada ' . $heldBy . '. Guna "Ubah" untuk pindahkan pentadbir dahulu.');
+        }
+        // Emel yang SAMA dibenarkan: orang yang sama boleh mentadbir
+        // BANYAK spot. Akaun venue sedia ada diguna semula (kata laluan
+        // & nama kekal), hanya tugasan lokasi ditambah.
+        $ex = $pdo->prepare("SELECT id, fullName, role FROM users WHERE email=? AND role IN ('admin','venue')");
+        $ex->execute([$email]);
+        $existing = $ex->fetch();
+        if ($existing && $existing['role'] === 'admin') {
+            fail('Email sedia ada sebagai pentadbir global (bukan spot).');
+        }
+        $reused = $existing !== false;
+        $fullName = $reused ? $existing['fullName'] : trim((string)($d['fullName'] ?? ''));
+        if (!$reused) {
+            if (empty($d['password']) || strlen((string)$d['password']) < 6) {
+                fail('Kata laluan sekurang-kurangnya 6 aksara (akaun baharu).');
+            }
+            if ($fullName === '') {
+                fail('Nama penuh diperlukan (akaun baharu).');
+            }
         }
         $pdo->beginTransaction();
         try {
-            $pdo->prepare("INSERT INTO users (email,password,role,fullName,verificationStatus,isActive,token)
-                VALUES (?,?,?,?,?,?,?)")->execute([
-                $email, password_hash($d['password'], PASSWORD_DEFAULT), 'venue',
-                $d['fullName'], 'approved', 1, bin2hex(random_bytes(24)),
-            ]);
-            $vid = $pdo->lastInsertId();
+            if ($reused) {
+                $vid = (int)$existing['id'];
+            } else {
+                $pdo->prepare("INSERT INTO users (email,password,role,fullName,verificationStatus,isActive,token)
+                    VALUES (?,?,?,?,?,?,?)")->execute([
+                    $email, password_hash($d['password'], PASSWORD_DEFAULT), 'venue',
+                    $fullName, 'approved', 1, bin2hex(random_bytes(24)),
+                ]);
+                $vid = $pdo->lastInsertId();
+            }
             $pdo->prepare("UPDATE locations SET adminUserId=? WHERE id=?")->execute([$vid, $locationId]);
             $pdo->commit();
         } catch (Throwable $e) {
@@ -494,8 +516,9 @@ switch ($action) {
             fail($e->getMessage(), 500);
         }
         ok([
-            'venue' => ['id' => $vid, 'email' => $email, 'fullName' => $d['fullName'], 'role' => 'venue'],
+            'venue' => ['id' => $vid, 'email' => $email, 'fullName' => $fullName, 'role' => 'venue'],
             'location' => ['id' => $locationId, 'name' => $loc['name']],
+            'reused' => $reused,
         ]);
         break;
 
@@ -538,6 +561,13 @@ switch ($action) {
             $loc = $locStmt->fetch();
             if (!$loc) {
                 fail('Lokasi tidak dijumpai.');
+            }
+            // Elak tulis ganti senyap: lokasi yang diduduki pentadbir LAIN.
+            $heldStmt = $pdo->prepare("SELECT u.email FROM locations l LEFT JOIN users u ON u.id=l.adminUserId WHERE l.id=? AND l.adminUserId IS NOT NULL AND l.adminUserId<>?");
+            $heldStmt->execute([$locId, $vid]);
+            $heldBy = $heldStmt->fetchColumn();
+            if ($heldBy) {
+                fail('Lokasi itu sudah ditugaskan kepada ' . $heldBy . '. Pindahkan pentadbir sedia ada dahulu.');
             }
             $pdo->beginTransaction();
             try {

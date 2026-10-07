@@ -331,16 +331,19 @@
             <input class="input" id="vEmail" type="email" required placeholder="admin.lokasi@contoh.com">
           </div>
           <div class="field span-2">
-            <label for="vName">Nama Penuh <em>*</em></label>
-            <input class="input" id="vName" required placeholder="Nama pentadbir spot">
+            <label for="vName">Nama Penuh <small style="color:var(--muted);">(akaun baharu sahaja)</small></label>
+            <input class="input" id="vName" placeholder="Nama pentadbir spot">
           </div>
           <div class="field span-2">
-            <label for="vPass">Kata Laluan Awal <em>*</em></label>
-            <input class="input" id="vPass" type="text" required minlength="6" placeholder="Minimum 6 aksara">
+            <label for="vPass">Kata Laluan Awal <small style="color:var(--muted);">(akaun baharu sahaja)</small></label>
+            <input class="input" id="vPass" type="text" minlength="6" placeholder="Minimum 6 aksara">
           </div>
           <div class="field span-2">
             <label for="vLoc">Lokasi <em>*</em></label>
             <select class="select" id="vLoc" required><option value="">-- Pilih Lokasi --</option></select>
+          </div>
+          <div class="field span-2">
+            <small style="color:var(--muted)">Emel yang sama boleh ditugaskan ke lebih daripada satu spot. Jika emel sedia ada sebagai pentadbir spot, akaun digunakan semula — kata laluan & nama kekal.</small>
           </div>
           <div class="field span-2" style="align-self:end;">
             <button class="btn btn-primary" id="vSubmit">Cipta Pentadbir Spot</button>
@@ -390,7 +393,7 @@
 
     const locSel = document.getElementById('vLoc');
     locSel.innerHTML = '<option value="">-- Pilih Lokasi --</option>' + locations
-      .map(l => `<option value="${l.id}">${UI.esc(l.name)}${l.area ? ' (' + UI.esc(l.area) + ')' : ''}</option>`).join('');
+      .map(l => `<option value="${l.id}" ${l.adminUserId ? 'disabled' : ''}>${UI.esc(l.name)}${l.area ? ' (' + UI.esc(l.area) + ')' : ''}${l.adminUserId ? ' — sedia ada: ' + UI.esc(l.adminName || l.adminEmail) : ''}</option>`).join('');
 
     const box = document.getElementById('venueList');
     box.innerHTML = `<div class="table-wrap"><table class="data">
@@ -427,7 +430,15 @@
       document.getElementById('eEmail').value = l.adminEmail || '';
       document.getElementById('eName').value = '';
       document.getElementById('ePass').value = '';
-      document.getElementById('eLoc').value = '';
+      // Lokasi yang diduduki pentadbir LAIN dikunci — elak tulis ganti senyap.
+      const eLoc = document.getElementById('eLoc');
+      eLoc.innerHTML = '<option value="">-- Kekal Lokasi Semasa --</option>' + locs
+        .map(x => {
+          const taken = x.adminUserId && x.adminUserId !== l.adminUserId;
+          const label = x.name + (x.area ? ' (' + UI.esc(x.area) + ')' : '') + (taken ? ' — sedia ada: ' + UI.esc(x.adminName || x.adminEmail) : '');
+          return `<option value="${x.id}" ${taken ? 'disabled' : ''}>${UI.esc(label)}</option>`;
+        }).join('');
+      eLoc.value = '';
       editPanel.style.display = 'block';
       editPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
@@ -465,7 +476,9 @@
           password: document.getElementById('vPass').value,
           locationId: Number(document.getElementById('vLoc').value),
         });
-        UI.toast('Pentadbir spot dicipta & ditugaskan ke ' + (r.location && r.location.name ? r.location.name : 'lokasi terpilih') + '.', 'ok');
+        UI.toast(
+          (r.reused ? 'Pentadbir sedia ada ditugaskan ke ' : 'Pentadbir spot dicipta & ditugaskan ke ') +
+          (r.location && r.location.name ? r.location.name : 'lokasi terpilih') + '.', 'ok');
         Router.replace('admin-venues');
       } catch (err) {
         UI.toast(err.message, 'err');
