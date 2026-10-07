@@ -12,7 +12,7 @@
     let buskers = [];
     try {
       const r = await API.community.buskers();
-      buskers = r.buskers || [];
+      buskers = (r && r.buskers) || [];
       if (!buskers.length) buskers = _demoBuskers();
     } catch (e) {
       buskers = _demoBuskers();
@@ -59,7 +59,7 @@
     let notifications = [];
     try {
       const r = await API.community.notifications();
-      notifications = r.notifications || [];
+      notifications = (r && r.notifications) || [];
     } catch (e) {
       document.getElementById('inboxList').innerHTML = UI.notice(e.message, 'error');
       return;

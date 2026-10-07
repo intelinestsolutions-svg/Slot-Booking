@@ -13,6 +13,9 @@ function db(): PDO
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         $pdo->exec('PRAGMA journal_mode = WAL;');
+        // Tunggu sehingga 5s jika pangkalan data dikunci (contoh: dua permintaan
+        // serentak semasa migrasi bina semula) — elakkan SQLITE_BUSY rawak.
+        $pdo->exec('PRAGMA busy_timeout = 5000;');
         schema($pdo);
         seed($pdo);
     }
@@ -118,13 +121,28 @@ function schema(PDO $pdo): void
             $uCols[] = '"' . $c['name'] . '"';
             $ddl = '"' . $c['name'] . '" ' . $c['type'];
             if (!empty($c['notnull'])) { $ddl .= ' NOT NULL'; }
-            if ($c['dflt_value'] !== null) { $ddl .= ' DEFAULT ' . $c['dflt_value']; }
-            if (!empty($c['pk'])) { $ddl .= ' PRIMARY KEY'; }
+            if ($c['dflt_value'] !== null) {
+                $dv = trim((string)$c['dflt_value']);
+                // PRAGMA memulangkan lalai ungkapan TANPA kurungan (cth:
+                // datetime('now')); SQLite hanya terima ungkapan lengkap
+                // dalam kurungan. Literal '...' / nombor / NULL dikecualikan.
+                $isLiteral = preg_match("/^'[^']*'$/", $dv) === 1
+                    || preg_match('/^[-+]?[0-9.]+$/', $dv) === 1
+                    || $dv === 'NULL';
+                $ddl .= ' DEFAULT ' . ($isLiteral ? $dv : '(' . $dv . ')');
+            }
+            if (!empty($c['pk'])) {
+                $ddl .= ' PRIMARY KEY';
+                if (strtoupper(trim((string)$c['type'])) === 'INTEGER') {
+                    $ddl .= ' AUTOINCREMENT';
+                }
+            }
             $cdefs[] = $ddl;
         }
         $cdefs[] = 'UNIQUE(email, role)';
         $pdo->exec('BEGIN');
         try {
+            $pdo->exec('DROP TABLE IF EXISTS users_v2');
             $pdo->exec('CREATE TABLE users_v2 (' . implode(', ', $cdefs) . ')');
             $pdo->exec('INSERT INTO users_v2 (' . implode(',', $uCols) . ') SELECT ' . implode(',', $uCols) . ' FROM users');
             $pdo->exec('DROP TABLE users');
@@ -133,6 +151,12 @@ function schema(PDO $pdo): void
         } catch (Throwable $e) {
             $pdo->exec('ROLLBACK');
             throw $e;
+        }
+        // Segerakkan sqlite_sequence supaya id baharu bersambung dengan betul.
+        try {
+            $pdo->exec("INSERT OR REPLACE INTO sqlite_sequence (name, seq) SELECT 'users', COALESCE(MAX(id), 0) FROM users");
+        } catch (Throwable $e) {
+            // Jadual sqlite_sequence tiada — ABAIKAN; SQLite tetapkan semula sendiri.
         }
     }
     // Bukti pengesahan telefon pra-pendaftaran: OTP disahkan DAHULU,

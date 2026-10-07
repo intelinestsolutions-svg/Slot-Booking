@@ -49,6 +49,15 @@
       err.data = data;
       throw err;
     }
+    if (data === null) {
+      // Badan respons bukan JSON/kosong (cth. HTTP 500) — buang ralat mesra
+      // dan bukannya pulangkan null yang mencetuskan ralat "of null".
+      const err = new Error(res.ok
+        ? 'Respons pelayan tidak sah. Sila muat semula halaman.'
+        : 'Pelayan menghadapi masalah buat sementara (HTTP ' + res.status + '). Sila cuba sebentar lagi.');
+      err.status = res.status;
+      throw err;
+    }
     return data;
   }
 

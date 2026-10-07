@@ -32,7 +32,7 @@
     let list = [];
     try {
       const r = await API.bookings.mine();
-      list = r.bookings || [];
+      list = (r && r.bookings) || [];
     } catch (e) {
       document.getElementById('dashNext').innerHTML = UI.notice(e.message, 'error');
       return;

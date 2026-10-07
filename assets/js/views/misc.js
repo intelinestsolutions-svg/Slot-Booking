@@ -118,8 +118,8 @@
     let loc = null, slots = [];
     try {
       const r = await API.locations.publicSchedule(slug, 7);
-      loc = r.location || null;
-      slots = r.slots || [];
+      loc = (r && r.location) || null;
+      slots = (r && r.slots) || [];
     } catch (e) { /* ignore, render error below */ }
 
     if (!loc) {

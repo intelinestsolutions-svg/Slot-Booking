@@ -53,7 +53,7 @@
     let apps = [];
     try {
       const r = await API.admin.applications();
-      apps = r.applications || [];
+      apps = (r && r.applications) || [];
     } catch (e) {
       document.getElementById('adApps').innerHTML = UI.notice(e.message, 'error');
       return;
@@ -113,7 +113,7 @@
     let rows = [];
     try {
       const r = await API.admin.financials();
-      rows = r.transactions || [];
+      rows = (r && r.transactions) || [];
       const s = await API.community.stats().catch(() => null);
       document.getElementById('finStats').innerHTML = s ? `
         <div class="stat-grid" style="margin-bottom:20px;">
@@ -166,7 +166,7 @@
         API.admin.slotSchedule(),
         API.admin.listBuskers().catch(() => ({ buskers: [] })),
       ]);
-      slots = r.slots || [];
+      slots = (r && r.slots) || [];
       buskers = (buskersRes && buskersRes.buskers) || [];
     } catch (e) {
       document.getElementById('slotMgr').innerHTML = UI.notice(e.message, 'error');
@@ -247,7 +247,7 @@
     let rows = [];
     try {
       const r = await API.admin.pendingBookings();
-      rows = r.bookings || [];
+      rows = (r && r.bookings) || [];
     } catch (e) {
       document.getElementById('pendingBookings').innerHTML = UI.notice(e.message, 'error');
       return;
@@ -255,7 +255,7 @@
 
     const box = document.getElementById('pendingBookings');
     if (!rows.length) {
-      box.innerHTML = '<div class="empty"><div class="e-ico">✅</div><p>Tiada tempahan menunggu kelulusan buat masa ini.</p></div>';
+      box.innerHTML = '<div class="empty"><div class="e-ico">✅</div><p>Belum ada tempahan busker.</p></div>';
       return;
     }
 
@@ -382,7 +382,7 @@
     let locations = [];
     try {
       const r = await API.admin.venueLocations();
-      locations = r.locations || [];
+      locations = (r && r.locations) || [];
     } catch (e) {
       document.getElementById('venueList').innerHTML = UI.notice(e.message, 'error');
       return;
@@ -532,7 +532,7 @@
     let locations = [];
     try {
       const r = await API.admin.venueLocations();
-      locations = r.locations || [];
+      locations = (r && r.locations) || [];
     } catch (e) {
       document.getElementById('locList').innerHTML = UI.notice(e.message, 'error');
       return;

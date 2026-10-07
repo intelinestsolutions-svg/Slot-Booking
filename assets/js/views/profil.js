@@ -44,7 +44,7 @@
     let u = {};
     try {
       const r = await API.auth.me();
-      u = r.user || {};
+      u = (r && r.user) || {};
       Session.setUser({ ...Session.user, ...u });
     } catch (e) {
       document.getElementById('meCard').innerHTML = UI.notice(e.message, 'error');
@@ -170,7 +170,7 @@
     let u = {};
     try {
       const r = await API.auth.me();
-      u = r.user || {};
+      u = (r && r.user) || {};
       Session.setUser({ ...Session.user, ...u });
     } catch (e) { /* continue with session data */ }
 
