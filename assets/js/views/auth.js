@@ -12,6 +12,7 @@
   }
 
   window.viewLogin = function (q) {
+    if (window.sbcConsentHide) window.sbcConsentHide();
     const role = q.page === 'admin_login' ? 'admin' : 'busker';
     const tabNames = { busker: 'Busker', admin: 'Admin' };
     const tabs = Object.keys(tabNames).map(r =>
@@ -95,6 +96,7 @@
   });
 
   window.viewRegister = function () {
+    if (window.sbcConsentHide) window.sbcConsentHide();
     const stateOpts = MY_STATES.map(s => `<option>${s}</option>`).join('');
     const genreOpts = GENRES.map(g => `<option>${g}</option>`).join('');
 
@@ -491,6 +493,7 @@
 
   };
   window.viewVerifyPhone = function (q) {
+    if (window.sbcConsentHide) window.sbcConsentHide();
     const mode = q.mode === 'forgot' ? 'forgot' : 'verify';
     const isForgot = mode === 'forgot';
     const title = isForgot ? 'Lupa Kata Laluan' : 'Sahkan Email';

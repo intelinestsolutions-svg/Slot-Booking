@@ -1,12 +1,12 @@
 {
   "app": "Sabah Buskers Community",
   "domain": "sabahbuskers.my",
-  "webVersion": "20261048",
+  "webVersion": "20261049",
   "android": {
-    "version": "2.1.0-beta",
-    "versionCode": 23,
+    "version": "2.1.1-beta",
+    "versionCode": 24,
     "url": "https://apps.sabahbuskers.my/sbc-mobile.apk",
-    "notes": "Pembetulan pendaftaran: nombor telefon 011 (11 digit) kini diterima."
+    "notes": "Pembetulan kotak tanda persetujuan (PDPA) di pendaftaran: banner tetap tidak lagi menutup kotak tick & butang hantar."
   },
   "updatedAt": "2026-10-07"
 }

@@ -73,6 +73,11 @@
      Native gate above already handles in-app consent. */
   function ensureWebConsent() {
     if (window.APP.isNative) return;
+    // Halaman borang (daftar/log masuk/lupa kata laluan) ADA persetujuan PDPA
+    // sendiri di dalam borang — jangan papar banner tetap di sini kerana ia
+    // menutup kotak tanda & butang hantar di bahagian bawah skrin (telefon).
+    const p = (new URLSearchParams(location.search).get('page') || '').toLowerCase();
+    if (['register', 'login', 'admin_login', 'forgot', 'verify-phone'].includes(p)) return;
     let choice = null;
     try { choice = localStorage.getItem('sbc-consent'); } catch (e) {}
     if (choice) return;
@@ -87,16 +92,34 @@
         <button type="button" class="btn btn-primary btn-sm" data-choice="accept">Terima</button>
         <button type="button" class="btn btn-ghost btn-sm" data-choice="decline">Tolak</button>
       </div>`;
+    // Ruang tambahan di bawah kandungan supaya banner tetap TIDAK menutup
+    // butang/borang di bahagian bawah — pengguna boleh skrol melepasinya.
+    const spacer = document.createElement('div');
+    spacer.id = 'sbcConsentSpacer';
+    spacer.setAttribute('aria-hidden', 'true');
+    spacer.style.height = '130px';
+    const dismiss = () => {
+      bar.classList.add('gone');
+      if (spacer.parentNode) spacer.remove();
+      setTimeout(() => bar.remove(), 400);
+    };
     bar.addEventListener('click', (e) => {
       const b = e.target.closest('[data-choice]');
       if (!b) return;
       try { localStorage.setItem('sbc-consent', b.dataset.choice); } catch (err) {}
-      bar.classList.add('gone');
-      setTimeout(() => bar.remove(), 400);
+      dismiss();
     });
+    document.body.appendChild(spacer);
     document.body.appendChild(bar);
     requestAnimationFrame(() => bar.classList.add('on'));
   }
+  // Sembunyikan banner serta-merta (dipanggil oleh halaman borang SPA).
+  window.sbcConsentHide = function () {
+    const bar = document.getElementById('sbcConsent');
+    if (bar) { bar.classList.add('gone'); setTimeout(() => bar.remove(), 400); }
+    const sp = document.getElementById('sbcConsentSpacer');
+    if (sp) sp.remove();
+  };
   window.sbcConsentManage = function () {
     try { localStorage.removeItem('sbc-consent'); } catch (e) {}
     const old = document.getElementById('sbcConsent');
